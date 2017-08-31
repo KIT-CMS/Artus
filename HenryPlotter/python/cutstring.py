@@ -3,39 +3,26 @@ import sys
 """
 """
 
-# arten:
-	# larger/ smaller
-	# (save) equivalent
-	# AND
-	# OR
-	# 
+# Cut -> base class for sorting them
+# Cuts -> holder for selection steps
+# Weight -> Weight, constant, Number
+# Weights -> holder for weight expression
+
+
 supported_operators = ['<', '>', '&&', '||', '==', '!=']
 inverted_operators =  ['>', '<', '||', '&&', '!=', '==']
 
-class Weightstring(object):
+# Base class all others inherit from.
+# Usage: For any weight string that does not follow one of the special definitions listed below
+class Weight(object):
 
 	def __init__(self, weightstring, name=False):
-		# test weightstring: only constant values and floating point numbers are allowed
 		self.weightstring = weightstring
-		try:
-			float(weightstring)
-			self.is_float = True
-			self.name = name
-		except:
-			self.is_float = False
-			self.name = weightstring if name==False else name
+		self.name = name
 		if name == False:
 			print "No appropriate name has been assigned to weight with value " + str(weightstring) + ". Please use an explicit name for this weight string. \n Aborting."
 			sys.exit(1)
 			
-	def invert(self):
-		if self.is_float:
-			self.weightstring = str(1.0/float(self.weightstring))
-		else:
-			if self.weightstring.startswith("1.0/"):
-				self.weightstring = self.weightstring.replace("1.0/", "")
-			else:
-				self.weightstring = "1.0/"+self.weightstring
 
 	def get_name(self):
 		return self.name
@@ -46,8 +33,37 @@ class Weightstring(object):
 	def embrace(self, c):
 		return "(" + c + ")"
 
+# Class to use a variable as weight, e.g. 'generatorWeight'
+class Number(Weight):
+	def __init__(self, weightstring, name=False):
+		self.weightstring = weightstring
+		self.name = weightstring if name==False else name
 
-class Weightstrings(object):
+	def invert(self):
+		self.weightstring = str(1.0/float(self.weightstring))
+
+# Class for a constant number, e.g. '0.9'
+class Constant(Weight):
+	def __init__(self, weightstring, name=False):
+		self.weightstring = weightstring
+		try:
+			float(weightstring)
+			self.name = name
+		except:
+			print "Could not convert " + str(weightstring) + " to a float value. Please use a different weight type. \n Aborting."
+
+		if name == False:
+			print "No appropriate name has been assigned to weight with value " + str(weightstring) + ". Please use an explicit name for this weight string. \n Aborting."
+			sys.exit(1)
+
+	def invert(self):
+		if self.weightstring.startswith("1.0/"):
+			self.weightstring = self.weightstring.replace("1.0/", "")
+		else:
+			self.weightstring = "1.0/"+self.weightstring
+
+# holder class for weight/cutstring objects
+class Weights(object):
 	def __init__(self, *args):
 		self.weightstrings = []
 		if args!=False:
@@ -55,7 +71,7 @@ class Weightstrings(object):
 				self.add(w)
 
 	def add(self, weightstring):
-		if (issubclass(type(weightstring), Weightstring)):
+		if (issubclass(type(weightstring), Weight)):
 			if weightstring.get_name() in self.get_names():
 				print "Not possible to add the weightstring " + str(weightstring) + " since its name is not unique. Aborting."
 				sys.exit(1)
@@ -83,7 +99,8 @@ class Weightstrings(object):
 		else:
 			return False
 
-class Cutstring(Weightstring):
+# Class for a simple cut expression e.g. 'pt_1>22'
+class Cut():
 
 	def __init__(self, cutstring, name=False):
 		self.varleft = False
@@ -126,3 +143,48 @@ class Cutstring(Weightstring):
 	def set_variable(self, variable):
 		self.varleft = variable
 		self.update_weightstring()
+
+	def get_name(self):
+		return self.name
+
+	def extract(self):
+			return self.embrace(self.weightstring)
+
+	def embrace(self, c):
+		return "(" + c + ")"
+
+# holder class for cutstring objects
+class Cuts(object):
+	def __init__(self, *args):
+		self.cutstrings = []
+		if args!=False:
+			for w in args:
+				self.add(w)
+
+	def add(self, cutstring):
+		if (issubclass(type(cutstring), Weight)):
+			if cutstring.get_name() in self.get_names():
+				print "Not possible to add the cutstring " + str(cutstring) + " since its name is not unique. Aborting."
+				sys.exit(1)
+			else:
+	
+				self.cutstrings.append(cutstring)
+
+	def extract(self):
+		return self.cutstrings
+
+	def get_names(self):
+		return [w.get_name() for w in self.cutstrings]
+
+	def get(self, name):
+		for w in self.cutstrings:
+			if w.get_name() == name:
+				return w
+		return False
+
+	def remove(self, name):
+		if name in get_names:
+			self.cutstrings = [w for w in self.cutstrings if not w.get_name() == name]
+			return True
+		else:
+			return False
