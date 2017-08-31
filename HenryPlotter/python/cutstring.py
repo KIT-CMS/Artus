@@ -173,6 +173,12 @@ class Cuts(object):
 	def extract(self):
 		return self.cutstrings
 
+	def expand(self):
+		if len(self.cutstrings) > 0:
+			return "*".join([c.extract() for c in self.cutstrings])
+		else:
+			return "(1.0)"
+
 	def get_names(self):
 		return [w.get_name() for w in self.cutstrings]
 

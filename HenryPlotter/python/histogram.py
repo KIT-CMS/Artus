@@ -7,11 +7,17 @@ import ROOT
 """
 
 class Histogram(object):
-	def __init__(self, name, nbins, xlow, xhigh, variable, inputfiles, folder, cuts, weights): # empty histogram
+
+	default_nbins = 100
+	default_xlow = 0.0
+	default_xhigh = 1.0
+	default_variable = "x"
+
+	def __init__(self, name, variable, inputfiles, folder, cuts, weights, nbins=None, xlow=None, xhigh=None): # empty histogram
 		self.name = name
-		self.nbins = nbins
-		self.xlow = xlow
-		self.xhigh = xhigh
+		self.nbins = Histogram.default_nbins if (nbins==None) else nbins
+		self.xlow = Histogram.default_xlow if (xlow==None) else xlow
+		self.xhigh = Histogram.default_xhigh if (xhigh==None) else xhigh
 		self.variable = variable
 		self.inputfiles = [inputfiles] if isinstance(inputfiles, str) else inputfiles
 		self.folder = folder
@@ -34,8 +40,19 @@ class Histogram(object):
 			dataframe = dataframe.Filter(cutstring)
 		return dataframe
 
-	def create_histogram(self, dataframe):
-		self.root_object = dataframe.Histo1D(self.variable, self.weight_name)
+	def create_histogram(self, dataframe=False):
+		if dataframe:
+			self.root_object = dataframe.Histo1D(self.variable, self.weight_name)
+		else:
+			tree = ROOT.TChain()
+			for inputfile in self.inputfiles:
+				tree.Add(inputfile + "/" + self.folder)
+			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
+			          self.cuts.expand() + "*" + self.weights.extract(),
+			          "goff")
+			self.root_object = ROOT.gDirectory.Get(self.name)
+		return self
+
 
 	def produce_eventweight(self, dataframe):
 		new_dataframe = dataframe.Define(self.weight_name, self.weights.extract())
@@ -48,10 +65,9 @@ class Histogram(object):
 
 	def update(self):
 		if self.present():
-			print self.root_object
 			self.root_object.SetName(self.name)
 
-class root_objects(object):
+class Root_objects(object):
 	def __init__(self, output_file):
 		self.histograms = []
 		self.counts = []
@@ -65,15 +81,14 @@ class root_objects(object):
 		else:
 			self.histograms.append(histogram)
 
-	def new_histogram(self, *args):
-		h = Histogram(*args)
-		self.add_histogram(h)
+	def new_histogram(self, **kwargs):
+		self.add_histogram(Histogram(**kwargs))
 
 	# debug function
 	def print_all(self):
 		print self.histograms
 
-	# get all possible files/filders combinations to determine how many data frames are needed
+	# get all possible files/folders combinations to determine how many data frames are needed
 	def get_combinations(self, *args):
 		files_folders = []
 		for obj in args:
@@ -82,7 +97,7 @@ class root_objects(object):
 					files_folders.append(o.files_folders())
 		return files_folders
 
-	def produce(self):
+	def produce_tdf(self):
 		self.produced = True
 		# determine how many data frames have to be created; sort by inputfiles and trees
 		files_folders = self.get_combinations(self.histograms, self.counts)
@@ -95,11 +110,24 @@ class root_objects(object):
 				# find overlapping cut selections -> dummy atm
 				special_dataframe = h.apply_cuts_on_dataframe(common_dataframe)
 				special_dataframe = h.produce_eventweight(common_dataframe)
-				h.create_histogram(special_dataframe)
+				h.create_histogram(dataframe=special_dataframe)
 			# create the histograms
 			for h in [h for h in self.histograms if h.files_folders()==files_folder]:
 				h.update()
 				h.draw()
+
+	def create_histogram(self, index):
+		return self.histograms[index].create_histogram()
+
+	def produce_classic(self, processes=1):
+		self.produced = True
+		#for i in range(len(self.histograms)):
+		#	self.create_histogram(i)
+		from pathos.multiprocessing import ProcessingPool as Pool
+		pool = Pool(processes=processes)
+		res = pool.map(self.create_histogram, range(len(self.histograms)))
+		for h in res:
+			h.root_object.Write()
 
 
 	def save(self):
