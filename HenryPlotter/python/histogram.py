@@ -1,39 +1,25 @@
 # -*- coding: utf-8 -*-
 
 import ROOT
-
+from array import array
 
 """
 """
 
-class Histogram(object):
-
-	default_nbins = 100
-	default_xlow = 0.0
-	default_xhigh = 1.0
-	default_variable = "x"
-	default_folder = ""
-
-	def __init__(self, name, inputfiles, folder, cuts, weights, variable=None, nbins=None, xlow=None, xhigh=None): # empty histogram
+# Base class for Histogram and Count
+class TTree_content(object):
+	def __init__(self, name, inputfiles, folder, cuts, weights): # empty histogram
 		self.name = name
-		self.nbins = Histogram.default_nbins if (nbins==None) else nbins
-		self.xlow = Histogram.default_xlow if (xlow==None) else xlow
-		self.xhigh = Histogram.default_xhigh if (xhigh==None) else xhigh
-		self.folder = Histogram.default_folder if (folder==None) else folder
-		self.variable = Histogram.default_variable if (variable==None) else variable
-
 		self.inputfiles = [inputfiles] if isinstance(inputfiles, str) else inputfiles
 
 		self.cuts = cuts
 		self.weights = weights
-		self.weight_name = 'weight_' + self.name
-		self.root_object = False
+		self.weight_name = 'weight_' + self.name # internal name needed for TDFs
+		self.result = False
+		self.folder = Histogram.default_folder if (folder==None) else folder
 
 	def present(self): # return if h is already filled
-		return self.root_object != False
-
-	def add(self, second_histogram):
-		pass # to be implemented
+		return self.result != False
 
 	def files_folders(self):
 		return (self.inputfiles, self.folder)
@@ -43,55 +29,120 @@ class Histogram(object):
 			dataframe = dataframe.Filter(cutstring)
 		return dataframe
 
-	def create_histogram(self, dataframe=False):
-		if dataframe:
-			self.root_object = dataframe.Histo1D(self.variable, self.weight_name)
-		else:
-			tree = ROOT.TChain()
-			for inputfile in self.inputfiles:
-				tree.Add(inputfile + "/" + self.folder)
-			print self.cuts
-			print self.cuts.expand() + "*" + self.weights.extract()
-			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
-			          self.cuts.expand() + "*" + self.weights.extract(),
-			          "goff")
-			self.root_object = ROOT.gDirectory.Get(self.name)
-		return self
-
-
 	def produce_eventweight(self, dataframe):
 		new_dataframe = dataframe.Define(self.weight_name, self.weights.extract())
 		return new_dataframe
+
+	def update(self):
+		pass
+
+
+class Histogram(TTree_content):
+
+	default_nbins = 100
+	default_xlow = 0.0
+	default_xhigh = 1.0
+	default_variable = "x"
+	default_folder = ""
+
+	def __init__(self, name, inputfiles, folder, cuts, weights, variable=None, nbins=None, xlow=None, xhigh=None): # empty histogram
+		self.nbins = Histogram.default_nbins if (nbins==None) else nbins
+		self.xlow = Histogram.default_xlow if (xlow==None) else xlow
+		self.xhigh = Histogram.default_xhigh if (xhigh==None) else xhigh
+		self.variable = Histogram.default_variable if (variable==None) else variable
+		super(Histogram, self).__init__(name, inputfiles, folder, cuts, weights)
+
+	def get_result(self, dataframe=False):
+		if dataframe:
+			self.result = dataframe.Histo1D(self.variable, self.weight_name)
+		else: # classic way
+			tree = ROOT.TChain()
+			for inputfile in self.inputfiles:
+				tree.Add(inputfile + "/" + self.folder)
+			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
+			          self.cuts.expand() + "*" + self.weights.extract(),
+			          "goff")
+			self.result = ROOT.gDirectory.Get(self.name)
+		return self
+
 	
-	def draw(self):
-		self.root_object.Draw()	
+	def show(self):
+		print "showing histogram " + self.name 
+		self.result.Draw()	
 		import time
 		time.sleep(1.5)
 
 	def update(self):
 		if self.present():
-			self.root_object.SetName(self.name)
+			self.result.SetName(self.name)
+	def save(self, output_tree):
+		self.result.Write()
+
+# class to count the (weighted) number of events in a selection
+class Count(TTree_content):
+	def __init__(self, name, inputfiles, folder, cuts, weights):
+		super(Count, self).__init__(name, inputfiles, folder, cuts, weights)
+		self.inputfiles = [inputfiles] if isinstance(inputfiles, str) else inputfiles
+
+		self.cuts = cuts
+		self.weights = weights
+		self.result = False
+
+	def get_result(self, dataframe=False):
+		if dataframe: # TODO: does not work yet. Requires a patch of TDF from the ROOT team
+			ROOT.gInterpreter.Declare('''
+			class Sum {
+			    public:
+				float value;
+				void add(float a) {value += a; }
+				float get() {return value;}
+				};
+			Sum sum_instance;
+			float bla=3.0;
+			''')
+			self.result = dataframe.Foreach(ROOT.sum_instance.add(1.0), {self.weight_name})
+			print ROOT.sum_instance.get()
+		else: # classic way
+			tree = ROOT.TChain()
+			for inputfile in self.inputfiles:
+				tree.Add(inputfile + "/" + self.folder)
+			tree.Draw("1>>" + self.name + "(1)",
+			          self.cuts.expand() + "*" + self.weights.extract(),
+			          "goff")
+			
+			self.result = ROOT.gDirectory.Get(self.name).GetBinContent(1)
+		print "returning " + str(self) + " with the result " + str(self.result)
+		return self
+
+	def show(self):
+		print "Result from count with name " + self.name + " : " + str(self.result)
+
+	def save(self, output_tree):
+		self.result_array = array("f", [self.result])
+		name = self.name
+		output_tree.Branch(name, self.result_array, name + "/F")
+
 
 class Root_objects(object):
 	def __init__(self, output_file):
-		self.histograms = []
+		self.root_objects = []
 		self.counts = []
 		self.produced = False
 		self.output_file = ROOT.TFile(output_file, "new")
+		self.output_tree = ROOT.TTree('output_tree', 'output_tree')
 
-	def add_histogram(self, histogram):
+	def add(self, root_object):
 		if self.produced:
-			print "The root_objects.produced() has already been called. No more histograms can be added"
+			print "The results.produced() has already been called. No more histograms can be added"
 			return False
 		else:
-			self.histograms.append(histogram)
+			self.root_objects.append(root_object)
 
 	def new_histogram(self, **kwargs):
-		self.add_histogram(Histogram(**kwargs))
+		self.add(Histogram(**kwargs))
 
-	# debug function
-	def print_all(self):
-		print self.histograms
+	def new_count(self, **kwargs):
+		self.add(Count(**kwargs))
 
 	# get all possible files/folders combinations to determine how many data frames are needed
 	def get_combinations(self, *args):
@@ -105,40 +156,46 @@ class Root_objects(object):
 	def produce_tdf(self):
 		self.produced = True
 		# determine how many data frames have to be created; sort by inputfiles and trees
-		files_folders = self.get_combinations(self.histograms, self.counts)
+		files_folders = self.get_combinations(self.root_objects, self.counts)
 
 		for files_folder in files_folders:
 			# create the dataframe
 			common_dataframe = ROOT.Experimental.TDataFrame(files_folder[1], files_folder[0][0])
 			# loop over the corresponding histograms and create an own dataframe for each histogram -> TODO
-			for h in [h for h in self.histograms if h.files_folders()==files_folder]:
+			for h in [h for h in self.root_objects if h.files_folders()==files_folder]:
 				# find overlapping cut selections -> dummy atm
 				special_dataframe = h.apply_cuts_on_dataframe(common_dataframe)
 				special_dataframe = h.produce_eventweight(common_dataframe)
-				h.create_histogram(dataframe=special_dataframe)
+				h.get_result(dataframe=special_dataframe)
 			# create the histograms
-			for h in [h for h in self.histograms if h.files_folders()==files_folder]:
+			for h in [h for h in self.root_objects if h.files_folders()==files_folder]:
 				h.update()
-				h.draw()
+				h.show()
 
-	def create_histogram(self, index):
-		return self.histograms[index].create_histogram()
 
 	def produce_classic(self, processes=1):
 		self.produced = True
 		if processes==1:
-			for i in range(len(self.histograms)):
-				self.create_histogram(i)
+			for i in range(len(self.root_objects)):
+				self.get_result(i)
 		else:
 			from pathos.multiprocessing import ProcessingPool as Pool
 			pool = Pool(processes=processes)
-			res = pool.map(self.create_histogram, range(len(self.histograms)))
-			for h in res:
-				h.root_object.Write()
+			self.root_objects = pool.map(self.get_result, range(len(self.root_objects)))
+			
+			for h in self.root_objects: # write sequentially to prevent race conditions
+				h.save(self.output_tree)
+				h.show()
 
+	def get_result(self, index):
+		return self.root_objects[index].get_result()
 
 	def save(self):
-		if not self.produced:
-			self.produce()
+		assert(self.produced)
+		for h in self.root_objects:
+			print h
+			print h.result
+			h.show()
+		self.output_tree.Fill()
 		self.output_file.Write()
 		self.output_file.Close()
