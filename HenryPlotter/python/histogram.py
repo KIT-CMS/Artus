@@ -12,15 +12,18 @@ class Histogram(object):
 	default_xlow = 0.0
 	default_xhigh = 1.0
 	default_variable = "x"
+	default_folder = ""
 
-	def __init__(self, name, variable, inputfiles, folder, cuts, weights, nbins=None, xlow=None, xhigh=None): # empty histogram
+	def __init__(self, name, inputfiles, folder, cuts, weights, variable=None, nbins=None, xlow=None, xhigh=None): # empty histogram
 		self.name = name
 		self.nbins = Histogram.default_nbins if (nbins==None) else nbins
 		self.xlow = Histogram.default_xlow if (xlow==None) else xlow
 		self.xhigh = Histogram.default_xhigh if (xhigh==None) else xhigh
-		self.variable = variable
+		self.folder = Histogram.default_folder if (folder==None) else folder
+		self.variable = Histogram.default_variable if (variable==None) else variable
+
 		self.inputfiles = [inputfiles] if isinstance(inputfiles, str) else inputfiles
-		self.folder = folder
+
 		self.cuts = cuts
 		self.weights = weights
 		self.weight_name = 'weight_' + self.name
@@ -47,6 +50,8 @@ class Histogram(object):
 			tree = ROOT.TChain()
 			for inputfile in self.inputfiles:
 				tree.Add(inputfile + "/" + self.folder)
+			print self.cuts
+			print self.cuts.expand() + "*" + self.weights.extract()
 			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
@@ -121,13 +126,15 @@ class Root_objects(object):
 
 	def produce_classic(self, processes=1):
 		self.produced = True
-		#for i in range(len(self.histograms)):
-		#	self.create_histogram(i)
-		from pathos.multiprocessing import ProcessingPool as Pool
-		pool = Pool(processes=processes)
-		res = pool.map(self.create_histogram, range(len(self.histograms)))
-		for h in res:
-			h.root_object.Write()
+		if processes==1:
+			for i in range(len(self.histograms)):
+				self.create_histogram(i)
+		else:
+			from pathos.multiprocessing import ProcessingPool as Pool
+			pool = Pool(processes=processes)
+			res = pool.map(self.create_histogram, range(len(self.histograms)))
+			for h in res:
+				h.root_object.Write()
 
 
 	def save(self):

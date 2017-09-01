@@ -5,7 +5,7 @@ import sys
 
 # Cut -> base class for sorting them
 # Cuts -> holder for selection steps
-# Weight -> Weight, constant, Number
+# Weight -> Weight, constant
 # Weights -> holder for weight expression
 
 
@@ -33,34 +33,31 @@ class Weight(object):
 	def embrace(self, c):
 		return "(" + c + ")"
 
-# Class to use a variable as weight, e.g. 'generatorWeight'
-class Number(Weight):
-	def __init__(self, weightstring, name=False):
-		self.weightstring = weightstring
-		self.name = weightstring if name==False else name
 
-	def invert(self):
-		self.weightstring = str(1.0/float(self.weightstring))
-
-# Class for a constant number, e.g. '0.9'
+# Class for a constant number, e.g. '0.9' or a constant variable e.g. "generatorWeight"
 class Constant(Weight):
 	def __init__(self, weightstring, name=False):
+		self.is_float = False
 		self.weightstring = weightstring
 		try:
 			float(weightstring)
+			is_float = True
 			self.name = name
 		except:
-			print "Could not convert " + str(weightstring) + " to a float value. Please use a different weight type. \n Aborting."
+			self.name = weightstring if name==False else name
 
 		if name == False:
 			print "No appropriate name has been assigned to weight with value " + str(weightstring) + ". Please use an explicit name for this weight string. \n Aborting."
 			sys.exit(1)
 
 	def invert(self):
-		if self.weightstring.startswith("1.0/"):
-			self.weightstring = self.weightstring.replace("1.0/", "")
+		if is_float:
+			self.weightstring = str(1.0/float(self.weightstring))
 		else:
-			self.weightstring = "1.0/"+self.weightstring
+			if self.weightstring.startswith("1.0/"):
+				self.weightstring = self.weightstring.replace("1.0/", "")
+			else:
+				self.weightstring = "1.0/"+self.weightstring
 
 # holder class for weight/cutstring objects
 class Weights(object):
