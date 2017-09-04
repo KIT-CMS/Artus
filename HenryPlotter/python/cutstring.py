@@ -107,7 +107,7 @@ class Cut():
 		if name != False:
 			self.name = name
 		else:
-			self.name = filter(str.isalnum, cutstring)
+			self.name = filter(str.isalnum, cutstring.replace(">", "Gt").replace("<", "St"))
 
 		# test if simple, parseable cutstring
 		operators = [s for s in cutstring if s in supported_operators]	
@@ -159,12 +159,11 @@ class Cuts(object):
 				self.add(w)
 
 	def add(self, cutstring):
-		if (issubclass(type(cutstring), Weight)):
+		if (issubclass(type(cutstring), Cut)) or isinstance(cutstring, Cut):
 			if cutstring.get_name() in self.get_names():
 				print "Not possible to add the cutstring " + str(cutstring) + " since its name is not unique. Aborting."
 				sys.exit(1)
 			else:
-	
 				self.cutstrings.append(cutstring)
 
 	def extract(self):

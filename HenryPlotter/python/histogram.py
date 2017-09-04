@@ -26,7 +26,7 @@ class TTree_content(object):
 
 	def apply_cuts_on_dataframe(self, dataframe):
 		for cutstring in self.cuts.extract():
-			dataframe = dataframe.Filter(cutstring)
+			dataframe = dataframe.Filter(cutstring.extract(), cutstring.name)
 		return dataframe
 
 	def produce_eventweight(self, dataframe):
@@ -84,43 +84,36 @@ class Count(TTree_content):
 		super(Count, self).__init__(name, inputfiles, folder, cuts, weights)
 		self.inputfiles = [inputfiles] if isinstance(inputfiles, str) else inputfiles
 
-		self.cuts = cuts
 		self.weights = weights
 		self.result = False
 
 	def get_result(self, dataframe=False):
-		if dataframe: # TODO: does not work yet. Requires a patch of TDF from the ROOT team
-			ROOT.gInterpreter.Declare('''
-			class Sum {
-			    public:
-				float value;
-				void add(float a) {value += a; }
-				float get() {return value;}
-				};
-			Sum sum_instance;
-			float bla=3.0;
-			''')
-			self.result = dataframe.Foreach(ROOT.sum_instance.add(1.0), {self.weight_name})
-			print ROOT.sum_instance.get()
+		if dataframe:
+			self.result = dataframe.Define("flat", "1").Histo1D("flat", self.weight_name)
 		else: # classic way
 			tree = ROOT.TChain()
 			for inputfile in self.inputfiles:
 				tree.Add(inputfile + "/" + self.folder)
+			
 			tree.Draw("1>>" + self.name + "(1)",
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
 			
 			self.result = ROOT.gDirectory.Get(self.name).GetBinContent(1)
-		print "returning " + str(self) + " with the result " + str(self.result)
 		return self
 
 	def show(self):
-		print "Result from count with name " + self.name + " : " + str(self.result)
+		print "Result from count with name " + self.name + " : " + str(self.result) + ", selection: " +self.cuts.expand() + "*" + self.weights.extract()
 
 	def save(self, output_tree):
 		self.result_array = array("f", [self.result])
 		name = self.name
 		output_tree.Branch(name, self.result_array, name + "/F")
+
+	def update(self):
+		if not isinstance(self.result, float):
+			self.result = self.result.GetBinContent(59)
+
 
 
 class Root_objects(object):
@@ -165,12 +158,12 @@ class Root_objects(object):
 			for h in [h for h in self.root_objects if h.files_folders()==files_folder]:
 				# find overlapping cut selections -> dummy atm
 				special_dataframe = h.apply_cuts_on_dataframe(common_dataframe)
-				special_dataframe = h.produce_eventweight(common_dataframe)
+				special_dataframe = h.produce_eventweight(special_dataframe)
 				h.get_result(dataframe=special_dataframe)
 			# create the histograms
 			for h in [h for h in self.root_objects if h.files_folders()==files_folder]:
 				h.update()
-				h.show()
+				h.save(self.output_tree)
 
 
 	def produce_classic(self, processes=1):
@@ -183,19 +176,18 @@ class Root_objects(object):
 			pool = Pool(processes=processes)
 			self.root_objects = pool.map(self.get_result, range(len(self.root_objects)))
 			
-			for h in self.root_objects: # write sequentially to prevent race conditions
-				h.save(self.output_tree)
-				h.show()
+		for h in self.root_objects: # write sequentially to prevent race conditions
+			h.save(self.output_tree)
 
 	def get_result(self, index):
 		return self.root_objects[index].get_result()
+	
+	def show():
+		for h in self.root_objects:
+			h.show()
 
 	def save(self):
 		assert(self.produced)
-		for h in self.root_objects:
-			print h
-			print h.result
-			h.show()
 		self.output_tree.Fill()
 		self.output_file.Write()
 		self.output_file.Close()
