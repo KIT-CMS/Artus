@@ -59,10 +59,14 @@ class Histogram(TTree_content):
 			tree = ROOT.TChain()
 			for inputfile in self.inputfiles:
 				tree.Add(inputfile + "/" + self.folder)
+			print self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")"
+			print "cuts" + str(self.cuts)
+			print self.cuts.expand() + "*" + self.weights.extract()
 			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
 			self.result = ROOT.gDirectory.Get(self.name)
+			print self.result
 		return self
 
 	
@@ -75,6 +79,7 @@ class Histogram(TTree_content):
 	def update(self):
 		if self.present():
 			self.result.SetName(self.name)
+
 	def save(self, output_tree):
 		self.result.Write()
 
@@ -129,7 +134,10 @@ class Root_objects(object):
 			print "The results.produced() has already been called. No more histograms can be added"
 			return False
 		else:
-			self.root_objects.append(root_object)
+			if isinstance(root_object, list):
+				self.root_objects += root_object
+			else:
+				self.root_objects.append(root_object)
 
 	def new_histogram(self, **kwargs):
 		self.add(Histogram(**kwargs))

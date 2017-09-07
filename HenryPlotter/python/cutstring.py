@@ -77,8 +77,11 @@ class Weights(object):
 				self.weightstrings.append(weightstring)
 
 	def extract(self):
-		full_weightstring = "*".join([c.extract() for c in self.weightstrings])
-		return full_weightstring
+		if len(self.weightstrings) > 0:
+			full_weightstring = "*".join([c.extract() for c in self.weightstrings])
+			return full_weightstring
+		else:
+			return "(1.0)"
 
 	def get_names(self):
 		return [w.get_name() for w in self.weightstrings]
@@ -90,11 +93,16 @@ class Weights(object):
 		return False
 
 	def remove(self, name):
-		if name in get_names:
+		if name in self.get_names():
 			self.weightstrings = [w for w in self.weightstrings if not w.get_name() == name]
 			return True
 		else:
 			return False
+
+	def square(self, name):
+		new = self.get(name)
+		new.name = new.name+"2"
+		self.weightstrings.append(new)
 
 # Class for a simple cut expression e.g. 'pt_1>22'
 class Cut():
