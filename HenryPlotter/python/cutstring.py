@@ -103,6 +103,7 @@ class Weights(object):
 		new = self.get(name)
 		new.name = new.name+"2"
 		self.weightstrings.append(new)
+		return self
 
 # Class for a simple cut expression e.g. 'pt_1>22'
 class Cut():
@@ -131,13 +132,16 @@ class Cut():
 	def invert(self):
 		self.operator = inverted_operators[supported_operators.index(self.operator)]
 		self.update_weightstring()
+		return self
 
 	def update_weightstring(self):
 		self.weightstring = "".join([self.varleft, self.operator, str(self.varright)])
+		return self
 
 	def set_value(self, value):
 		self.varright = float(value)
 		self.update_weightstring()
+		return self
 
 	def get_value(self):
 		return self.varright
@@ -148,6 +152,7 @@ class Cut():
 	def set_variable(self, variable):
 		self.varleft = variable
 		self.update_weightstring()
+		return self
 
 	def get_name(self):
 		return self.name

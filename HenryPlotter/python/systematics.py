@@ -29,22 +29,26 @@ class Systematic(object):
 		# TODO: make sure all parameters are not None any more
 		self.input_histograms = []
 
-	def get_cuts(self):
-		return self.category.get_cuts()
+	def get_category(self):
+		return self.category
 
 	# function to return the histogram classes necessary for this systematic variation
 	def get_histograms(self):
-		self.input_histograms = self.estimation_method.get_histograms(self)
+		self.input_histograms = dict([(h.get_name(), h) for h in self.estimation_method.get_histograms(self)])
+		#self.input_histograms = self.estimation_method.get_histograms(self)
 			# call estimation_methods with corresponding arguments...
 		return self.input_histograms
 
 	def produce(self): # function doing the actual calculations.
 		self.shape = self.estimation_method.do_estimation(self)
 
-	def get_name(self, direction=""):
+	def get_name(self, *args):
 		name = "_".join([self.channel, self.process, self.category.get_name(), self.analysis, self.era])
 		if self.syst!=None:
-			name += "_" + self.syst.get_name() + "_"+direction
+			name += "_" + self.syst.get_name()
+		name = "_".join([name]+ list(args))
+		print "name: " + name
+		print list(args)
 		return name
 
 	def summary(self):
@@ -74,7 +78,7 @@ class Systematics(object):
 	def create_histograms(self):
 		root_objects = Root_objects("outputfile.root")
 		for systematic in self.systematics:
-			root_objects.add(systematic.get_histograms())
+			root_objects.add(systematic.get_histograms().values())
 		root_objects.produce_classic(processes=1)
 		# TODO: write back the resulting histograms if not already done 
 

@@ -18,7 +18,10 @@ class Systematic_variation(object):
 		return self.name
 
 	def change_histogram_name(self, h_settings, direction):
-		h_settings["name"] = [h_settings["name"], direction]
+		if isinstance(h_settings, list):
+			h_settings["name"].append( direction )
+		else:
+			h_settings["name"] = [h_settings["name"], direction]
 		return h_settings
 
 	def shifted_histograms(self, h_settings):

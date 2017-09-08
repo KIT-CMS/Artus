@@ -36,6 +36,9 @@ class TTree_content(object):
 	def update(self):
 		pass
 
+	def get_name(self):
+		return self.name
+
 
 class Histogram(TTree_content):
 
@@ -68,7 +71,6 @@ class Histogram(TTree_content):
 			self.result = ROOT.gDirectory.Get(self.name)
 			print self.result
 		return self
-
 	
 	def show(self):
 		print "showing histogram " + self.name 
