@@ -2,6 +2,7 @@
 
 import ROOT
 from array import array
+import hashlib
 
 """
 """
@@ -39,6 +40,20 @@ class TTree_content(object):
 	def get_name(self):
 		return self.name
 
+	def __eq__(self, other):
+		return self.__hash__() == other.__hash__()
+
+	def __hash__(self):
+		m = hashlib.md5()
+		m.update(self.name)
+		for ifile in self.inputfiles:
+			m.update(ifile)
+		m.update(self.cuts.expand()) # todo
+		m.update(self.weights.extract())
+		m.update(self.folder)
+		m.update(self.variable)
+		return int(m.hexdigest(), 16)
+
 
 class Histogram(TTree_content):
 
@@ -62,14 +77,11 @@ class Histogram(TTree_content):
 			tree = ROOT.TChain()
 			for inputfile in self.inputfiles:
 				tree.Add(inputfile + "/" + self.folder)
-			print self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")"
-			print "cuts" + str(self.cuts)
-			print self.cuts.expand() + "*" + self.weights.extract()
 			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
+			print self.name, self.cuts.expand() + "*" + self.weights.extract(), self.inputfiles, self.folder
 			self.result = ROOT.gDirectory.Get(self.name)
-			print self.result
 		return self
 	
 	def show(self):
@@ -83,6 +95,8 @@ class Histogram(TTree_content):
 			self.result.SetName(self.name)
 
 	def save(self, output_tree):
+		print self.get_name()
+		print self.result
 		self.result.Write()
 
 # class to count the (weighted) number of events in a selection
@@ -121,7 +135,16 @@ class Count(TTree_content):
 		if not isinstance(self.result, float):
 			self.result = self.result.GetBinContent(59)
 
-
+# automatic determination of the type
+def create_root_object(**kwargs):
+	keys = ["variable", "nbins", "xlow", "xhigh"]
+	if all(item in  kwargs.keys() for item in keys):
+		return Histogram(**kwargs)
+	elif any(item in  kwargs.keys() for item in keys):
+		print "invalid configuration found"
+		assert(False)
+	else:
+		return Count(**kwargs)
 
 class Root_objects(object):
 	def __init__(self, output_file):
@@ -175,6 +198,8 @@ class Root_objects(object):
 				h.update()
 				h.save(self.output_tree)
 
+	def remove_duplicates(self):
+		self.root_objects = list(set(self.root_objects))
 
 	def produce_classic(self, processes=1):
 		self.produced = True
@@ -188,6 +213,7 @@ class Root_objects(object):
 			
 		for h in self.root_objects: # write sequentially to prevent race conditions
 			h.save(self.output_tree)
+		return self
 
 	def get_result(self, index):
 		return self.root_objects[index].get_result()

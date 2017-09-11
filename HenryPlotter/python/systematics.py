@@ -27,17 +27,15 @@ class Systematic(object):
 		self.estimation_method = copy.deepcopy(estimation_method)
 		#self.estimation_method.set_systematic(self.syst)
 		# TODO: make sure all parameters are not None any more
-		self.input_histograms = []
 
 	def get_category(self):
 		return self.category
 
 	# function to return the histogram classes necessary for this systematic variation
-	def get_histograms(self):
-		self.input_histograms = dict([(h.get_name(), h) for h in self.estimation_method.get_histograms(self)])
-		#self.input_histograms = self.estimation_method.get_histograms(self)
+	def get_root_objects(self):
+		self.input_root_objects = dict([(h.get_name(), h) for h in self.estimation_method.get_root_objects(self)])
 			# call estimation_methods with corresponding arguments...
-		return self.input_histograms
+		return self.input_root_objects
 
 	def produce(self): # function doing the actual calculations.
 		self.shape = self.estimation_method.do_estimation(self)
@@ -47,12 +45,10 @@ class Systematic(object):
 		if self.syst!=None:
 			name += "_" + self.syst.get_name()
 		name = "_".join([name]+ list(args))
-		print "name: " + name
-		print list(args)
 		return name
 
 	def summary(self):
-		return [self.get_name(), self.category.get_name(), self.process, self.analysis, self.era, self.channel, str(self.mass), self.syst.get_name() if self.syst!=None else "", str(self.estimation_method), str(self.input_histograms), str(self.shape)]
+		return [self.get_name(), self.category.get_name(), self.process, self.analysis, self.era, self.channel, str(self.mass), self.syst.get_name() if self.syst!=None else "", str(self.estimation_method), str(self.input_root_objects), str(self.shape)]
 
 
 # holder class for systematics
@@ -76,11 +72,11 @@ class Systematics(object):
 
 	# read root histograms from the inputfiles and write them to the outputfile
 	def create_histograms(self):
-		root_objects = Root_objects("outputfile.root")
+		self.root_objects = Root_objects("outputfile.root")
 		for systematic in self.systematics:
-			root_objects.add(systematic.get_histograms().values())
-		root_objects.produce_classic(processes=1)
-		# TODO: write back the resulting histograms if not already done 
+			self.root_objects.add(systematic.get_root_objects().values())
+		self.root_objects.remove_duplicates()
+		self.root_objects.produce_classic(processes=1)
 
 	# TODO function to sort the estimation modules depending on what has to be previously ran
 	def sort_estimations(self):

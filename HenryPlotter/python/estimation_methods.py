@@ -4,6 +4,7 @@ import ROOT
 import copy
 from Artus.HenryPlotter.histogram import *
 from Artus.HenryPlotter.cutstring import *
+from Artus.HenryPlotter.systematics import *
 
 #base class for an estimation methd
 class Estimation_method(object):
@@ -29,17 +30,19 @@ class Estimation_method(object):
 		raise NotImplementedError
 
 	# wrapper function for the Histogram creation performing the systematic shifts
-	def apply_systematic_variations(self, systematic, histogram_settings):
-		if systematic.syst !=None:
+	def apply_systematic_variations(self, systematic, settings):
+		print "apply"
+		print systematic.get_name(), systematic.syst
+		print "end"
+		if (systematic.syst):
 			new_settings = []
-			for h_setting in histogram_settings:
-				new_settings += systematic.syst.shifted_histograms(h_setting)
+			for setting in settings:
+				new_settings += systematic.syst.shifted_root_objects(setting)
 			return new_settings
 		else:
-			return histogram_settings
+			return settings
 
-	# return a list of the histogram class. In the base class just reads out the signal region
-	def define_histograms(self, systematic):
+	def define_root_objects(self, systematic):
 		histogram_settings = []
 		histogram_settings.append({     "name" : systematic.get_name, 
 						"inputfiles" : self.get_files,
@@ -50,31 +53,29 @@ class Estimation_method(object):
 						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh})
 		return histogram_settings
 
-	def get_histograms(self, systematic):
-		histogram_settings = self.define_histograms(systematic)
+	def get_root_objects(self, systematic):
+		root_object_settings = self.define_root_objects(systematic)
 
 		# execute the underlying functions
-		histogram_settings = self.apply_systematic_variations(systematic, histogram_settings)
-		for setting in histogram_settings:
+		root_object_settings = self.apply_systematic_variations(systematic, root_object_settings)
+		for setting in root_object_settings:
 			for key, value in setting.iteritems():
-				print key, value
 				if isinstance(value, list):
-					print value
 					setting[key] = value[0](*value[1:])
 				elif callable(value):
 					setting[key] = value()
 
-		histograms = []
-		import pprint
-		pprint.pprint(histogram_settings)
-		for setting in histogram_settings:
-			histograms.append( Histogram(**setting))
-		return histograms
+		root_objects = []
+		#import pprint
+		#pprint.pprint(root_object_settings)
+		for setting in root_object_settings:
+			root_objects.append( create_root_object(**setting))
+		return root_objects
 		
 
 	# doing nothing, shape is exactly the histogram as default
 	def do_estimation(self, systematic):
-		 return systematic.input_histograms[0]
+		 return systematic.input_root_objects[0]
 
 class Data(Estimation_method):
 	@staticmethod
@@ -101,47 +102,64 @@ class Wj(Estimation_method):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "WJ"
 
-	def define_histograms(self, systematic):
+
+	def get_root_objects(self, systematic):
+		self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
+		highmt_category = copy.deepcopy(systematic.get_category())
+		highmt_category.get_cuts().get("mt").invert().set_value(70)
+		highmt_category.name = "high_mt_os"
+		self.data = Systematic(category=highmt_category, process="data", channel="mt", analysis = "boaexample", era="2017", mass=None, syst=None, estimation_method = self.data_estimation)
+		#self.data_systematic = copy.deepcopy(systematic)
+		#self.data_systematic.syst = None
+		root_objects = super(Wj, self).get_root_objects(systematic)
+		root_objects += self.data_estimation.get_root_objects(self.data)
+		print "root o"
+		for r in root_objects:
+			print r.get_name(), r.result
+		return root_objects
+
+	def define_root_objects(self, systematic):
 		# wj signal region
-		histogram_settings = super(Wj, self).define_histograms(systematic)
+		histogram_settings = super(Wj, self).define_root_objects(systematic)
 		# high-mt os
-		high_mt_os_cuts =  copy.deepcopy(systematic.get_category().get_cuts())
-		high_mt_os_cuts.get("mt").invert().set_value(70)
-		common_settings = {		"folder" : [self.get_folder, systematic, self.folder],
-						"cuts" : high_mt_os_cuts,
-	        	            		"variable" : systematic.category.get_variable,
-						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh}
+#		high_mt_os_cuts =  copy.deepcopy(systematic.get_category().get_cuts())
+#		high_mt_os_cuts.get("mt").invert().set_value(70)
+#		common_settings = {		"folder" : [self.get_folder, systematic, self.folder],
+#						"cuts" : high_mt_os_cuts}
+#	        	            		"variable" : systematic.category.get_variable}
+#						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh}
 
 		# wj high-mt os
-		histogram_settings.append(dict({     "name" : [systematic.get_name, "wj_high_mt_os"],
-						"inputfiles" : Wj.get_files,
-						"weights" : self.get_weights}.items() + common_settings.items()))
-		histogram_settings.append(dict({     "name" : [systematic.get_name, "ztt_high_mt_os"],
-						"inputfiles" : Ztt.get_files,
-						"weights" : Ztt.get_weights}.items() + common_settings.items()))
-		histogram_settings.append(dict({     "name" : [systematic.get_name, "data_high_mt_os"],
-						"inputfiles" : Data.get_files,
-						"weights" : Data.get_weights}.items() + common_settings.items()))
+#		histogram_settings.append(dict({     "name" : [systematic.get_name, "wj_high_mt_os"],
+#						"inputfiles" : Wj.get_files,
+#						"weights" : self.get_weights}.items() + common_settings.items()))
+#		histogram_settings.append(dict({     "name" : [systematic.get_name, "ztt_high_mt_os"],
+#						"inputfiles" : Ztt.get_files,
+#						"weights" : Ztt.get_weights}.items() + common_settings.items()))
+#		histogram_settings.append(dict({     "name" : [systematic.get_name, "data_high_mt_os"],
+#						"inputfiles" : Data.get_files,
+#						"weights" : Data.get_weights}.items() + common_settings.items()))
 
 		# high-mt ss
-		common_settings["cuts"] = copy.deepcopy(high_mt_os_cuts)
-		common_settings["cuts"].get("os").invert()
-		histogram_settings.append(dict({     "name" : [systematic.get_name, "wj_high_mt_ss"],
-						"inputfiles" : Wj.get_files,
-						"weights" : self.get_weights}.items() + common_settings.items()))
-		histogram_settings.append(dict({     "name" : [systematic.get_name, "ztt_high_mt_ss"],
-						"inputfiles" : Ztt.get_files,
-						"weights" : Ztt.get_weights}.items() + common_settings.items()))
-		histogram_settings.append(dict({     "name" : [systematic.get_name, "data_high_mt_ss"],
-						"inputfiles" : Data.get_files,
-						"weights" : Data.get_weights}.items() + common_settings.items()))
-		import pprint
-		pprint.pprint(histogram_settings)
+#		common_settings["cuts"] = copy.deepcopy(high_mt_os_cuts)
+#		common_settings["cuts"].get("os").invert()
+#		histogram_settings.append(dict({     "name" : [systematic.get_name, "wj_high_mt_ss"],
+#						"inputfiles" : Wj.get_files,
+#						"weights" : self.get_weights}.items() + common_settings.items()))
+#		histogram_settings.append(dict({     "name" : [systematic.get_name, "ztt_high_mt_ss"],
+#						"inputfiles" : Ztt.get_files,
+#						"weights" : Ztt.get_weights}.items() + common_settings.items()))
+#		histogram_settings.append(dict({     "name" : [systematic.get_name, "data_high_mt_ss"],
+#						"inputfiles" : Data.get_files,
+#						"weights" : Data.get_weights}.items() + common_settings.items()))
+		#import pprint
+		#pprint.pprint(histogram_settings)
 		return histogram_settings
 
 	def do_estimation(self, systematic):
-		for k, v in systematic.input_histograms.iteritems():
+		for k, v in systematic.input_root_objects.iteritems():
 			print k
+			print v.result
 			print v
 
 	@staticmethod

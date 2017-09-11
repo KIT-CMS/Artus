@@ -18,7 +18,7 @@ class Systematic_variation(object):
 		return self.name
 
 	def change_histogram_name(self, h_settings, direction):
-		if isinstance(h_settings, list):
+		if isinstance(h_settings["name"], list):
 			h_settings["name"].append( direction )
 		else:
 			h_settings["name"] = [h_settings["name"], direction]
@@ -33,7 +33,7 @@ class Different_pipeline(Systematic_variation):
 		self.pipeline_downshift = pipeline_downshift
 		self.pipeline_upshift = pipeline_upshift
 
-	def shifted_histograms(self, h_settings):
+	def shifted_root_objects(self, h_settings):
 		up = copy.deepcopy(h_settings)
 		up["folder"][2] = self.pipeline_upshift
 		up = self.change_histogram_name(up, "Up")
@@ -49,9 +49,8 @@ class Reapply_remove_weight(Systematic_variation):
 		super(Reapply_remove_weight, self).__init__(name)
 		self.weight_name = weight_name
 
-	def shifted_histograms(self, h_settings):
+	def shifted_root_objects(self, h_settings):
 		up = copy.deepcopy(h_settings)
-		print up["weights"]()
 		up["weights"]().square(self.weight_name)
 		up = self.change_histogram_name(up, "Up")
 

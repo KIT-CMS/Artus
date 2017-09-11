@@ -34,6 +34,8 @@ ztt  = Systematic(category=some_category, process="ztt",  channel="mt", analysis
 #systematics.add(ztt)
 wj  = Systematic(category=some_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = wj_estimation)
 systematics.add(wj)
+wj_jec_shift  = Systematic(category=some_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst=jec_shifts, estimation_method = wj_estimation)
+systematics.add(wj_jec_shift)
 
 # add e.g. add additional categories
 
