@@ -19,6 +19,10 @@ class Estimation_method(object):
 	def get_weights():
 		return Weights(Weight("1.0", "constant"))
 
+	@staticmethod
+	def get_cuts():
+		return Cuts()
+
 	def __init__(self, name, folder):
 		self.folder = folder
 		self.name = name
@@ -47,7 +51,7 @@ class Estimation_method(object):
 		histogram_settings.append({     "name" : systematic.get_name, 
 						"inputfiles" : self.get_files,
 						"folder" : [self.get_folder, systematic, self.folder],
-						"cuts" : systematic.get_category().get_cuts,
+						"cuts" : systematic.get_category().get_cuts() + self.get_cuts(),
 						"weights" : self.get_weights,
 	        	            		"variable" : systematic.category.get_variable,
 						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh})
@@ -74,8 +78,9 @@ class Estimation_method(object):
 		
 
 	# doing nothing, shape is exactly the histogram as default
-	def do_estimation(self, systematic):
-		 return systematic.input_root_objects[0]
+	def do_estimation(self, systematic, root_objects):
+		if(len(systematic.input_root_objects.keys())) == 1:
+			return systematic.input_root_objects.values()[0]
 
 class Data(Estimation_method):
 	@staticmethod
@@ -93,8 +98,23 @@ class Ztt(Estimation_method):
 		return Weights(Weight("zPtReweightWeight", "zPtReweightWeight"))
 
 	@staticmethod
+	def get_cuts():
+		return Cuts(Cut("gen_match_2==5", "ztt_genmatch_mt"))
+
+	@staticmethod
 	def get_files():
 		return ["/home/friese/artus/2017-01-02_longRun/DYJetsToLLM50_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8_ext1/DYJetsToLLM50_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8_ext1.root"]
+
+class Zll(Ztt):
+
+	def __init__(self):
+		self.folder = "jecUncNom_tauEsNom"
+		self.name = "Zll"
+
+	@staticmethod
+	def get_cuts():
+		return Cuts(Cut("(gen_match_2<5||gen_match_2==6)", "zll_genmatch_mt"))
+
 
 class Wj(Estimation_method):
 
@@ -104,15 +124,27 @@ class Wj(Estimation_method):
 
 
 	def get_root_objects(self, systematic):
-		self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
-		highmt_category = copy.deepcopy(systematic.get_category())
-		highmt_category.get_cuts().get("mt").invert().set_value(70)
-		highmt_category.name = "high_mt_os"
-		self.data = Systematic(category=highmt_category, process="data", channel="mt", analysis = "boaexample", era="2017", mass=None, syst=None, estimation_method = self.data_estimation)
-		#self.data_systematic = copy.deepcopy(systematic)
-		#self.data_systematic.syst = None
 		root_objects = super(Wj, self).get_root_objects(systematic)
-		root_objects += self.data_estimation.get_root_objects(self.data)
+
+		highmt_os_category = copy.deepcopy(systematic.get_category())
+		highmt_os_category.get_cuts().get("mt").invert().set_value(70)
+		highmt_os_category.name = "high_mt_os"
+
+		highmt_ss_category = copy.deepcopy(systematic.get_category())
+		highmt_ss_category.get_cuts().get("mt").invert().set_value(70)
+		highmt_ss_category.get_cuts().get("os").invert().name = "ss"
+		highmt_ss_category.name = "high_mt_ss"
+
+
+		for category in [highmt_os_category, highmt_ss_category]:
+				self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
+				self.data = Systematic(category=category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.data_estimation)
+				root_objects += self.data_estimation.get_root_objects(self.data)
+
+				self.ztt_estimation = Ztt()
+				self.ztt  = Systematic(category=category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.ztt_estimation)
+				root_objects += self.ztt_estimation.get_root_objects(self.ztt)
+
 		print "root o"
 		for r in root_objects:
 			print r.get_name(), r.result
@@ -121,46 +153,103 @@ class Wj(Estimation_method):
 	def define_root_objects(self, systematic):
 		# wj signal region
 		histogram_settings = super(Wj, self).define_root_objects(systematic)
-		# high-mt os
-#		high_mt_os_cuts =  copy.deepcopy(systematic.get_category().get_cuts())
-#		high_mt_os_cuts.get("mt").invert().set_value(70)
-#		common_settings = {		"folder" : [self.get_folder, systematic, self.folder],
-#						"cuts" : high_mt_os_cuts}
-#	        	            		"variable" : systematic.category.get_variable}
-#						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh}
-
-		# wj high-mt os
-#		histogram_settings.append(dict({     "name" : [systematic.get_name, "wj_high_mt_os"],
-#						"inputfiles" : Wj.get_files,
-#						"weights" : self.get_weights}.items() + common_settings.items()))
-#		histogram_settings.append(dict({     "name" : [systematic.get_name, "ztt_high_mt_os"],
-#						"inputfiles" : Ztt.get_files,
-#						"weights" : Ztt.get_weights}.items() + common_settings.items()))
-#		histogram_settings.append(dict({     "name" : [systematic.get_name, "data_high_mt_os"],
-#						"inputfiles" : Data.get_files,
-#						"weights" : Data.get_weights}.items() + common_settings.items()))
-
-		# high-mt ss
-#		common_settings["cuts"] = copy.deepcopy(high_mt_os_cuts)
-#		common_settings["cuts"].get("os").invert()
-#		histogram_settings.append(dict({     "name" : [systematic.get_name, "wj_high_mt_ss"],
-#						"inputfiles" : Wj.get_files,
-#						"weights" : self.get_weights}.items() + common_settings.items()))
-#		histogram_settings.append(dict({     "name" : [systematic.get_name, "ztt_high_mt_ss"],
-#						"inputfiles" : Ztt.get_files,
-#						"weights" : Ztt.get_weights}.items() + common_settings.items()))
-#		histogram_settings.append(dict({     "name" : [systematic.get_name, "data_high_mt_ss"],
-#						"inputfiles" : Data.get_files,
-#						"weights" : Data.get_weights}.items() + common_settings.items()))
-		#import pprint
-		#pprint.pprint(histogram_settings)
 		return histogram_settings
 
-	def do_estimation(self, systematic):
-		for k, v in systematic.input_root_objects.iteritems():
-			print k
-			print v.result
-			print v
+	def do_estimation(self, systematic, root_objects):
+		return
+
+	@staticmethod
+	def get_files():
+		return ["/home/friese/artus/2017-01-02_longRun/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8.root"]
+
+	@staticmethod
+	def get_weights():
+		return Weights(Weight("1.0", "constant"))
+
+
+class TT(Estimation_method):
+
+	def __init__(self):
+		self.folder = "jecUncNom_tauEsNom"
+		self.name = "TT"
+
+	@staticmethod
+	def get_weights():
+		return Weights(Weight("topPtReweightWeight", "topPtReweightWeight"))
+
+	@staticmethod
+	def get_files():
+		return ["/home/friese/artus/2017-01-02_longRun/TT_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_powheg-pythia8_ext4/TT_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_powheg-pythia8_ext4.root"]
+
+class VV(Estimation_method):
+
+	def __init__(self):
+		self.folder = "jecUncNom_tauEsNom"
+		self.name = "VV"
+
+	@staticmethod
+	def get_weights():
+		return Weights()
+
+	@staticmethod
+	def get_files():
+		path = "/home/friese/artus/2017-01-02_longRun/"
+		files = ["WZTo1L1Nu2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8"]
+		files.append("WZTo1L3Nu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
+		files.append( "WZTo2L2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
+		files.append("ZZTo2L2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
+		files.append("WWTo1L1Nu2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
+
+		return [ path + f + "/" + f + ".root" for f in files]
+
+class QCD(Estimation_method):
+
+	def __init__(self):
+		self.folder = "jecUncNom_tauEsNom"
+		self.name = "QCD"
+
+
+	def get_root_objects(self, systematic):
+		ss_category = copy.deepcopy(systematic.get_category())
+		ss_category.get_cuts().get("os").invert().name = "ss"
+		ss_category.name = "ss"
+
+		root_objects = []
+		self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
+		self.data = Systematic(category=ss_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.data_estimation)
+		root_objects += self.data_estimation.get_root_objects(self.data)
+
+		self.ztt_estimation = Ztt()
+		self.ztt  = Systematic(category=ss_category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.ztt_estimation)
+		root_objects += self.ztt_estimation.get_root_objects(self.ztt)
+
+		self.zll_estimation = Zll()
+		self.zll  = Systematic(category=ss_category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.zll_estimation)
+		root_objects += self.zll_estimation.get_root_objects(self.zll)
+
+		self.tt_estimation = TT()
+		self.tt  = Systematic(category=ss_category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.tt_estimation)
+		root_objects += self.tt_estimation.get_root_objects(self.tt)
+
+		self.vv_estimation = VV()
+		self.vv  = Systematic(category=ss_category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.vv_estimation)
+		root_objects += self.vv_estimation.get_root_objects(self.vv)
+
+		self.data_hist = root_objects[0]
+		self.mc_hist = root_objects[1:]
+		print "root o"
+		for r in root_objects:
+			print r.get_name(), r.result
+		return root_objects
+
+
+	def do_estimation(self, systematic, root_objects):
+		result_histo = self.data_hist
+		for h in self.mc_hist:
+			result_histo.result.Add(h.result, -1.0)
+		result_histo.set_name(systematic.get_name())
+		result_histo.save(root_objects.output_tree)
+
 
 	@staticmethod
 	def get_files():

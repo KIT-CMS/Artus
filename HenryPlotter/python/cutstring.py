@@ -112,6 +112,7 @@ class Cut():
 		self.varleft = False
 		self.varright = False
 		self.operator = False
+		self.weightstring = cutstring
 		# set name
 		if name != False:
 			self.name = name
@@ -119,15 +120,14 @@ class Cut():
 			self.name = filter(str.isalnum, cutstring.replace(">", "Gt").replace("<", "St"))
 
 		# test if simple, parseable cutstring
-		operators = [s for s in cutstring if s in supported_operators]	
+		operators = [s for s in supported_operators if s in cutstring]
 		self.operator = operators[0]
 		tmpcutstring = cutstring.split(self.operator)
-		if len(tmpcutstring) ==2:
+		if len(tmpcutstring) ==2 and len(operators)==1:
 			self.varleft = tmpcutstring[0]
 			self.varright = float(tmpcutstring[1])
 		self.update_weightstring()
-
-			
+				
 
 	def invert(self):
 		self.operator = inverted_operators[supported_operators.index(self.operator)]
@@ -135,7 +135,8 @@ class Cut():
 		return self
 
 	def update_weightstring(self):
-		self.weightstring = "".join([self.varleft, self.operator, str(self.varright)])
+		if self.varleft and self.operator and self.varright:
+			self.weightstring = "".join([self.varleft, self.operator, str(self.varright)])
 		return self
 
 	def set_value(self, value):
@@ -170,6 +171,14 @@ class Cuts(object):
 		if args!=False:
 			for w in args:
 				self.add(w)
+
+	def __add__(self, other):
+		new_cuts = Cuts()
+		for c in self.cutstrings:
+			new_cuts.add(c)
+		for c in other.cutstrings:
+			new_cuts.add(c)
+		return new_cuts
 
 	def add(self, cutstring):
 		if (issubclass(type(cutstring), Cut)) or isinstance(cutstring, Cut):

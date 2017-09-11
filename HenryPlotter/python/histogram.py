@@ -40,6 +40,11 @@ class TTree_content(object):
 	def get_name(self):
 		return self.name
 
+	def set_name(self, new_name):
+		self.name = new_name
+		self.update()
+		return self
+
 	def __eq__(self, other):
 		return self.__hash__() == other.__hash__()
 
@@ -80,7 +85,6 @@ class Histogram(TTree_content):
 			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
-			print self.name, self.cuts.expand() + "*" + self.weights.extract(), self.inputfiles, self.folder
 			self.result = ROOT.gDirectory.Get(self.name)
 		return self
 	
@@ -95,8 +99,6 @@ class Histogram(TTree_content):
 			self.result.SetName(self.name)
 
 	def save(self, output_tree):
-		print self.get_name()
-		print self.result
 		self.result.Write()
 
 # class to count the (weighted) number of events in a selection

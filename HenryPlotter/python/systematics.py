@@ -37,8 +37,8 @@ class Systematic(object):
 			# call estimation_methods with corresponding arguments...
 		return self.input_root_objects
 
-	def produce(self): # function doing the actual calculations.
-		self.shape = self.estimation_method.do_estimation(self)
+	def produce(self, root_objects): # function doing the actual calculations.
+		self.shape = self.estimation_method.do_estimation(self, root_objects)
 
 	def get_name(self, *args):
 		name = "_".join([self.channel, self.process, self.category.get_name(), self.analysis, self.era])
@@ -85,7 +85,7 @@ class Systematics(object):
 	# to the actual estimations. Currently ran in paralell due to expected very low runtime, can in principle be parallelized
 	def do_estimation(self):
 		for systematic in self.systematics:
-			systematic.produce()
+			systematic.produce(self.root_objects)
 
 	def summary(self): #TODO: beautify with logger
 		table =  [["name", "category", "process", "analysis", "era", "channel", "mass", "systematic", "estimation method", "input histograms", "results"]]
