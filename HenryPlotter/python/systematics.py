@@ -16,14 +16,15 @@ class Systematic(object):
 	channel_default = None  # channel after combine convetions
 	mass_default = None	# (Higgs) mass as string
 	
-	def __init__(self, estimation_method, category=None, process=None, analysis=None, era=None, channel=None, mass=None, syst=None): # all defaults are none, if wanted use class members as default parameters 
+	def __init__(self, estimation_method, category=None, process=None, analysis=None, era=None, channel=None, mass=None, syst_var=None, direction=None): # all defaults are none, if wanted use class members as default parameters 
 		self.category = category if category!=None else Systematic.category_default 
 		self.process = process if process!=None else Systematic.process_default 
 		self.analysis = analysis if analysis!=None else Systematic.analysis_default 
 		self.era = era if era!=None else Systematic.era_default 
 		self.channel = channel if channel!=None else channel_default 
 		self.mass = mass if mass!=None else Systematic.mass_default 
-		self.syst = syst
+		self.syst_var = syst_var
+		self.direction = direction
 		self.estimation_method = copy.deepcopy(estimation_method)
 		#self.estimation_method.set_systematic(self.syst)
 		# TODO: make sure all parameters are not None any more
@@ -40,15 +41,15 @@ class Systematic(object):
 	def produce(self, root_objects): # function doing the actual calculations.
 		self.shape = self.estimation_method.do_estimation(self, root_objects)
 
-	def get_name(self, *args):
+	def get_name(self):
 		name = "_".join([self.channel, self.process, self.category.get_name(), self.analysis, self.era])
-		if self.syst!=None:
-			name += "_" + self.syst.get_name()
-		name = "_".join([name]+ list(args))
+		if self.syst_var!=None:
+			name += "_" + self.syst_var.get_name()
+#		name = "_".join([name]+ list(args))
 		return name
 
 	def summary(self):
-		return [self.get_name(), self.category.get_name(), self.process, self.analysis, self.era, self.channel, str(self.mass), self.syst.get_name() if self.syst!=None else "", str(self.estimation_method), str(self.input_root_objects), str(self.shape)]
+		return [self.get_name(), self.category.get_name(), self.process, self.analysis, self.era, self.channel, str(self.mass), self.syst_var.get_name() if self.syst_var!=None else "", str(self.estimation_method), str(self.input_root_objects), str(self.shape)]
 
 
 # holder class for systematics

@@ -5,6 +5,7 @@ import copy
 from Artus.HenryPlotter.histogram import *
 from Artus.HenryPlotter.cutstring import *
 from Artus.HenryPlotter.systematics import *
+from Artus.HenryPlotter.systematic_variations import *
 
 #base class for an estimation methd
 class Estimation_method(object):
@@ -35,16 +36,8 @@ class Estimation_method(object):
 
 	# wrapper function for the Histogram creation performing the systematic shifts
 	def apply_systematic_variations(self, systematic, settings):
-		print "apply"
-		print systematic.get_name(), systematic.syst
-		print "end"
-		if (systematic.syst):
-			new_settings = []
-			for setting in settings:
-				new_settings += systematic.syst.shifted_root_objects(setting)
-			return new_settings
-		else:
-			return settings
+		print systematic.syst_var
+		return systematic.syst_var.shifted_root_objects(settings)
 
 	def define_root_objects(self, systematic):
 		histogram_settings = []
@@ -138,11 +131,11 @@ class Wj(Estimation_method):
 
 		for category in [highmt_os_category, highmt_ss_category]:
 				self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
-				self.data = Systematic(category=category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.data_estimation)
+				self.data = Systematic(category=category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=Nominal(), estimation_method = self.data_estimation)
 				root_objects += self.data_estimation.get_root_objects(self.data)
 
 				self.ztt_estimation = Ztt()
-				self.ztt  = Systematic(category=category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.ztt_estimation)
+				self.ztt  = Systematic(category=category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.ztt_estimation)
 				root_objects += self.ztt_estimation.get_root_objects(self.ztt)
 
 		print "root o"
@@ -216,23 +209,23 @@ class QCD(Estimation_method):
 
 		root_objects = []
 		self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
-		self.data = Systematic(category=ss_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.data_estimation)
+		self.data = Systematic(category=ss_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.data_estimation)
 		root_objects += self.data_estimation.get_root_objects(self.data)
 
 		self.ztt_estimation = Ztt()
-		self.ztt  = Systematic(category=ss_category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.ztt_estimation)
+		self.ztt  = Systematic(category=ss_category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.ztt_estimation)
 		root_objects += self.ztt_estimation.get_root_objects(self.ztt)
 
 		self.zll_estimation = Zll()
-		self.zll  = Systematic(category=ss_category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.zll_estimation)
+		self.zll  = Systematic(category=ss_category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.zll_estimation)
 		root_objects += self.zll_estimation.get_root_objects(self.zll)
 
 		self.tt_estimation = TT()
-		self.tt  = Systematic(category=ss_category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.tt_estimation)
+		self.tt  = Systematic(category=ss_category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.tt_estimation)
 		root_objects += self.tt_estimation.get_root_objects(self.tt)
 
 		self.vv_estimation = VV()
-		self.vv  = Systematic(category=ss_category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = self.vv_estimation)
+		self.vv  = Systematic(category=ss_category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.vv_estimation)
 		root_objects += self.vv_estimation.get_root_objects(self.vv)
 
 		self.data_hist = root_objects[0]

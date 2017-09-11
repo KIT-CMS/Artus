@@ -13,8 +13,10 @@ from Artus.HenryPlotter.estimation_methods import *
 from Artus.HenryPlotter.systematic_variations import *
 
 
-jec_shifts = Different_pipeline("jec", "jecUncDown_tauEsNom", "jecUncUp_tauEsNom")
-zPtReweightWeight = Reapply_remove_weight("zPtReweightWeight", "zPtReweightWeight")
+jec_downshift = Different_pipeline("jec", "jecUncDown_tauEsNom", "Down")
+jec_upshift = Different_pipeline("jec", "jecUncUp_tauEsNom", "Up")
+#zPtReweightWeight = Reapply_remove_weight("zPtReweightWeight", "zPtReweightWeight")
+nominal = Nominal()
 
 # todo: systematic shift class
 
@@ -32,31 +34,33 @@ some_category = Category( "some", Cuts(Cut("pt_2>40"), Cut("mjj>100"), Cut("mt_1
 #systematics object, to be filled
 systematics = Systematics()
 # first, create the nominals
-data = Systematic(category=some_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = data_estimation)
+data = Systematic(category=some_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = data_estimation)
 #systematics.add(data)
-ztt  = Systematic(category=some_category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = ztt_estimation)
+ztt  = Systematic(category=some_category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = ztt_estimation)
 systematics.add(ztt)
-zll  = Systematic(category=some_category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = zll_estimation)
+zll  = Systematic(category=some_category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = zll_estimation)
 systematics.add(zll)
-wj  = Systematic(category=some_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = wj_estimation)
+wj  = Systematic(category=some_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = wj_estimation)
 systematics.add(wj)
-wj_jec_shift  = Systematic(category=some_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst=jec_shifts, estimation_method = wj_estimation)
-systematics.add(wj_jec_shift)
+wj_jec_upshift  = Systematic(category=some_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=jec_upshift, estimation_method = wj_estimation)
+wj_jec_downshift  = Systematic(category=some_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=jec_downshift, estimation_method = wj_estimation)
+systematics.add(wj_jec_upshift)
+systematics.add(wj_jec_downshift)
 
-tt  = Systematic(category=some_category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = tt_estimation)
+tt  = Systematic(category=some_category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = tt_estimation)
 systematics.add(tt)
 
-vv  = Systematic(category=some_category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = vv_estimation)
+vv  = Systematic(category=some_category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = vv_estimation)
 systematics.add(vv)
 
-qcd  = Systematic(category=some_category, process="qcd",  channel="mt", analysis = "example", era="2017", mass=None, syst=None, estimation_method = simple_qcd_estimation)
+qcd  = Systematic(category=some_category, process="qcd",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = simple_qcd_estimation)
 systematics.add(qcd)
 # add e.g. add additional categories
 
 # add the systematic variations
-ztt_jec_shift  = Systematic(category=some_category, process="ztt", channel="mt", analysis = "example", era="2017", mass=None, syst=jec_shifts, estimation_method = ztt_estimation)
+#ztt_jec_shift  = Systematic(category=some_category, process="ztt", channel="mt", analysis = "example", era="2017", mass=None, syst_var=jec_shifts, estimation_method = ztt_estimation)
 #systematics.add(ztt_jec_shift)
-ztt_zpt_shift  = Systematic(category=some_category, process="ztt", channel="mt", analysis = "example", era="2017", mass=None, syst=zPtReweightWeight, estimation_method = ztt_estimation)
+#ztt_zpt_shift  = Systematic(category=some_category, process="ztt", channel="mt", analysis = "example", era="2017", mass=None, syst=zPtReweightWeight, estimation_method = ztt_estimation)
 #systematics.add(ztt_zpt_shift)
 
 systematics.produce()
