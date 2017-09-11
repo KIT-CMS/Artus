@@ -55,6 +55,10 @@ systematics.add(vv)
 
 qcd  = Systematic(category=some_category, process="qcd",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=nominal, estimation_method = simple_qcd_estimation)
 systematics.add(qcd)
+qcd_jec_down  = Systematic(category=some_category, process="qcd",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=jec_downshift, estimation_method = simple_qcd_estimation)
+systematics.add(qcd_jec_down)
+qcd_jec_up  = Systematic(category=some_category, process="qcd",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=jec_upshift, estimation_method = simple_qcd_estimation)
+systematics.add(qcd_jec_up)
 # add e.g. add additional categories
 
 # add the systematic variations

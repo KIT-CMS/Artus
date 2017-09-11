@@ -78,6 +78,8 @@ class Systematics(object):
 			self.root_objects.add(systematic.get_root_objects().values())
 		self.root_objects.remove_duplicates()
 		self.root_objects.produce_classic(processes=1)
+		print "create"
+		print self.root_objects.root_objects
 
 	# TODO function to sort the estimation modules depending on what has to be previously ran
 	def sort_estimations(self):

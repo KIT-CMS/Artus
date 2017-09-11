@@ -30,11 +30,15 @@ class Systematic_variation(object):
 
 class Nominal(Systematic_variation):
 
-	def __init__(self):
+	def __init__(self, direction=None):
 		self.name = "Nominal"
+		self.direction = direction
 
 	def get_name(self):
-		return self.name
+		name = self.name
+		if self.direction:
+			name += "_"  + self.direction
+		return name
 
 	def change_histogram_name(self, h_settings, direction):
 		return h_settings # do nothing

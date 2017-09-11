@@ -209,7 +209,9 @@ class QCD(Estimation_method):
 
 		root_objects = []
 		self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
-		self.data = Systematic(category=ss_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.data_estimation)
+		custom_nom = Nominal(direction=systematic.syst_var.direction)
+		custom_nom.name = systematic.syst_var.name
+		self.data = Systematic(category=ss_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=custom_nom, estimation_method = self.data_estimation)
 		root_objects += self.data_estimation.get_root_objects(self.data)
 
 		self.ztt_estimation = Ztt()
@@ -230,9 +232,6 @@ class QCD(Estimation_method):
 
 		self.data_hist = root_objects[0]
 		self.mc_hist = root_objects[1:]
-		print "root o"
-		for r in root_objects:
-			print r.get_name(), r.result
 		return root_objects
 
 
