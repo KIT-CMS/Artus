@@ -109,9 +109,9 @@ class Weights(object):
 class Cut():
 
 	def __init__(self, cutstring, name=False):
-		self.varleft = False
-		self.varright = False
-		self.operator = False
+		self.varleft = None
+		self.varright = None
+		self.operator = None
 		self.weightstring = cutstring
 		# set name
 		if name != False:
@@ -135,7 +135,7 @@ class Cut():
 		return self
 
 	def update_weightstring(self):
-		if self.varleft and self.operator and self.varright:
+		if (self.varleft != None) and (self.operator!=None) and (self.varright!=None):
 			self.weightstring = "".join([self.varleft, self.operator, str(self.varright)])
 		return self
 
@@ -207,8 +207,6 @@ class Cuts(object):
 		return False
 
 	def remove(self, name):
-		if name in get_names:
+		if name in self.get_names():
 			self.cutstrings = [w for w in self.cutstrings if not w.get_name() == name]
-			return True
-		else:
-			return False
+		return self

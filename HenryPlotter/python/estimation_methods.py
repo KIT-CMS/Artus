@@ -72,6 +72,7 @@ class Estimation_method(object):
 
 	# doing nothing, shape is exactly the histogram as default
 	def do_estimation(self, systematic, root_objects):
+		print systematic.input_root_objects.keys()
 		if(len(systematic.input_root_objects.keys())) == 1:
 			return systematic.input_root_objects.values()[0]
 
@@ -108,8 +109,22 @@ class Zll(Ztt):
 	def get_cuts():
 		return Cuts(Cut("(gen_match_2<5||gen_match_2==6)", "zll_genmatch_mt"))
 
-
 class Wj(Estimation_method):
+
+	def __init__(self):
+		self.folder = "jecUncNom_tauEsNom"
+		self.name = "WJ"
+
+	@staticmethod
+	def get_weights():
+		return Weights()
+
+	@staticmethod
+	def get_files():
+		return ["/home/friese/artus/2017-01-02_longRun/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8.root"]
+
+
+class Wj_from_SS_OS(Wj):
 
 	def __init__(self):
 		self.folder = "jecUncNom_tauEsNom"
@@ -118,29 +133,47 @@ class Wj(Estimation_method):
 
 	def get_root_objects(self, systematic):
 		root_objects = super(Wj, self).get_root_objects(systematic)
+		self.wj_signal_shape = root_objects[0]
+		print self.wj_signal_shape
+		print "------------------------------------------"
+		print "hier", root_objects
 
-		highmt_os_category = copy.deepcopy(systematic.get_category())
-		highmt_os_category.get_cuts().get("mt").invert().set_value(70)
-		highmt_os_category.name = "high_mt_os"
+		self.wj_ss_os_category = copy.deepcopy(systematic.get_category())
+		self.wj_ss_os_category.get_cuts().remove("os").get("mt").invert().set_value(70)
+		self.wj_ss_os_category.variable = "q_1*q_2"
+		self.wj_ss_os_category.nbins = 2
+		self.wj_ss_os_category.xlow= -1.1
+		self.wj_ss_os_category.xhigh= 1.1
+		self.wj_ss_os_category.name = "inclusive"
+		self.wj_ss_os = Systematic(category=self.wj_ss_os_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Wj())
+		root_objects += self.wj_ss_os.get_root_objects().values()
 
-		highmt_ss_category = copy.deepcopy(systematic.get_category())
-		highmt_ss_category.get_cuts().get("mt").invert().set_value(70)
-		highmt_ss_category.get_cuts().get("os").invert().name = "ss"
-		highmt_ss_category.name = "high_mt_ss"
 
+		self.highmt_os_category = copy.deepcopy(systematic.get_category())
+		self.highmt_os_category.get_cuts().get("mt").invert().set_value(70)
+		self.highmt_os_category.name = "high_mt_os"
 
-		for category in [highmt_os_category, highmt_ss_category]:
-				self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
-				self.data = Systematic(category=category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=Nominal(), estimation_method = self.data_estimation)
-				root_objects += self.data_estimation.get_root_objects(self.data)
+		self.highmt_ss_category = copy.deepcopy(systematic.get_category())
+		self.highmt_ss_category.get_cuts().get("mt").invert().set_value(70)
+		self.highmt_ss_category.get_cuts().get("os").invert().name = "ss"
+		self.highmt_ss_category.name = "high_mt_ss"
+		
+		for category in [self.highmt_os_category, self.highmt_ss_category]:
+				c_name = category.get_name()
+				setattr(self, c_name, [])
+				print "test"
+				print getattr(self, c_name)
+				getattr(self, c_name).append(Systematic(category=category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=Nominal(), estimation_method = Data("data", folder="jecUncNom_tauEsNom")))
 
-				self.ztt_estimation = Ztt()
-				self.ztt  = Systematic(category=category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.ztt_estimation)
-				root_objects += self.ztt_estimation.get_root_objects(self.ztt)
+				getattr(self, c_name).append(Systematic(category=category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Ztt()))
+				getattr(self, c_name).append(Systematic(category=category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Zll()))
+				getattr(self, c_name).append(Systematic(category=category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = TT()))
+				getattr(self, c_name).append(Systematic(category=category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = VV()))
+				getattr(self, c_name).append(Systematic(category=category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Wj()))
 
-		print "root o"
-		for r in root_objects:
-			print r.get_name(), r.result
+				for systematic in getattr(self, c_name):
+					root_objects += systematic.get_root_objects().values()
+
 		return root_objects
 
 	def define_root_objects(self, systematic):
@@ -149,11 +182,38 @@ class Wj(Estimation_method):
 		return histogram_settings
 
 	def do_estimation(self, systematic, root_objects):
-		return
 
-	@staticmethod
-	def get_files():
-		return ["/home/friese/artus/2017-01-02_longRun/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8.root"]
+		# call the estimation method of the individual estimations
+		for category in [self.highmt_os_category, self.highmt_ss_category]:
+				c_name = category.get_name()
+				for systematic in getattr(self, c_name):
+					systematic.do_estimation(root_objects)
+
+		# N_Fake^OS
+		n_fake_os = getattr(self, self.highmt_os_category.get_name())[0].shape.result.Integral() - sum([h.shape.result.Integral() for h in getattr(self, self.highmt_os_category.get_name())][1:-1])
+		n_fake_ss = getattr(self, self.highmt_ss_category.get_name())[0].shape.result.Integral() - sum([h.shape.result.Integral() for h in getattr(self, self.highmt_ss_category.get_name())][1:-1])
+
+		f_W_os_ss = getattr(self, self.highmt_os_category.get_name())[-1].shape.result.Integral() / getattr(self, self.highmt_ss_category.get_name())[-1].shape.result.Integral()
+		print f_W_os_ss, "1st"
+
+		self.wj_ss_os.do_estimation(root_objects)
+		f_W_os_ss = self.wj_ss_os.shape.result.GetBinContent(1) / self.wj_ss_os.shape.result.GetBinContent(2)
+		print f_W_os_ss, "2nd"
+
+		# hard-coded number with no more motivation than "it works"
+		f_QCD_os_ss = 1.2
+
+		scale_factor = (n_fake_os - f_QCD_os_ss * n_fake_ss)/(1+f_QCD_os_ss/f_W_os_ss)
+
+		print n_fake_os
+		print n_fake_ss
+		print f_W_os_ss
+		print scale_factor
+
+		f_W_high_low = getattr(self, self.highmt_os_category.get_name())[-1].shape.result.Integral()  / self.wj_signal_shape.result.Integral()
+		#nothing happens atm with these scale factors
+		return self.wj_signal_shape.result
+
 
 	@staticmethod
 	def get_weights():
