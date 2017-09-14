@@ -7,6 +7,8 @@ import ROOT
 """
 
 import copy
+import logging
+logger = logging.getLogger(__name__)
 
 # class performing the systematic variation
 class Systematic_variation(object):

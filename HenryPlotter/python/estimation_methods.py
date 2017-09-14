@@ -7,11 +7,15 @@ from Artus.HenryPlotter.cutstring import *
 from Artus.HenryPlotter.systematics import *
 from Artus.HenryPlotter.systematic_variations import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 #base class for an estimation methd
 class Estimation_method(object):
 
+
 	def get_folder(self, systematic, folder):
-		return systematic.channel + "_" + folder + "/ntuple"
+		return systematic.channel.get_name() + "_" + folder + "/ntuple"
 
 	def get_name(self):
 		return self.name
@@ -27,6 +31,7 @@ class Estimation_method(object):
 	def __init__(self, name, folder):
 		self.folder = folder
 		self.name = name
+		self.campaign = "RunIISummer16MiniAODv2"
 
 
 	# function parsing the datasets helper to return the files
@@ -41,16 +46,18 @@ class Estimation_method(object):
 
 	def define_root_objects(self, systematic):
 		histogram_settings = []
+		print "test"
 		histogram_settings.append({     "name" : systematic.get_name, 
 						"inputfiles" : self.get_files,
 						"folder" : [self.get_folder, systematic, self.folder],
 						"cuts" : systematic.get_category().get_cuts() + self.get_cuts(),
 						"weights" : self.get_weights,
-	        	            		"variable" : systematic.category.get_variable,
+       	        		"variable" : systematic.category.get_variable,
 						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh})
+		print "test"
 		return histogram_settings
 
-	def get_root_objects(self, systematic):
+	def create_root_objects(self, systematic):
 		root_object_settings = self.define_root_objects(systematic)
 
 		# execute the underlying functions
@@ -62,34 +69,46 @@ class Estimation_method(object):
 				elif callable(value):
 					setting[key] = value()
 
-		root_objects = []
+		self.root_objects = []
 		#import pprint
 		#pprint.pprint(root_object_settings)
 		for setting in root_object_settings:
-			root_objects.append( create_root_object(**setting))
-		return root_objects
+			self.root_objects.append( create_root_object(**setting))
+		return self
+
+	def get_root_objects(self):
+		return self.root_objects
 		
 
 	# doing nothing, shape is exactly the histogram as default
 	def do_estimation(self, systematic, root_objects):
-		print systematic.input_root_objects.keys()
-		if(len(systematic.input_root_objects.keys())) == 1:
-			return systematic.input_root_objects.values()[0]
+		logger.debug("Calling do_estimation for the estimation method %s. ", self.get_name())
+		if len(self.get_root_objects()) == 0:
+			logger.warning("No histogram associated to %s with name %s. Using the first one as the result", self, self.get_name())
+			raise Exception
+		elif len(self.get_root_objects()) > 1:
+			logger.warning("There is not exactly one histogram associated to %s with name %s. Using the first one as the result", self, self.get_name())
+		print self.get_root_objects()[0]
+		return self.get_root_objects()[0]
+		
 
-class Data(Estimation_method):
+class Data_estimation_mt(Estimation_method):
+	def __init__(self):
+		self.name = "data"
+		self.folder = "jecUncNom_tauEsNom"
 	@staticmethod
 	def get_files():
 		return ["/home/friese/artus/2017-01-02_longRun/SingleMuon_Run2016B_PromptRecov2_13TeV_MINIAOD/SingleMuon_Run2016B_PromptRecov2_13TeV_MINIAOD.root"]
 
-class Ztt(Estimation_method):
+class Ztt_estimation(Estimation_method):
 
-	def __init__(self):
+	def __init__(self, era):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "ZTT"
+		self.era = era
 
-	@staticmethod
-	def get_weights():
-		return Weights(Weight("zPtReweightWeight", "zPtReweightWeight"))
+	def get_weights(self):
+		return Weights(Weight("zPtReweightWeight", "zPtReweightWeight"), self.era.get_lumi_weight())
 
 	@staticmethod
 	def get_cuts():
@@ -99,7 +118,7 @@ class Ztt(Estimation_method):
 	def get_files():
 		return ["/home/friese/artus/2017-01-02_longRun/DYJetsToLLM50_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8_ext1/DYJetsToLLM50_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8_ext1.root"]
 
-class Zll(Ztt):
+class Zll_estimation(Ztt_estimation):
 
 	def __init__(self):
 		self.folder = "jecUncNom_tauEsNom"
@@ -109,13 +128,12 @@ class Zll(Ztt):
 	def get_cuts():
 		return Cuts(Cut("(gen_match_2<5||gen_match_2==6)", "zll_genmatch_mt"))
 
-class Wj(Estimation_method):
+class Wj_estimation(Estimation_method):
 
 	def __init__(self):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "WJ"
 
-	@staticmethod
 	def get_weights():
 		return Weights()
 
@@ -124,7 +142,7 @@ class Wj(Estimation_method):
 		return ["/home/friese/artus/2017-01-02_longRun/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8.root"]
 
 
-class Wj_from_SS_OS(Wj):
+class Wj_from_SS_OS_estimation(Wj_estimation):
 
 	def __init__(self):
 		self.folder = "jecUncNom_tauEsNom"
@@ -215,18 +233,16 @@ class Wj_from_SS_OS(Wj):
 		return self.wj_signal_shape.result
 
 
-	@staticmethod
 	def get_weights():
 		return Weights(Weight("1.0", "constant"))
 
 
-class TT(Estimation_method):
+class TT_estimation(Estimation_method):
 
 	def __init__(self):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "TT"
 
-	@staticmethod
 	def get_weights():
 		return Weights(Weight("topPtReweightWeight", "topPtReweightWeight"))
 
@@ -234,13 +250,12 @@ class TT(Estimation_method):
 	def get_files():
 		return ["/home/friese/artus/2017-01-02_longRun/TT_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_powheg-pythia8_ext4/TT_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_powheg-pythia8_ext4.root"]
 
-class VV(Estimation_method):
+class VV_estimation(Estimation_method):
 
 	def __init__(self):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "VV"
 
-	@staticmethod
 	def get_weights():
 		return Weights()
 
@@ -255,7 +270,7 @@ class VV(Estimation_method):
 
 		return [ path + f + "/" + f + ".root" for f in files]
 
-class QCD(Estimation_method):
+class QCD_estimation(Estimation_method):
 
 	def __init__(self):
 		self.folder = "jecUncNom_tauEsNom"
@@ -307,6 +322,5 @@ class QCD(Estimation_method):
 	def get_files():
 		return ["/home/friese/artus/2017-01-02_longRun/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8.root"]
 
-	@staticmethod
 	def get_weights():
 		return Weights(Weight("1.0", "constant"))

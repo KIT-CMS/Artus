@@ -4,6 +4,9 @@ import ROOT
 from Artus.HenryPlotter.histogram import *
 from Artus.HenryPlotter.cutstring import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 """
 """
 
@@ -18,6 +21,7 @@ class Category(object):
 		self.nbins = nbins
 		self.xlow = xlow
 		self.xhigh = xhigh
+		logger.debug("Created category \"%s\" with selection %s", self.get_name(), self.cuts.expand())
 
 	def get_cuts(self):
 		return self.cuts

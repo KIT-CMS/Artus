@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
+import logging
+logger = logging.getLogger(__name__)
 """
 """
 
@@ -22,6 +24,7 @@ class Weight(object):
 		if name == False:
 			print "No appropriate name has been assigned to weight with value " + str(weightstring) + ". Please use an explicit name for this weight string. \n Aborting."
 			sys.exit(1)
+		logger.debug("Created %s object with name \"%s\" and weightstring \"%s\"", self, self.get_name(), self.extract())
 			
 
 	def get_name(self):
@@ -49,6 +52,7 @@ class Constant(Weight):
 		if name == False:
 			print "No appropriate name has been assigned to weight with value " + str(weightstring) + ". Please use an explicit name for this weight string. \n Aborting."
 			sys.exit(1)
+		logger.debug("Created %s object with name \"%s\" and string \"%s\"", self, self.get_name(), self.extract())
 
 	def invert(self):
 		if is_float:
@@ -58,6 +62,7 @@ class Constant(Weight):
 				self.weightstring = self.weightstring.replace("1.0/", "")
 			else:
 				self.weightstring = "1.0/"+self.weightstring
+		logger.debug("Inverted Constant object %s with name \"%s\", value is now \"%s\"", self, self.get_name(), self.extract())
 
 # holder class for weight/cutstring objects
 class Weights(object):
@@ -65,16 +70,18 @@ class Weights(object):
 		self.weightstrings = []
 		if args!=False:
 			for w in args:
-				self.add(w)
+				self.add(w, False)
+		self.log()
 
-	def add(self, weightstring):
+	def add(self, weightstring, verbose=False):
 		if (issubclass(type(weightstring), Weight)):
 			if weightstring.get_name() in self.get_names():
-				print "Not possible to add the weightstring " + str(weightstring) + " since its name is not unique. Aborting."
-				sys.exit(1)
+				logger.fatal("Not possible to add the weightstring %s since its name is not unique. Aborting.", cutstring)
+				raise LookupError
 			else:
-	
 				self.weightstrings.append(weightstring)
+		if verbose:
+			self.log()
 
 	def extract(self):
 		if len(self.weightstrings) > 0:
@@ -105,6 +112,9 @@ class Weights(object):
 		self.weightstrings.append(new)
 		return self
 
+	def log(self):
+		logger.debug("Weights object %s now holds the weights %s", self, self.get_names())
+
 # Class for a simple cut expression e.g. 'pt_1>22'
 class Cut():
 
@@ -127,11 +137,13 @@ class Cut():
 			self.varleft = tmpcutstring[0]
 			self.varright = float(tmpcutstring[1])
 		self.update_weightstring()
+		logger.debug("Created %s object with name \"%s\" and string \"%s\"", self, self.get_name(), self.extract())
 				
 
 	def invert(self):
 		self.operator = inverted_operators[supported_operators.index(self.operator)]
 		self.update_weightstring()
+		logger.debug("Inverted Cut object %s with name \"%s\", value is now \"%s\"", self, self.get_name(), self.extract())
 		return self
 
 	def update_weightstring(self):
@@ -163,30 +175,37 @@ class Cut():
 
 	def embrace(self, c):
 		return "(" + c + ")"
-
+	
 # holder class for cutstring objects
 class Cuts(object):
 	def __init__(self, *args):
 		self.cutstrings = []
 		if args!=False:
 			for w in args:
-				self.add(w)
+				self.add(w, False)
+		self.log()
+
+	def log(self):
+		logger.debug("Cuts object %s now holds the cuts %s", self, self.get_names())
 
 	def __add__(self, other):
 		new_cuts = Cuts()
 		for c in self.cutstrings:
-			new_cuts.add(c)
+			new_cuts.add(c, False)
 		for c in other.cutstrings:
-			new_cuts.add(c)
+			new_cuts.add(c, False)
+		self.log()
 		return new_cuts
 
-	def add(self, cutstring):
+	def add(self, cutstring, verbose=True):
 		if (issubclass(type(cutstring), Cut)) or isinstance(cutstring, Cut):
 			if cutstring.get_name() in self.get_names():
-				print "Not possible to add the cutstring " + str(cutstring) + " since its name is not unique. Aborting."
-				sys.exit(1)
+				logger.fatal("Not possible to add the cutstring %s since its name is not unique. Aborting.", cutstring)
+				raise LookupError
 			else:
 				self.cutstrings.append(cutstring)
+		if verbose:
+			self.log()
 
 	def extract(self):
 		return self.cutstrings
@@ -209,4 +228,5 @@ class Cuts(object):
 	def remove(self, name):
 		if name in self.get_names():
 			self.cutstrings = [w for w in self.cutstrings if not w.get_name() == name]
+			self.log()
 		return self

@@ -3,6 +3,8 @@
 import ROOT
 from array import array
 import hashlib
+import logging
+logger = logging.getLogger(__name__)
 
 """
 """
@@ -17,7 +19,7 @@ class TTree_content(object):
 		self.weights = weights
 		self.weight_name = 'weight_' + self.name # internal name needed for TDFs
 		self.result = False
-		self.folder = Histogram.default_folder if (folder==None) else folder
+		self.folder = folder
 
 	def present(self): # return if h is already filled
 		return self.result != False
@@ -59,23 +61,22 @@ class TTree_content(object):
 		m.update(self.variable)
 		return int(m.hexdigest(), 16)
 
+	def get_result(self):
+		if not self.present():
+			logger.fatal("The result object of %s hase not yet been produced. Call the create_result() method before calling get_result()", self)
+			raise RuntimeError
+		return self.result
 
 class Histogram(TTree_content):
 
-	default_nbins = 100
-	default_xlow = 0.0
-	default_xhigh = 1.0
-	default_variable = "x"
-	default_folder = ""
-
-	def __init__(self, name, inputfiles, folder, cuts, weights, variable=None, nbins=None, xlow=None, xhigh=None): # empty histogram
-		self.nbins = Histogram.default_nbins if (nbins==None) else nbins
-		self.xlow = Histogram.default_xlow if (xlow==None) else xlow
-		self.xhigh = Histogram.default_xhigh if (xhigh==None) else xhigh
-		self.variable = Histogram.default_variable if (variable==None) else variable
+	def __init__(self, name, inputfiles, folder, cuts, weights, variable, nbins, xlow, xhigh): # empty histogram
+		self.nbins = nbins
+		self.xlow = xlow
+		self.xhigh = xhigh
+		self.variable = variable
 		super(Histogram, self).__init__(name, inputfiles, folder, cuts, weights)
 
-	def get_result(self, dataframe=False):
+	def create_result(self, dataframe=False):
 		if dataframe:
 			self.result = dataframe.Histo1D(self.variable, self.weight_name)
 		else: # classic way
@@ -86,13 +87,8 @@ class Histogram(TTree_content):
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
 			self.result = ROOT.gDirectory.Get(self.name)
+			logger.info("Created histogram %s, %s(%s,%s,%s) with selection %s and weights %s. Integral> %s", self, self.variable, self.nbins, self.xlow, self.xhigh, self.cuts.expand(), self.weights.extract(), self.result.Integral())
 		return self
-	
-	def show(self):
-		print "showing histogram " + self.name 
-		self.result.Draw()	
-		import time
-		time.sleep(1.5)
 
 	def update(self):
 		if self.present():
@@ -100,6 +96,9 @@ class Histogram(TTree_content):
 
 	def save(self, output_tree):
 		self.result.Write()
+
+	def summary(self):
+		return """Histogram %s """, self.get_name()
 
 # class to count the (weighted) number of events in a selection
 class Count(TTree_content):
@@ -110,7 +109,7 @@ class Count(TTree_content):
 		self.weights = weights
 		self.result = False
 
-	def get_result(self, dataframe=False):
+	def create_result(self, dataframe=False):
 		if dataframe:
 			self.result = dataframe.Define("flat", "1").Histo1D("flat", self.weight_name)
 		else: # classic way
@@ -125,8 +124,6 @@ class Count(TTree_content):
 			self.result = ROOT.gDirectory.Get(self.name).GetBinContent(1)
 		return self
 
-	def show(self):
-		print "Result from count with name " + self.name + " : " + str(self.result) + ", selection: " +self.cuts.expand() + "*" + self.weights.extract()
 
 	def save(self, output_tree):
 		self.result_array = array("f", [self.result])
@@ -143,8 +140,8 @@ def create_root_object(**kwargs):
 	if all(item in  kwargs.keys() for item in keys):
 		return Histogram(**kwargs)
 	elif any(item in  kwargs.keys() for item in keys):
-		print "invalid configuration found"
-		assert(False)
+		logger.fatal("Invalid configuration found")
+		raise Exception
 	else:
 		return Count(**kwargs)
 
@@ -153,12 +150,12 @@ class Root_objects(object):
 		self.root_objects = []
 		self.counts = []
 		self.produced = False
-		self.output_file = ROOT.TFile(output_file, "new")
-		self.output_tree = ROOT.TTree('output_tree', 'output_tree')
+		self.output_file_name = output_file
 
 	def add(self, root_object):
 		if self.produced:
-			print "The results.produced() has already been called. No more histograms can be added"
+			logger.critical("A produce function has already been called. No more histograms can be added.")
+			raise Exception
 			return False
 		else:
 			if isinstance(root_object, list):
@@ -181,7 +178,13 @@ class Root_objects(object):
 					files_folders.append(o.files_folders())
 		return files_folders
 
+	def create_output_file(self):
+		self.output_file = ROOT.TFile(self.output_file_name, "new")
+		self.output_tree = ROOT.TTree('output_tree', 'output_tree')
+		logger.debug("Created output file \"%s\"", self.output_file_name)
+
 	def produce_tdf(self):
+		self.create_output_file()
 		self.produced = True
 		# determine how many data frames have to be created; sort by inputfiles and trees
 		files_folders = self.get_combinations(self.root_objects, self.counts)
@@ -194,7 +197,7 @@ class Root_objects(object):
 				# find overlapping cut selections -> dummy atm
 				special_dataframe = h.apply_cuts_on_dataframe(common_dataframe)
 				special_dataframe = h.produce_eventweight(special_dataframe)
-				h.get_result(dataframe=special_dataframe)
+				h.create_result(dataframe=special_dataframe)
 			# create the histograms
 			for h in [h for h in self.root_objects if h.files_folders()==files_folder]:
 				h.update()
@@ -204,28 +207,28 @@ class Root_objects(object):
 		self.root_objects = list(set(self.root_objects))
 
 	def produce_classic(self, processes=1):
+		self.create_output_file()
 		self.produced = True
 		if processes==1:
 			for i in range(len(self.root_objects)):
-				self.get_result(i)
+				self.create_result(i)
 		else:
 			from pathos.multiprocessing import ProcessingPool as Pool
 			pool = Pool(processes=processes)
-			self.root_objects = pool.map(self.get_result, range(len(self.root_objects)))
+			self.root_objects = pool.map(self.create_result, range(len(self.root_objects)))
 			
 		for h in self.root_objects: # write sequentially to prevent race conditions
 			h.save(self.output_tree)
+		logger.debug("Produced root objects %s", [h.get_name() for h in self.root_objects])
 		return self
 
-	def get_result(self, index):
-		return self.root_objects[index].get_result()
-	
-	def show():
-		for h in self.root_objects:
-			h.show()
+	def create_result(self, index):
+		return self.root_objects[index].create_result()
 
 	def save(self):
-		assert(self.produced)
+		if not self.produced:
+			logger.critical("No produce method has been called for %s. Call produce_classic() or produce_tdf() before saving", self)
+			raise Exception
 		self.output_tree.Fill()
 		self.output_file.Write()
 		self.output_file.Close()
