@@ -1,7 +1,9 @@
 
 # -*- coding: utf-8 -*-
-import ROOT
 import copy
+
+import os
+
 from Artus.HenryPlotter.histogram import *
 from Artus.HenryPlotter.cutstring import *
 from Artus.HenryPlotter.systematics import *
@@ -28,7 +30,8 @@ class Estimation_method(object):
 	def get_cuts():
 		return Cuts()
 
-	def __init__(self, name, folder):
+	def __init__(self, name, folder, directory):
+		self.directory = directory
 		self.folder = folder
 		self.name = name
 		self.campaign = "RunIISummer16MiniAODv2"
@@ -39,6 +42,9 @@ class Estimation_method(object):
 	def get_files():
 		raise NotImplementedError
 
+	def artus_file_names(self, files):
+		return [os.path.join(self.directory, f, "%s.root"%f) for f in files]
+
 	# wrapper function for the Histogram creation performing the systematic shifts
 	def apply_systematic_variations(self, systematic, settings):
 		print systematic.syst_var
@@ -46,7 +52,6 @@ class Estimation_method(object):
 
 	def define_root_objects(self, systematic):
 		histogram_settings = []
-		print "test"
 		histogram_settings.append({     "name" : systematic.get_name, 
 						"inputfiles" : self.get_files,
 						"folder" : [self.get_folder, systematic, self.folder],
@@ -54,7 +59,6 @@ class Estimation_method(object):
 						"weights" : self.get_weights,
        	        		"variable" : systematic.category.get_variable,
 						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh})
-		print "test"
 		return histogram_settings
 
 	def create_root_objects(self, systematic):
@@ -92,17 +96,23 @@ class Estimation_method(object):
 		return self.get_root_objects()[0]
 		
 
-class Data_estimation_mt(Estimation_method):
-	def __init__(self):
+class Data_estimation(Estimation_method):
+	def __init__(self, channel, era, directory):
+		self.directory = directory
 		self.name = "data"
-		self.folder = "jecUncNom_tauEsNom"
-	@staticmethod
-	def get_files():
-		return ["/home/friese/artus/2017-01-02_longRun/SingleMuon_Run2016B_PromptRecov2_13TeV_MINIAOD/SingleMuon_Run2016B_PromptRecov2_13TeV_MINIAOD.root"]
+		self.folder = "nominal"
+		self.channel = channel
+		self.era = era
+
+	def get_files(self):
+		return self.artus_file_names(self.era.data_files(self.channel))
+
+	def get_cuts(self):
+		return Cuts()
 
 class Ztt_estimation(Estimation_method):
 
-	def __init__(self, era):
+	def __init__(self, era, directory):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "ZTT"
 		self.era = era
@@ -120,7 +130,7 @@ class Ztt_estimation(Estimation_method):
 
 class Zll_estimation(Ztt_estimation):
 
-	def __init__(self):
+	def __init__(self, directory):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "Zll"
 
@@ -130,7 +140,7 @@ class Zll_estimation(Ztt_estimation):
 
 class Wj_estimation(Estimation_method):
 
-	def __init__(self):
+	def __init__(self, directory):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "WJ"
 
@@ -144,7 +154,7 @@ class Wj_estimation(Estimation_method):
 
 class Wj_from_SS_OS_estimation(Wj_estimation):
 
-	def __init__(self):
+	def __init__(self, directory):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "WJ"
 
@@ -239,7 +249,7 @@ class Wj_from_SS_OS_estimation(Wj_estimation):
 
 class TT_estimation(Estimation_method):
 
-	def __init__(self):
+	def __init__(self, directory):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "TT"
 
@@ -252,7 +262,7 @@ class TT_estimation(Estimation_method):
 
 class VV_estimation(Estimation_method):
 
-	def __init__(self):
+	def __init__(self, directory):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "VV"
 
@@ -272,7 +282,7 @@ class VV_estimation(Estimation_method):
 
 class QCD_estimation(Estimation_method):
 
-	def __init__(self):
+	def __init__(self, directory):
 		self.folder = "jecUncNom_tauEsNom"
 		self.name = "QCD"
 

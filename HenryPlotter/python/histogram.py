@@ -88,6 +88,7 @@ class Histogram(TTree_content):
 			          "goff")
 			self.result = ROOT.gDirectory.Get(self.name)
 			logger.info("Created histogram %s, %s(%s,%s,%s) with selection %s and weights %s. Integral> %s", self, self.variable, self.nbins, self.xlow, self.xhigh, self.cuts.expand(), self.weights.extract(), self.result.Integral())
+			logger.debug("Input ROOT files: %s", self.inputfiles)
 		return self
 
 	def update(self):
