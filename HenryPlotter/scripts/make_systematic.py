@@ -30,15 +30,24 @@ logger.addHandler(handler)
 
 directory = "/storage/b/rcaspart/htautau/2017-06-21_eleScale/"
 era=Run2016BCDEFGH()
-channel = ET()
-ztt = Process("ZTT", Ztt_estimation(era, directory, channel))
-zll = Process("ZLL", Zll_estimation(era, directory, channel))
-tt =  Process("TT",  TT_estimation(era, directory, channel))
-wj =  Process("WJ",  WJ_estimation(era, directory, channel))
-vv =  Process("VV",  VV_estimation(era, directory, channel))
-data = Process("data", Data_estimation(era, directory, channel))
-qcd = Process("QCD", QCD_estimation(era, directory, channel, [ztt, zll, tt, vv, wj], data))
+# et
+et = ET()
+ztt_et = Process("ZTT", Ztt_estimation(era, directory, et))
+zll_et = Process("ZLL", Zll_estimation(era, directory, et))
+tt_et =  Process("TT",  TT_estimation(era, directory, et))
+wj_et =  Process("WJ",  WJ_estimation(era, directory, et))
+vv_et =  Process("VV",  VV_estimation(era, directory, et))
+data_et = Process("data", Data_estimation(era, directory, et))
+qcd_et = Process("QCD", QCD_estimation(era, directory, et, [ztt_et, zll_et, tt_et, vv_et, wj_et], data_et))
 
+mt = MT()
+ztt_mt = Process("ZTT", Ztt_estimation(era, directory, mt))
+zll_mt = Process("ZLL", Zll_estimation(era, directory, mt))
+tt_mt =  Process("TT",  TT_estimation(era, directory, mt))
+wj_mt =  Process("WJ",  WJ_estimation(era, directory, mt))
+vv_mt =  Process("VV",  VV_estimation(era, directory, mt))
+data_mt = Process("data", Data_estimation(era, directory, mt))
+qcd_mt = Process("QCD", QCD_estimation(era, directory, mt, [ztt_mt, zll_mt, tt_mt, vv_mt, wj_mt], data_mt))
 # systematic variations. Start with "nominal" for the central values without any variation
 nominal = Nominal()
 
@@ -46,12 +55,12 @@ jec_downshift = Different_pipeline("jec", "jecUncDown_tauEsNom", "Down")
 jec_upshift = Different_pipeline("jec", "jecUncUp_tauEsNom", "Up")
 
 #definition of categories
-nobtag_tight_mt = Category( "nobtag_tight", channel, Cuts(
+nobtag_tight_mt = Category( "nobtag_tight", MT(), Cuts(
 	Cut("nbtag==0", "nobtag"),
 	Cut("mt_1<40","mt")),
 	variable="pt_1", nbins=50, xlow=0, xhigh=100)
 
-nobtag_tight_et = Category( "nobtag_tight", channel, Cuts(
+nobtag_tight_et = Category( "nobtag_tight", ET(), Cuts(
 	Cut("nbtag==0", "nobtag"),
 	Cut("mt_1<40","mt")),
 	variable="pt_1", nbins=50, xlow=0, xhigh=100)
@@ -60,14 +69,11 @@ nobtag_tight_et = Category( "nobtag_tight", channel, Cuts(
 #systematics object, to be filled
 systematics = Systematics()
 # first, create the nominals
-systematics.add( Systematic(category=nobtag_tight_et, process=data, channel=channel, analysis = "example", era=era, syst_var=nominal))
-systematics.add( Systematic(category=nobtag_tight_et, process=ztt,  channel=channel, analysis = "example", era=era, syst_var=nominal))
-systematics.add( Systematic(category=nobtag_tight_et, process=zll,  channel=channel, analysis = "example", era=era, syst_var=nominal))
-systematics.add( Systematic(category=nobtag_tight_et, process=tt,   channel=channel, analysis = "example", era=era, syst_var=nominal))
-systematics.add( Systematic(category=nobtag_tight_et, process=vv,   channel=channel, analysis = "example", era=era, syst_var=nominal))
-systematics.add( Systematic(category=nobtag_tight_et, process=wj,   channel=channel, analysis = "example", era=era, syst_var=nominal))
-systematics.add( Systematic(category=nobtag_tight_et, process=qcd,  channel=channel, analysis = "example", era=era, syst_var=nominal))
+for process in [ztt_mt, zll_mt, tt_mt, vv_mt, wj_mt, data_mt, qcd_mt]:
+	systematics.add( Systematic(category=nobtag_tight_mt, process=process, analysis = "example", era=era, syst_var=nominal))
+
+for process in [ztt_et, zll_et, tt_et, vv_et, wj_et, data_et, qcd_et]:
+	systematics.add( Systematic(category=nobtag_tight_et, process=process, analysis = "example", era=era, syst_var=nominal))
 
 systematics.produce()
-
 systematics.summary()

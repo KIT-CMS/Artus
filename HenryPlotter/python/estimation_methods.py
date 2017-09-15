@@ -20,7 +20,7 @@ class Estimation_method(object):
 
 
 	def get_folder(self, systematic, folder):
-		return systematic.channel.get_name() + "_" + folder + "/ntuple"
+		return systematic.category.get_channel_name() + "_" + folder + "/ntuple"
 
 	def get_name(self):
 		return self.name
@@ -339,7 +339,7 @@ class QCD_estimation(Estimation_method):
 		self.root_objects = []
 		self.systematics = []
 		for process in [self.data_process] + self.bg_processes:
-			self.systematics.append( Systematic(category=ss_category, process=process, channel=systematic.get_channel(), analysis =systematic.get_analysis(), era=self.era, syst_var=systematic.get_syst_var()))
+			self.systematics.append( Systematic(category=ss_category, process=process, analysis =systematic.get_analysis(), era=self.era, syst_var=systematic.get_syst_var()))
 			self.root_objects += self.systematics[-1].get_root_objects()
 
 		return self

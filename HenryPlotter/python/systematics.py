@@ -11,21 +11,17 @@ logger = logging.getLogger(__name__)
 
 class Systematic(object):
 	
-	def __init__(self, category, process, analysis, era, channel, syst_var, mass=None):
+	def __init__(self, category, process, analysis, era, syst_var, mass=None):
 		self.category = category
 		self.process = process
 		self.analysis = analysis
 		self.era = era
-		self.channel = channel
 		self.mass = mass
 		self.syst_var = syst_var
 		logger.debug("Created systematic called %s", self.get_name())
 
 	def get_category(self):
 		return self.category
-
-	def get_channel(self):
-		return self.channel
 	
 	def get_analysis(self):
 		return self.analysis
@@ -50,13 +46,13 @@ class Systematic(object):
 		return self.shape
 
 	def get_name(self):
-		name = "_".join([self.channel.get_name(), self.process.get_name(), self.category.get_name(), self.analysis, self.era.get_name()])
+		name = "_".join([self.process.get_name(), self.category.get_name(), self.analysis, self.era.get_name()])
 		if self.syst_var!=None:
 			name += "_" + self.syst_var.get_name()
 		return name
 
 	def summary(self):
-		return [self.get_name(), self.category.get_name(), self.process.get_name(), self.analysis, self.era.get_name(), self.channel.get_name(), str(self.mass), self.syst_var.get_name() , str(self.process.estimation_method), str(self.shape)]
+		return [self.get_name(), self.category.get_name(), self.process.get_name(), self.analysis, self.era.get_name(), self.category.get_channel_name(), str(self.mass), self.syst_var.get_name() , str(self.process.estimation_method), str(self.shape)]
 
 
 # holder class for systematics

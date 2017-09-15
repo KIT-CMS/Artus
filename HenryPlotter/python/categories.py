@@ -28,7 +28,10 @@ class Category(object):
 		return self.cuts
 
 	def get_name(self):
-		return self.name
+		return self.channel.get_name() + "_"+ self.name
+
+	def get_channel_name(self):
+		return self.channel.get_name()
 
 	def get_variable(self):
 		return self.variable

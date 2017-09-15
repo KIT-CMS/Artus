@@ -21,7 +21,8 @@ class EM(Channel):
 class MT(Channel):
 	def __init__(self):
 		self.name = "mt"
-	def get_cuts():
+
+	def get_cuts(self):
 		return Cuts(
 			Cut("extraelec_veto<0.5", "extraelec_veto"),
 			Cut("extramuon_veto<0.5", "extramuon_veto"),
