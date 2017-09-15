@@ -18,9 +18,9 @@ class Era(object):
 	# data files
 	# NOT mc files!	 -> they correspond to the background estimation methods!
 
-class Run2016BCDEFG(Era):
+class Run2016BCDEFGH(Era):
 	def __init__(self):
-		self.name = "Run2016BCDEFG"
+		self.name = "Run2016BCDEFGH"
 		self.luminosity = 35.87*1000.0
 		self.data_format = "MINIAOD"
 		self.energy = 13
@@ -29,6 +29,10 @@ class Run2016BCDEFG(Era):
 		if channel.get_name() == "mt":
 			query = {"data" : True, "campaign": "Run2016(B|C|D|E|F|G|H)", "scenario": "03Feb2017.*"}
 			query["process"] = "SingleMuon"
+			files = datasetsHelper.get_nicks_with_query(query)
+		if channel.get_name() == "et":
+			query = {"data" : True, "campaign": "Run2016(B|C|D|E|F|G|H)", "scenario": "03Feb2017.*"}
+			query["process"] = "SingleElectron"
 			files = datasetsHelper.get_nicks_with_query(query)
 		return files
 

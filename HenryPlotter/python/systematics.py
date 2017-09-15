@@ -19,28 +19,40 @@ class Systematic(object):
 		self.channel = channel
 		self.mass = mass
 		self.syst_var = syst_var
-		self.shape = "doof"
 		logger.debug("Created systematic called %s", self.get_name())
 
 	def get_category(self):
 		return self.category
 
+	def get_channel(self):
+		return self.channel
+	
+	def get_analysis(self):
+		return self.analysis
+
+	def get_syst_var(self):
+		return self.syst_var
+
+	def set_category(self, new_category):
+		self.category = new_category
+		return self
+
 	# function to return the histogram classes necessary for this systematic variation
 	def get_root_objects(self):
 		self.process.estimation_method.create_root_objects(self)
-			#self.input_root_objects = dict([(h.get_name(), h) for h in self.process.estimation_method.get_root_objects(self)])
-			# call estimation_methods with corresponding arguments...
 		return self.process.estimation_method.get_root_objects()
 
 	def do_estimation(self, root_objects_holder): # function doing the actual calculations.
 		self.shape = self.process.estimation_method.do_estimation(self, root_objects_holder)
 		return self
 
+	def get_shape(self):
+		return self.shape
+
 	def get_name(self):
 		name = "_".join([self.channel.get_name(), self.process.get_name(), self.category.get_name(), self.analysis, self.era.get_name()])
 		if self.syst_var!=None:
 			name += "_" + self.syst_var.get_name()
-#		name = "_".join([name]+ list(args))
 		return name
 
 	def summary(self):
@@ -62,8 +74,8 @@ class Systematics(object):
 		# create the input histograms, all at once to make optimal use of TDFs
 		logger.debug("Creating the histograms")
 		self.create_histograms()
-		# sort the estimation modules
-		self.sort_estimations()
+		# sort the estimation modules. TODO to be implemented
+		# self.sort_estimations()
 		# do the background estimations
 		logger.debug("Calling the estimation methods")
 		self.do_estimations()
@@ -78,7 +90,7 @@ class Systematics(object):
 
 	# TODO function to sort the estimation modules depending on what has to be previously ran
 	def sort_estimations(self):
-		logger.warning("Not implemented")
+		raise NotImplementedError
 
 	# to the actual estimations. Currently ran in paralell due to expected very low runtime, can in principle be parallelized
 	def do_estimations(self):

@@ -22,7 +22,6 @@ class Processes(object):
 		self.processes = []
 
 	def get_processes(self, *args):
-			print args
 			return [p for p in self.processes if p.get_name() in args]
 
 	def add(self, process):

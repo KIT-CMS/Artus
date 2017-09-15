@@ -87,13 +87,23 @@ class Histogram(TTree_content):
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
 			self.result = ROOT.gDirectory.Get(self.name)
-			logger.info("Created histogram %s, %s(%s,%s,%s) with selection %s and weights %s. Integral> %s", self, self.variable, self.nbins, self.xlow, self.xhigh, self.cuts.expand(), self.weights.extract(), self.result.Integral())
-			logger.debug("Input ROOT files: %s", self.inputfiles)
+			self.log()
 		return self
 
 	def update(self):
 		if self.present():
 			self.result.SetName(self.name)
+
+	def log(self):
+			logger.info("Creating histogram %s with name %s", self, self.get_name())
+			logger.debug("\tInput ROOT files: %s", self.inputfiles)
+			logger.debug("\tBinning: (%s, %s, %s)", self.nbins, self.xlow, self.xhigh)
+			logger.debug("\tCuts: %s", self.cuts.expand())
+			logger.debug("\tWeights: %s", self.weights.extract())
+#			if self.present():
+#				logger.debug("\tNot yet produced")
+#			else:
+			logger.debug("\tResult: %s", self.get_result())
 
 	def save(self, output_tree):
 		self.result.Write()

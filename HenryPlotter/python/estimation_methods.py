@@ -9,6 +9,9 @@ from Artus.HenryPlotter.cutstring import *
 from Artus.HenryPlotter.systematics import *
 from Artus.HenryPlotter.systematic_variations import *
 
+from  Kappa.Skimming.datasetsHelperTwopz import datasetsHelperTwopz
+datasetsHelper = datasetsHelperTwopz(os.path.join(os.environ.get("CMSSW_BASE"),"src/Kappa/Skimming/data/datasets.json"))
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -30,11 +33,13 @@ class Estimation_method(object):
 	def get_cuts():
 		return Cuts()
 
-	def __init__(self, name, folder, directory):
+	def __init__(self, name, folder, era, directory, channel):
 		self.directory = directory
 		self.folder = folder
 		self.name = name
-		self.campaign = "RunIISummer16MiniAODv2"
+		self.mc_campaign = "RunIISummer16MiniAODv2"
+		self.channel = channel
+		self.era = era
 
 
 	# function parsing the datasets helper to return the files
@@ -47,7 +52,6 @@ class Estimation_method(object):
 
 	# wrapper function for the Histogram creation performing the systematic shifts
 	def apply_systematic_variations(self, systematic, settings):
-		print systematic.syst_var
 		return systematic.syst_var.shifted_root_objects(settings)
 
 	def define_root_objects(self, systematic):
@@ -74,8 +78,6 @@ class Estimation_method(object):
 					setting[key] = value()
 
 		self.root_objects = []
-		#import pprint
-		#pprint.pprint(root_object_settings)
 		for setting in root_object_settings:
 			self.root_objects.append( create_root_object(**setting))
 		return self
@@ -92,17 +94,18 @@ class Estimation_method(object):
 			raise Exception
 		elif len(self.get_root_objects()) > 1:
 			logger.warning("There is not exactly one histogram associated to %s with name %s. Using the first one as the result", self, self.get_name())
-		print self.get_root_objects()[0]
 		return self.get_root_objects()[0]
+
+	def log_query(self, query, files):
+		logger.debug("Query from get_files() method in %s ,directory %s", self.get_name(), self.directory)
+		logger.debug("Query : %s", query)
+		logger.debug("Files: %s", files)
 		
 
 class Data_estimation(Estimation_method):
-	def __init__(self, channel, era, directory):
-		self.directory = directory
-		self.name = "data"
-		self.folder = "nominal"
+	def __init__(self, era, directory, channel):
+		super(Data_estimation, self).__init__("data_obs", "nominal", era, directory, channel)
 		self.channel = channel
-		self.era = era
 
 	def get_files(self):
 		return self.artus_file_names(self.era.data_files(self.channel))
@@ -112,225 +115,246 @@ class Data_estimation(Estimation_method):
 
 class Ztt_estimation(Estimation_method):
 
-	def __init__(self, era, directory):
-		self.folder = "jecUncNom_tauEsNom"
-		self.name = "ZTT"
-		self.era = era
+	def __init__(self, era, directory, channel):
+		super(Ztt_estimation, self).__init__("ZTT", "nominal", era, directory, channel)
 
 	def get_weights(self):
-		return Weights(Weight("zPtReweightWeight", "zPtReweightWeight"), self.era.get_lumi_weight())
+		return Weights(Weight("eventWeight", "eventWeight"),
+		               Weight("zPtReweightWeight", "zPtReweightWeight"),
+		               Weight("((gen_match_2 == 5)*0.95 + (gen_match_2 != 5))", "hadronic_tau_sf"),
+		               Weight("((((genbosonmass >= 150.0 && (npartons == 0 || npartons >= 5))*3.95423374e-5) + ((genbosonmass >= 150.0 && npartons == 1)*1.27486147e-5) + ((genbosonmass >= 150.0 && npartons == 2)*1.3012785e-5) + ((genbosonmass >= 150.0 && npartons == 3)*1.33802133e-5) + ((genbosonmass >= 150.0 && npartons == 4)*1.09698723e-5)+((genbosonmass >= 50.0 && genbosonmass < 150.0 && (npartons == 0 || npartons >= 5))*3.95423374e-5) + ((genbosonmass >= 50.0 && genbosonmass < 150.0 && npartons == 1)*1.27486147e-5) + ((genbosonmass >= 50.0 && genbosonmass < 150.0 && npartons == 2)*1.3012785e-5) + ((genbosonmass >= 50.0 && genbosonmass < 150.0 && npartons == 3)*1.33802133e-5) + ((genbosonmass >= 50.0 && genbosonmass < 150.0 && npartons == 4)*1.09698723e-5)+((genbosonmass < 50.0)*numberGeneratedEventsWeight*crossSectionPerEventWeight))/(numberGeneratedEventsWeight*crossSectionPerEventWeight*sampleStitchingWeight))", "z_stitching_weight"),
+		               self.era.get_lumi_weight())
 
 	@staticmethod
 	def get_cuts():
 		return Cuts(Cut("gen_match_2==5", "ztt_genmatch_mt"))
 
-	@staticmethod
-	def get_files():
-		return ["/home/friese/artus/2017-01-02_longRun/DYJetsToLLM50_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8_ext1/DYJetsToLLM50_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8_ext1.root"]
+	def get_files(self):
+		query = { "process" : "(DYJetsToLL_M10to50|DYJetsToLL_M50|DY1JetsToLL_M50|DY2JetsToLL_M50|DY3JetsToLL_M50|DY4JetsToLL_M50)",
+		          "data": False, 
+		          "campaign" : self.mc_campaign,
+		          "generator" : "madgraph\-pythia8"
+		}
+		files = datasetsHelper.get_nicks_with_query(query)
+		self.log_query(query,files)
+		return self.artus_file_names(files)
+
 
 class Zll_estimation(Ztt_estimation):
 
-	def __init__(self, directory):
-		self.folder = "jecUncNom_tauEsNom"
-		self.name = "Zll"
+	def __init__(self, era, directory, channel):
+		super(Ztt_estimation, self).__init__("Zll", "nominal", era, directory, channel)
 
 	@staticmethod
 	def get_cuts():
 		return Cuts(Cut("(gen_match_2<5||gen_match_2==6)", "zll_genmatch_mt"))
 
-class Wj_estimation(Estimation_method):
+class WJ_estimation(Estimation_method):
 
-	def __init__(self, directory):
-		self.folder = "jecUncNom_tauEsNom"
-		self.name = "WJ"
+	def __init__(self, era, directory, channel):
+		super(WJ_estimation, self).__init__("WJ", "nominal", era, directory, channel)
 
-	def get_weights():
-		return Weights()
-
-	@staticmethod
-	def get_files():
-		return ["/home/friese/artus/2017-01-02_longRun/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8.root"]
-
-
-class Wj_from_SS_OS_estimation(Wj_estimation):
-
-	def __init__(self, directory):
-		self.folder = "jecUncNom_tauEsNom"
-		self.name = "WJ"
+	def get_weights(self):
+		return Weights(Weight("(((npartons == 0 || npartons >= 5)*7.09390278348407e-4) + ((npartons == 1)*1.90063898596475e-4) + ((npartons == 2)*5.8529964471165e-5) + ((npartons == 3)*1.9206444928444e-5) + ((npartons == 4)*1.923548021385e-5))/(numberGeneratedEventsWeight*crossSectionPerEventWeight*sampleStitchingWeight)", "wj_stitching_weight"),
+		               Weight("((gen_match_2 == 5)*0.95 + (gen_match_2 != 5))", "hadronic_tau_sf"),
+		               Weight("eventWeight", "eventWeight"),
+		               self.era.get_lumi_weight())
+	def get_files(self):
+		query = {"process" : "W.*JetsToLNu",
+		         "data" : False,
+		         "campaign" : self.mc_campaign,
+	             "generator" : "madgraph-pythia8"}
+		files = datasetsHelper.get_nicks_with_query(query)
+		return self.artus_file_names(files)
 
 
-	def get_root_objects(self, systematic):
-		root_objects = super(Wj, self).get_root_objects(systematic)
-		self.wj_signal_shape = root_objects[0]
-		print self.wj_signal_shape
-		print "------------------------------------------"
-		print "hier", root_objects
-
-		self.wj_ss_os_category = copy.deepcopy(systematic.get_category())
-		self.wj_ss_os_category.get_cuts().remove("os").get("mt").invert().set_value(70)
-		self.wj_ss_os_category.variable = "q_1*q_2"
-		self.wj_ss_os_category.nbins = 2
-		self.wj_ss_os_category.xlow= -1.1
-		self.wj_ss_os_category.xhigh= 1.1
-		self.wj_ss_os_category.name = "inclusive"
-		self.wj_ss_os = Systematic(category=self.wj_ss_os_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Wj())
-		root_objects += self.wj_ss_os.get_root_objects().values()
-
-
-		self.highmt_os_category = copy.deepcopy(systematic.get_category())
-		self.highmt_os_category.get_cuts().get("mt").invert().set_value(70)
-		self.highmt_os_category.name = "high_mt_os"
-
-		self.highmt_ss_category = copy.deepcopy(systematic.get_category())
-		self.highmt_ss_category.get_cuts().get("mt").invert().set_value(70)
-		self.highmt_ss_category.get_cuts().get("os").invert().name = "ss"
-		self.highmt_ss_category.name = "high_mt_ss"
-		
-		for category in [self.highmt_os_category, self.highmt_ss_category]:
-				c_name = category.get_name()
-				setattr(self, c_name, [])
-				print "test"
-				print getattr(self, c_name)
-				getattr(self, c_name).append(Systematic(category=category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=Nominal(), estimation_method = Data("data", folder="jecUncNom_tauEsNom")))
-
-				getattr(self, c_name).append(Systematic(category=category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Ztt()))
-				getattr(self, c_name).append(Systematic(category=category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Zll()))
-				getattr(self, c_name).append(Systematic(category=category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = TT()))
-				getattr(self, c_name).append(Systematic(category=category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = VV()))
-				getattr(self, c_name).append(Systematic(category=category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Wj()))
-
-				for systematic in getattr(self, c_name):
-					root_objects += systematic.get_root_objects().values()
-
-		return root_objects
-
-	def define_root_objects(self, systematic):
-		# wj signal region
-		histogram_settings = super(Wj, self).define_root_objects(systematic)
-		return histogram_settings
-
-	def do_estimation(self, systematic, root_objects):
-
-		# call the estimation method of the individual estimations
-		for category in [self.highmt_os_category, self.highmt_ss_category]:
-				c_name = category.get_name()
-				for systematic in getattr(self, c_name):
-					systematic.do_estimation(root_objects)
-
-		# N_Fake^OS
-		n_fake_os = getattr(self, self.highmt_os_category.get_name())[0].shape.result.Integral() - sum([h.shape.result.Integral() for h in getattr(self, self.highmt_os_category.get_name())][1:-1])
-		n_fake_ss = getattr(self, self.highmt_ss_category.get_name())[0].shape.result.Integral() - sum([h.shape.result.Integral() for h in getattr(self, self.highmt_ss_category.get_name())][1:-1])
-
-		f_W_os_ss = getattr(self, self.highmt_os_category.get_name())[-1].shape.result.Integral() / getattr(self, self.highmt_ss_category.get_name())[-1].shape.result.Integral()
-		print f_W_os_ss, "1st"
-
-		self.wj_ss_os.do_estimation(root_objects)
-		f_W_os_ss = self.wj_ss_os.shape.result.GetBinContent(1) / self.wj_ss_os.shape.result.GetBinContent(2)
-		print f_W_os_ss, "2nd"
-
+#class Wj_from_SS_OS_estimation(Wj_estimation):
+#
+#	def __init__(self, directory):
+#		self.folder = "jecUncNom_tauEsNom"
+#		self.name = "WJ"
+#
+#
+#	def get_root_objects(self, systematic):
+#		root_objects = super(Wj, self).get_root_objects(systematic)
+#		self.wj_signal_shape = root_objects[0]
+#		print self.wj_signal_shape
+#		print "------------------------------------------"
+#		print "hier", root_objects
+#
+#		self.wj_ss_os_category = copy.deepcopy(systematic.get_category())
+#		self.wj_ss_os_category.get_cuts().remove("os").get("mt").invert().set_value(70)
+#		self.wj_ss_os_category.variable = "q_1*q_2"
+#		self.wj_ss_os_category.nbins = 2
+#		self.wj_ss_os_category.xlow= -1.1
+#		self.wj_ss_os_category.xhigh= 1.1
+#		self.wj_ss_os_category.name = "inclusive"
+#		self.wj_ss_os = Systematic(category=self.wj_ss_os_category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Wj())
+#		root_objects += self.wj_ss_os.get_root_objects().values()
+#
+#
+#		self.highmt_os_category = copy.deepcopy(systematic.get_category())
+#		self.highmt_os_category.get_cuts().get("mt").invert().set_value(70)
+#		self.highmt_os_category.name = "high_mt_os"
+#
+#		self.highmt_ss_category = copy.deepcopy(systematic.get_category())
+#		self.highmt_ss_category.get_cuts().get("mt").invert().set_value(70)
+#		self.highmt_ss_category.get_cuts().get("os").invert().name = "ss"
+#		self.highmt_ss_category.name = "high_mt_ss"
+#		
+#		for category in [self.highmt_os_category, self.highmt_ss_category]:
+#				c_name = category.get_name()
+#				setattr(self, c_name, [])
+#				print "test"
+#				print getattr(self, c_name)
+#				getattr(self, c_name).append(Systematic(category=category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=Nominal(), estimation_method = Data("data", folder="jecUncNom_tauEsNom")))
+#
+#				getattr(self, c_name).append(Systematic(category=category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Ztt()))
+#				getattr(self, c_name).append(Systematic(category=category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Zll()))
+#				getattr(self, c_name).append(Systematic(category=category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = TT()))
+#				getattr(self, c_name).append(Systematic(category=category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = VV()))
+#				getattr(self, c_name).append(Systematic(category=category, process="wj",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = Wj()))
+#
+#				for systematic in getattr(self, c_name):
+#					root_objects += systematic.get_root_objects().values()
+#
+#		return root_objects
+#
+#	def define_root_objects(self, systematic):
+#		# wj signal region
+#		histogram_settings = super(Wj, self).define_root_objects(systematic)
+#		return histogram_settings
+#
+#	def do_estimation(self, systematic, root_objects):
+#
+#		# call the estimation method of the individual estimations
+#		for category in [self.highmt_os_category, self.highmt_ss_category]:
+#				c_name = category.get_name()
+#				for systematic in getattr(self, c_name):
+#					systematic.do_estimation(root_objects)
+#
+#		# N_Fake^OS
+#		n_fake_os = getattr(self, self.highmt_os_category.get_name())[0].shape.result.Integral() - sum([h.shape.result.Integral() for h in getattr(self, self.highmt_os_category.get_name())][1:-1])
+#		n_fake_ss = getattr(self, self.highmt_ss_category.get_name())[0].shape.result.Integral() - sum([h.shape.result.Integral() for h in getattr(self, self.highmt_ss_category.get_name())][1:-1])
+#
+#		f_W_os_ss = getattr(self, self.highmt_os_category.get_name())[-1].shape.result.Integral() / getattr(self, self.highmt_ss_category.get_name())[-1].shape.result.Integral()
+#		print f_W_os_ss, "1st"
+#
+#		self.wj_ss_os.do_estimation(root_objects)
+#		f_W_os_ss = self.wj_ss_os.shape.result.GetBinContent(1) / self.wj_ss_os.shape.result.GetBinContent(2)
+#		print f_W_os_ss, "2nd"
+#
 		# hard-coded number with no more motivation than "it works"
-		f_QCD_os_ss = 1.2
-
-		scale_factor = (n_fake_os - f_QCD_os_ss * n_fake_ss)/(1+f_QCD_os_ss/f_W_os_ss)
-
-		print n_fake_os
-		print n_fake_ss
-		print f_W_os_ss
-		print scale_factor
-
-		f_W_high_low = getattr(self, self.highmt_os_category.get_name())[-1].shape.result.Integral()  / self.wj_signal_shape.result.Integral()
+#		f_QCD_os_ss = 1.2
+#
+#		scale_factor = (n_fake_os - f_QCD_os_ss * n_fake_ss)/(1+f_QCD_os_ss/f_W_os_ss)
+#
+#		print n_fake_os
+#		print n_fake_ss
+#		print f_W_os_ss
+#		print scale_factor
+#
+#		f_W_high_low = getattr(self, self.highmt_os_category.get_name())[-1].shape.result.Integral()  / self.wj_signal_shape.result.Integral()
 		#nothing happens atm with these scale factors
-		return self.wj_signal_shape.result
-
-
-	def get_weights():
-		return Weights(Weight("1.0", "constant"))
-
+#		return self.wj_signal_shape.result
+#
+#
+#	def get_weights():
+#		return Weights(Weight("1.0", "constant"))
+#
 
 class TT_estimation(Estimation_method):
 
-	def __init__(self, directory):
-		self.folder = "jecUncNom_tauEsNom"
-		self.name = "TT"
+	def __init__(self, era, directory, channel):
+		super(TT_estimation, self).__init__("TT", "nominal", era, directory, channel)
 
-	def get_weights():
-		return Weights(Weight("topPtReweightWeight", "topPtReweightWeight"))
+	def get_weights(self):
+		return Weights(Weight("topPtReweightWeight", "topPtReweightWeight"),
+		               Weight("eventWeight", "eventWeight"),
+		               Weight("((gen_match_2 == 5)*0.95 + (gen_match_2 != 5))", "hadronic_tau_sf"))
 
-	@staticmethod
-	def get_files():
-		return ["/home/friese/artus/2017-01-02_longRun/TT_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_powheg-pythia8_ext4/TT_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_powheg-pythia8_ext4.root"]
+	def get_files(self):
+		query = { "process" : "^TT$",
+		          "data": False, 
+		          "campaign" : self.mc_campaign
+		}
+		files = datasetsHelper.get_nicks_with_query(query)
+		self.log_query(query,files)
+		return self.artus_file_names(files)
+
 
 class VV_estimation(Estimation_method):
+	def __init__(self, era, directory, channel):
+		super(VV_estimation, self).__init__("VV", "nominal", era, directory, channel)
 
-	def __init__(self, directory):
-		self.folder = "jecUncNom_tauEsNom"
-		self.name = "VV"
+	def get_weights(self):
+		return Weights( Weight("((gen_match_2 == 5)*0.95 + (gen_match_2 != 5))", "hadronic_tau_sf"),
+		                Weight("eventWeight", "eventWeight"))
 
-	def get_weights():
-		return Weights()
+	def get_files(self):
+		query = { "process" : "(WWTo1L1Nu2Q|"
+		                    + "WZTo1L1Nu2Q|"
+		                    + "WZTo1L3Nu|"
+		                    + "WZTo2L2Q|" 
+		                    + "ZZTo2L2Q"
+		                    +  ")",
+		          "data" : False,
+		          "campaign" : self.mc_campaign,
+		          "generator" : "amcatnlo-pythia8" }
+		files = datasetsHelper.get_nicks_with_query(query)
 
-	@staticmethod
-	def get_files():
-		path = "/home/friese/artus/2017-01-02_longRun/"
-		files = ["WZTo1L1Nu2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8"]
-		files.append("WZTo1L3Nu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
-		files.append( "WZTo2L2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
-		files.append("ZZTo2L2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
-		files.append("WWTo1L1Nu2Q_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_amcatnlo-pythia8")
+		query = { "process" : "ZZTo4L",
+		          "extension" : "ext1",
+		          "data" : False,
+		          "campaign" : self.mc_campaign,
+		          "generator" : "amcatnlo-pythia8"}
+		files += datasetsHelper.get_nicks_with_query(query)
 
-		return [ path + f + "/" + f + ".root" for f in files]
+		query = { "process" : "WZJToLLLNu",
+		          "data" : False,
+		          "campaign" : self.mc_campaign,
+		          "generator" : "pythia8"}
+		files += datasetsHelper.get_nicks_with_query(query)
+
+		query = { "process" : "(STt-channelantitop4finclusiveDecays|STt-channeltop4finclusiveDecays|STtWantitop5finclusiveDecays|STtWtop5finclusiveDecays)",
+		          "data" : False,
+		          "campaign" : self.mc_campaign}
+		files += datasetsHelper.get_nicks_with_query(query)
+
+		self.log_query("", files)
+		return self.artus_file_names(files)
 
 class QCD_estimation(Estimation_method):
 
-	def __init__(self, directory):
-		self.folder = "jecUncNom_tauEsNom"
-		self.name = "QCD"
+	def __init__(self, era, directory, channel, bg_processes, data_process):
+		super(QCD_estimation, self).__init__("QCD", "nominal", era, directory, channel)
+		self.bg_processes = [copy.deepcopy(p) for p in bg_processes]
+		self.data_process = copy.deepcopy(data_process)
 
-
-	def get_root_objects(self, systematic):
+	def create_root_objects(self, systematic):
 		ss_category = copy.deepcopy(systematic.get_category())
 		ss_category.get_cuts().get("os").invert().name = "ss"
 		ss_category.name = "ss"
 
-		root_objects = []
-		self.data_estimation = Data("data", folder="jecUncNom_tauEsNom")
-		custom_nom = Nominal(direction=systematic.syst_var.direction)
-		custom_nom.name = systematic.syst_var.name
-		self.data = Systematic(category=ss_category, process="data", channel="mt", analysis = "example", era="2017", mass=None, syst_var=custom_nom, estimation_method = self.data_estimation)
-		root_objects += self.data_estimation.get_root_objects(self.data)
+		self.root_objects = []
+		self.systematics = []
+		for process in [self.data_process] + self.bg_processes:
+			self.systematics.append( Systematic(category=ss_category, process=process, channel=systematic.get_channel(), analysis =systematic.get_analysis(), era=self.era, syst_var=systematic.get_syst_var()))
+			self.root_objects += self.systematics[-1].get_root_objects()
 
-		self.ztt_estimation = Ztt()
-		self.ztt  = Systematic(category=ss_category, process="ztt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.ztt_estimation)
-		root_objects += self.ztt_estimation.get_root_objects(self.ztt)
+		return self
 
-		self.zll_estimation = Zll()
-		self.zll  = Systematic(category=ss_category, process="zll",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.zll_estimation)
-		root_objects += self.zll_estimation.get_root_objects(self.zll)
+	def do_estimation(self, systematic, root_objects_holder):
+		self.shape = copy.deepcopy(self.systematics[0].do_estimation(root_objects_holder).get_shape())
+		for i in range(1, len(self.systematics)):
+			self.shape.get_result().Add(self.systematics[i].do_estimation(root_objects_holder).get_shape().get_result(), -1.0)
 
-		self.tt_estimation = TT()
-		self.tt  = Systematic(category=ss_category, process="tt",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.tt_estimation)
-		root_objects += self.tt_estimation.get_root_objects(self.tt)
+		self.shape.set_name(systematic.get_name())
+		self.shape.save(root_objects_holder)
+		return self.shape
 
-		self.vv_estimation = VV()
-		self.vv  = Systematic(category=ss_category, process="vv",  channel="mt", analysis = "example", era="2017", mass=None, syst_var=systematic.syst_var, estimation_method = self.vv_estimation)
-		root_objects += self.vv_estimation.get_root_objects(self.vv)
-
-		self.data_hist = root_objects[0]
-		self.mc_hist = root_objects[1:]
-		return root_objects
-
-
-	def do_estimation(self, systematic, root_objects):
-		result_histo = self.data_hist
-		for h in self.mc_hist:
-			result_histo.result.Add(h.result, -1.0)
-		result_histo.set_name(systematic.get_name())
-		result_histo.save(root_objects.output_tree)
-
-
-	@staticmethod
-	def get_files():
-		return ["/home/friese/artus/2017-01-02_longRun/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8/WJetsToLNu_RunIISpring16MiniAODv2_PUSpring16_13TeV_MINIAOD_madgraph-pythia8.root"]
+	def get_files(self):
+		raise NotImplementedError
 
 	def get_weights():
-		return Weights(Weight("1.0", "constant"))
+		raise NotImplementedError

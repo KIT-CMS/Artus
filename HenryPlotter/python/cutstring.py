@@ -22,8 +22,8 @@ class Weight(object):
 		self.weightstring = weightstring
 		self.name = name
 		if name == False:
-			print "No appropriate name has been assigned to weight with value " + str(weightstring) + ". Please use an explicit name for this weight string. \n Aborting."
-			sys.exit(1)
+			logger.fatal( "No appropriate name has been assigned to weight with value %s. Please use an explicit name for this weight string. \n Aborting.", str(weightstring))
+			raise ValueError
 		logger.debug("Created %s object with name \"%s\" and weightstring \"%s\"", self, self.get_name(), self.extract())
 			
 
@@ -50,8 +50,8 @@ class Constant(Weight):
 			self.name = weightstring if name==False else name
 
 		if name == False:
-			print "No appropriate name has been assigned to weight with value " + str(weightstring) + ". Please use an explicit name for this weight string. \n Aborting."
-			sys.exit(1)
+			logger.fatal( "No appropriate name has been assigned to weight with value %s. Please use an explicit name for this weight string. \n Aborting.", str(weightstring))
+			raise ValueError
 		logger.debug("Created %s object with name \"%s\" and string \"%s\"", self, self.get_name(), self.extract())
 
 	def invert(self):
@@ -97,7 +97,9 @@ class Weights(object):
 		for w in self.weightstrings:
 			if w.get_name() == name:
 				return w
-		return False
+		logger.fatal("The name \"%s\" is not part of this Weichts object.", name)
+		logger.fatal("Avilable names are: %s", [w.get_name() for w in self.weightstrings])
+		raise KeyError
 
 	def remove(self, name):
 		if name in self.get_names():
@@ -223,7 +225,9 @@ class Cuts(object):
 		for w in self.cutstrings:
 			if w.get_name() == name:
 				return w
-		return False
+		logger.fatal("The name \"%s\" is not part of this Cuts object", name)
+		logger.fatal("Avilable names are: %s", [w.get_name() for w in self.cutstrings])
+		raise KeyError
 
 	def remove(self, name):
 		if name in self.get_names():

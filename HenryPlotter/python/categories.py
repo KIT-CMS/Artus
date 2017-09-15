@@ -14,8 +14,9 @@ logger = logging.getLogger(__name__)
 # TODO: helper functions to compare the overlap of two categories
 class Category(object):
 
-	def __init__(self, name, cuts, variable, nbins=None, xlow=None, xhigh=None):
-		self.cuts = cuts
+	def __init__(self, name, channel, cuts, variable, nbins=None, xlow=None, xhigh=None):
+		self.channel = channel
+		self.cuts = cuts + channel.get_cuts()
 		self.name = name
 		self.variable = variable
 		self.nbins = nbins
