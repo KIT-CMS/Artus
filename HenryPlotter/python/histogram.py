@@ -58,32 +58,29 @@ class TTree_content(object):
 		m.update(self.cuts.expand()) # todo
 		m.update(self.weights.extract())
 		m.update(self.folder)
-		m.update(self.variable)
+		m.update(self.variable.get_name())
 		return int(m.hexdigest(), 16)
 
 	def get_result(self):
 		if not self.present():
-			logger.fatal("The result object of %s hase not yet been produced. Call the create_result() method before calling get_result()", self)
+			logger.fatal("The result object of %s has not yet been produced. Call the create_result() method before calling get_result()", self)
 			raise RuntimeError
 		return self.result
 
 class Histogram(TTree_content):
 
-	def __init__(self, name, inputfiles, folder, cuts, weights, variable, nbins, xlow, xhigh): # empty histogram
-		self.nbins = nbins
-		self.xlow = xlow
-		self.xhigh = xhigh
+	def __init__(self, name, inputfiles, folder, cuts, weights, variable): # empty histogram
 		self.variable = variable
 		super(Histogram, self).__init__(name, inputfiles, folder, cuts, weights)
 
 	def create_result(self, dataframe=False):
 		if dataframe:
-			self.result = dataframe.Histo1D(self.variable, self.weight_name)
+			self.result = dataframe.Histo1D(self.variable.get_name(), self.weight_name)
 		else: # classic way
 			tree = ROOT.TChain()
 			for inputfile in self.inputfiles:
 				tree.Add(inputfile + "/" + self.folder)
-			tree.Draw(self.variable + ">>" + self.name + "(" + ",".join([str(self.nbins), str(self.xlow), str(self.xhigh)]) + ")",
+			tree.Draw(self.variable.get_name() + ">>" + self.name + self.variable.get_binning().extract(),
 			          self.cuts.expand() + "*" + self.weights.extract(),
 			          "goff")
 			self.result = ROOT.gDirectory.Get(self.name)
@@ -95,9 +92,9 @@ class Histogram(TTree_content):
 			self.result.SetName(self.name)
 
 	def log(self):
-			logger.info("Creating histogram %s with name %s", self, self.get_name())
+			logger.info("Creating histogram %s with name %s on variable %s", self, self.get_name(), self.variable.get_name())
 			logger.debug("\tInput ROOT files: %s", self.inputfiles)
-			logger.debug("\tBinning: (%s, %s, %s)", self.nbins, self.xlow, self.xhigh)
+			logger.debug("\tBinning: %s", self.variable.get_binning().extract())
 			logger.debug("\tCuts: %s", self.cuts.expand())
 			logger.debug("\tWeights: %s", self.weights.extract())
 #			if self.present():
@@ -147,12 +144,8 @@ class Count(TTree_content):
 
 # automatic determination of the type
 def create_root_object(**kwargs):
-	keys = ["variable", "nbins", "xlow", "xhigh"]
-	if all(item in  kwargs.keys() for item in keys):
+	if "variable" in kwargs.keys():
 		return Histogram(**kwargs)
-	elif any(item in  kwargs.keys() for item in keys):
-		logger.fatal("Invalid configuration found")
-		raise Exception
 	else:
 		return Count(**kwargs)
 

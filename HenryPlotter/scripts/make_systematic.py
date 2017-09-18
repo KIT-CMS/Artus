@@ -9,6 +9,8 @@ import ROOT
 from Artus.HenryPlotter.cutstring import Cut, Cuts
 from Artus.HenryPlotter.systematics import Systematics, Systematic
 from Artus.HenryPlotter.categories import Category
+from Artus.HenryPlotter.binning import Variable_Binning, Constant_Binning
+from Artus.HenryPlotter.variable import Variable
 
 # Estimation methods, import only what is really necessary
 from Artus.HenryPlotter.estimation_methods import Ztt_estimation, Zll_estimation, Data_estimation, TT_estimation, VV_estimation, WJ_estimation, QCD_estimation
@@ -26,6 +28,10 @@ handler = logging.StreamHandler()
 formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+file_handler = logging.FileHandler("make_systematic.log")
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 
 directory = "/storage/b/rcaspart/htautau/2017-06-21_eleScale/"
@@ -53,16 +59,20 @@ nominal = Nominal()
 
 tauEsThreeProng_shifts = create_syst_variations("tauEsThreeProng", Different_pipeline)
 
+zPt_shifts = create_syst_variations("zPtReweightWeight", Reapply_remove_weight)
+
+pt_1 = Variable("pt_1", Constant_Binning(50,0,100))
+
 #definition of categories
 nobtag_tight_mt = Category( "nobtag_tight", MT(), Cuts(
 	Cut("nbtag==0", "nobtag"),
 	Cut("mt_1<40","mt")),
-	variable="pt_1", nbins=50, xlow=0, xhigh=100)
+	variable=pt_1)
 
 nobtag_tight_et = Category( "nobtag_tight", ET(), Cuts(
 	Cut("nbtag==0", "nobtag"),
 	Cut("mt_1<40","mt")),
-	variable="pt_1", nbins=50, xlow=0, xhigh=100)
+	variable=pt_1)
 
 
 #systematics object, to be filled
@@ -74,7 +84,8 @@ for process in [ztt_mt, zll_mt, tt_mt, vv_mt, wj_mt, data_mt, qcd_mt]:
 for process in [ztt_et, zll_et, tt_et, vv_et, wj_et, data_et, qcd_et]:
 	systematics.add( Systematic(category=nobtag_tight_et, process=process, analysis = "example", era=era, syst_var=nominal))
 
-systematics.add_syst_var(syst_vars = tauEsThreeProng_shifts, process=["ZTT"]) 
+systematics.add_syst_var(syst_vars = tauEsThreeProng_shifts, process=["ZTT"], channel=["mt"], era=["Run2016BCDEFGH"]) 
+systematics.add_syst_var(syst_vars = zPt_shifts, process=["ZTT", "ZLL"], channel=["mt", "et"], era=["Run2016BCDEFGH"]) 
 
 systematics.produce()
 systematics.summary()

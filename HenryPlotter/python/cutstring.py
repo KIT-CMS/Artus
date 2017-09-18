@@ -104,9 +104,10 @@ class Weights(object):
 	def remove(self, name):
 		if name in self.get_names():
 			self.weightstrings = [w for w in self.weightstrings if not w.get_name() == name]
-			return True
 		else:
-			return False
+			logger.fatal("Error while trying to remove weightstring with key \"%s\"", name)
+			raise KeyError
+		return self
 
 	def square(self, name):
 		new = self.get(name)

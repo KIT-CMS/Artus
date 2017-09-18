@@ -68,21 +68,14 @@ class Different_pipeline(Systematic_variation):
 class Reapply_remove_weight(Systematic_variation):
 
 	def __init__(self, name, weight_name, direction):
-		super(Reapply_remove_weight, self).__init__(name)
+		super(Reapply_remove_weight, self).__init__(name, direction)
 		self.weight_name = weight_name
 
-	def shifted_root_objects(self, h_settings, direction):
-		if direction == "Up":
-			up = copy.deepcopy(h_settings)
-			up["weights"]().square(self.weight_name)
-#			up = self.change_histogram_name(up, "Up")
-			return up
-		elif direction == "Down":
-			down = copy.deepcopy(h_settings)
-			down["weights"]().remove(self.weight_name)
-#			down = self.change_histogram_name(down, "Down")
-			return down
-		else:
-			# error
-			assert(False)
+	def shifted_root_objects(self, h_settings):
+		for index in range(len(h_settings)):
+			if self.direction == "Up":
+				h_settings[index]["weights"] = h_settings[index]["weights"]().square(self.name)
+			elif self.direction == "Down":
+				h_settings[index]["weights"] = h_settings[index]["weights"]().remove(self.name)
+			return h_settings
 

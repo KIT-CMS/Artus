@@ -13,6 +13,7 @@ class Systematic(object):
 	
 	def __init__(self, category, process, analysis, era, syst_var, mass=None):
 		self.category = category
+		self.channel = self.category.get_channel()
 		self.process = process
 		self.analysis = analysis
 		self.era = era
@@ -50,9 +51,13 @@ class Systematic(object):
 		return self.shape
 
 	def get_name(self):
-		name = "_".join([self.process.get_name(), self.category.get_name(), self.analysis, self.era.get_name()])
-		if self.syst_var!=None:
-			name += "_" + self.syst_var.get_name()
+		name = "_".join([
+			self.process.get_name(),
+			self.category.get_name(),
+			self.analysis,
+			self.era.get_name(),
+			self.category.get_variable_name(),
+			self.syst_var.get_name()])
 		return name
 
 	def summary(self):
@@ -104,6 +109,7 @@ class Systematics(object):
 		for line in table:
 			logger.info( "|".join([a.ljust(20)[0:20] for a in line]))
 
+	# function to add systematic variations 
 	def add_syst_var(self, syst_vars, **kwargs) :
 		for i in range(len(self.systematics)):
 			Found = True
@@ -111,11 +117,18 @@ class Systematics(object):
 				if hasattr(self.systematics[i], key):
 					if not getattr(self.systematics[i], key).get_name() in value:
 						Found = False
+						break
+				elif hasattr(self.systematics[i], "get_"+key):
+					if not getattr(self.systematics[i], "get_"+key)().get_name() in value:
+						Found = False
+						break
+				else:
+					logger.fatal("Key \"%s\" not found and no member function get_%s().get_name() available", key, key)
+					raise KeyError
 			if Found:
 				for syst_var in syst_vars:
 					new_systematic = copy.deepcopy(self.systematics[i])
 					new_systematic.set_syst_var(syst_var)
 					self.systematics.append(new_systematic)
-		
 
 		

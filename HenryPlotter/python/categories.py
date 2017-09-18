@@ -14,14 +14,11 @@ logger = logging.getLogger(__name__)
 # TODO: helper functions to compare the overlap of two categories
 class Category(object):
 
-	def __init__(self, name, channel, cuts, variable, nbins=None, xlow=None, xhigh=None):
+	def __init__(self, name, channel, cuts, variable):
 		self.channel = channel
 		self.cuts = cuts + channel.get_cuts()
 		self.name = name
 		self.variable = variable
-		self.nbins = nbins
-		self.xlow = xlow
-		self.xhigh = xhigh
 		logger.debug("Created category \"%s\" with selection %s", self.get_name(), self.cuts.expand())
 
 	def get_cuts(self):
@@ -33,14 +30,11 @@ class Category(object):
 	def get_channel_name(self):
 		return self.channel.get_name()
 
+	def get_variable_name(self):
+		return self.variable.get_name()
+
 	def get_variable(self):
 		return self.variable
 
-	def get_nbins(self):
-		return self.nbins
-
-	def get_xlow(self):
-		return self.xlow
-
-	def get_xhigh(self):
-		return self.xhigh
+	def get_channel(self):
+		return self.channel

@@ -61,8 +61,7 @@ class Estimation_method(object):
 						"folder" : [self.get_folder, systematic, self.folder],
 						"cuts" : systematic.get_category().get_cuts() + self.get_cuts(),
 						"weights" : self.get_weights,
-       	        		"variable" : systematic.category.get_variable,
-						"nbins" : systematic.category.get_nbins, "xlow" : systematic.category.get_xlow, "xhigh" : systematic.category.get_xhigh})
+       	        		"variable" : systematic.category.get_variable})
 		return histogram_settings
 
 	def create_root_objects(self, systematic):
