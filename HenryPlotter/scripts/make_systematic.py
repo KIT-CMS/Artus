@@ -12,7 +12,7 @@ from Artus.HenryPlotter.categories import Category
 
 # Estimation methods, import only what is really necessary
 from Artus.HenryPlotter.estimation_methods import Ztt_estimation, Zll_estimation, Data_estimation, TT_estimation, VV_estimation, WJ_estimation, QCD_estimation
-from Artus.HenryPlotter.systematic_variations import Nominal, Different_pipeline, Reapply_remove_weight
+from Artus.HenryPlotter.systematic_variations import Nominal, Different_pipeline, Reapply_remove_weight, create_syst_variations
 from Artus.HenryPlotter.era import Run2016BCDEFGH
 from Artus.HenryPlotter.process import Process
 from Artus.HenryPlotter.channel import MT, ET
@@ -51,8 +51,7 @@ qcd_mt = Process("QCD", QCD_estimation(era, directory, mt, [ztt_mt, zll_mt, tt_m
 # systematic variations. Start with "nominal" for the central values without any variation
 nominal = Nominal()
 
-jec_downshift = Different_pipeline("jec", "jecUncDown_tauEsNom", "Down")
-jec_upshift = Different_pipeline("jec", "jecUncUp_tauEsNom", "Up")
+tauEsThreeProng_shifts = create_syst_variations("tauEsThreeProng", Different_pipeline)
 
 #definition of categories
 nobtag_tight_mt = Category( "nobtag_tight", MT(), Cuts(
@@ -74,6 +73,8 @@ for process in [ztt_mt, zll_mt, tt_mt, vv_mt, wj_mt, data_mt, qcd_mt]:
 
 for process in [ztt_et, zll_et, tt_et, vv_et, wj_et, data_et, qcd_et]:
 	systematics.add( Systematic(category=nobtag_tight_et, process=process, analysis = "example", era=era, syst_var=nominal))
+
+systematics.add_syst_var(syst_vars = tauEsThreeProng_shifts, process=["ZTT"]) 
 
 systematics.produce()
 systematics.summary()

@@ -10,6 +10,13 @@ import copy
 import logging
 logger = logging.getLogger(__name__)
 
+# this helper function can be used in case the systematic variation's name ends with "Down" and "Up"
+def create_syst_variations(name, syst_variation):
+	results = []
+	results.append(syst_variation(name, name + "Down", "Down"))
+	results.append(syst_variation(name, name + "Up", "Up"))
+	return results
+
 # class performing the systematic variation
 class Systematic_variation(object):
 

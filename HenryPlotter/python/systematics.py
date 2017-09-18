@@ -29,6 +29,10 @@ class Systematic(object):
 	def get_syst_var(self):
 		return self.syst_var
 
+	def set_syst_var(self, new_syst_var):
+		self.syst_var = new_syst_var
+		return self
+
 	def set_category(self, new_category):
 		self.category = new_category
 		return self
@@ -99,5 +103,19 @@ class Systematics(object):
 			table.append(systematic.summary())
 		for line in table:
 			logger.info( "|".join([a.ljust(20)[0:20] for a in line]))
+
+	def add_syst_var(self, syst_vars, **kwargs) :
+		for i in range(len(self.systematics)):
+			Found = True
+			for key, value in kwargs.iteritems():
+				if hasattr(self.systematics[i], key):
+					if not getattr(self.systematics[i], key).get_name() in value:
+						Found = False
+			if Found:
+				for syst_var in syst_vars:
+					new_systematic = copy.deepcopy(self.systematics[i])
+					new_systematic.set_syst_var(syst_var)
+					self.systematics.append(new_systematic)
+		
 
 		
