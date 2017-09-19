@@ -1,8 +1,5 @@
-
-
 # -*- coding: utf-8 -*-
-import ROOT
-from Artus.HenryPlotter.cutstring import *
+from Artus.HenryPlotter.cutstring import Cuts, Cut
 import logging
 logger = logging.getLogger(__name__)
 
@@ -12,11 +9,6 @@ logger = logging.getLogger(__name__)
 class Channel(object):
 	def get_name(self):
 		return self.name
-
-class EM(Channel):
-	def __init__(self):
-		self.name = "em"
-
 
 class MT(Channel):
 	def __init__(self):

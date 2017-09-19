@@ -1,12 +1,7 @@
-
-
 # -*- coding: utf-8 -*-
-import ROOT
 
 """
 """
-
-import copy
 import logging
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,5 @@
 
 # -*- coding: utf-8 -*-
-import ROOT
-from Artus.HenryPlotter.histogram import *
-from Artus.HenryPlotter.cutstring import *
-
 import logging
 logger = logging.getLogger(__name__)
 

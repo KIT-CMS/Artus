@@ -72,9 +72,10 @@ class Systematic(object):
 # holder class for systematics
 class Systematics(object):
 	
-	def __init__(self):
+	def __init__(self, mode=1):
 		# member holding the systematics
 		self.systematics = []
+		self.mode = mode
 
 	def add(self, systematic):
 		self.systematics.append(systematic)
@@ -96,7 +97,12 @@ class Systematics(object):
 		for systematic in self.systematics:
 			self.root_objects_holder.add(systematic.get_root_objects())
 		self.root_objects_holder.remove_duplicates()
-		self.root_objects_holder.produce_classic(processes=10)
+		if self.mode == "tdf": # experimental - do not use yet
+			logger.fatal("TDFs are not yet validated - do not use yet")
+			raise NotImplementedError
+			self.root_objects_holder.produce_tdf()
+		else: # run classic way with mode being the number of cores to run on
+			self.root_objects_holder.produce_classic(processes=self.mode)
 		
 
 	# TODO function to sort the estimation modules depending on what has to be previously ran
