@@ -83,6 +83,10 @@ class Estimation_method(object):
 
 	def get_root_objects(self):
 		return self.root_objects
+
+	def set_root_objects(self, root_object_holder):
+		for index in range(len(self.root_objects)):
+			self.root_objects[index] = root_object_holder.get(self.root_objects[index].get_name())
 		
 
 	# doing nothing, shape is exactly the histogram as default
@@ -340,18 +344,22 @@ class QCD_estimation(Estimation_method):
 		for process in [self.data_process] + self.bg_processes:
 			self.systematics.append( Systematic(category=ss_category, process=process, analysis =systematic.get_analysis(), era=self.era, syst_var=systematic.get_syst_var()))
 			self.root_objects += self.systematics[-1].get_root_objects()
-
+		logger.debug("root objects from %s: %s", self.get_name(), self.root_objects)
 		return self
 
 	def do_estimation(self, systematic, root_objects_holder):
-		self.shape = copy.deepcopy(self.systematics[0].do_estimation(root_objects_holder).get_shape())
+		self.systematics[0].do_estimation(root_objects_holder)
+		self.shape = self.systematics[0].get_shape()
 		for i in range(1, len(self.systematics)):
-			self.shape.get_result().Add(self.systematics[i].do_estimation(root_objects_holder).get_shape().get_result(), -1.0)
+			self.systematics[i].do_estimation(root_objects_holder)
+		for i in range(1, len(self.systematics)):
+			self.shape.get_result().Add(self.systematics[i].get_shape().get_result(), -1.0)
 
 		self.shape.set_name(systematic.get_name())
 		self.shape.save(root_objects_holder)
 		return self.shape
 
+	# data-driven estimation, no associated files and weights
 	def get_files(self):
 		raise NotImplementedError
 

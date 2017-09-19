@@ -63,7 +63,7 @@ class TTree_content(object):
 
 	def get_result(self):
 		if not self.present():
-			logger.fatal("The result object of %s has not yet been produced. Call the create_result() method before calling get_result()", self)
+			logger.fatal("The result object of %s called \"%s\" has not yet been produced. Call the create_result() method before calling get_result()", self, self.get_name())
 			raise RuntimeError
 		return self.result
 
@@ -97,10 +97,7 @@ class Histogram(TTree_content):
 			logger.debug("\tBinning: %s", self.variable.get_binning().extract())
 			logger.debug("\tCuts: %s", self.cuts.expand())
 			logger.debug("\tWeights: %s", self.weights.extract())
-#			if self.present():
-#				logger.debug("\tNot yet produced")
-#			else:
-			logger.debug("\tResult: %s", self.get_result())
+	#		logger.debug("\tResult: %s", self.get_result())
 
 	def save(self, output_tree):
 		self.result.Write()
@@ -163,8 +160,15 @@ class Root_objects(object):
 			return False
 		else:
 			if isinstance(root_object, list):
+				for r in root_object:
+					if r.get_name() in [ro.get_name() for ro in self.root_objects]:
+						logger.fatal("Unable to add root object with name \"%s\" because another one with the same name is already contained")
+						raise KeyError
 				self.root_objects += root_object
 			else:
+				if root_objects.get_name() in [ro.get_name() for ro in self.root_objects]:
+						logger.fatal("Unable to add root object with name \"%s\" because another one with the same name is already contained")
+						raise KeyError
 				self.root_objects.append(root_object)
 
 	def new_histogram(self, **kwargs):
@@ -181,6 +185,14 @@ class Root_objects(object):
 				if not o.files_folders() in files_folders:
 					files_folders.append(o.files_folders())
 		return files_folders
+
+	#getter function depending on the histogram name
+	def get(self, name):
+		logger.debug("searching for %s in %s", name, [a.get_name() for a in self.root_objects])
+		for index in range(len(self.root_objects)):
+			if self.root_objects[index].get_name() == name:
+				logger.debug("pos: %s, %s", index, self.root_objects[index])
+				return self.root_objects[index]
 
 	def create_output_file(self):
 		self.output_file = ROOT.TFile(self.output_file_name, "new")
@@ -219,7 +231,9 @@ class Root_objects(object):
 		else:
 			from pathos.multiprocessing import ProcessingPool as Pool
 			pool = Pool(processes=processes)
-			self.root_objects = pool.map(self.create_result, range(len(self.root_objects)))
+			self.root_objects =  pool.map(self.create_result, range(len(self.root_objects)))
+			logger.debug("map result: %s",  [a for a in self.root_objects])
+			
 			
 		for h in self.root_objects: # write sequentially to prevent race conditions
 			h.save(self.output_tree)
@@ -227,7 +241,10 @@ class Root_objects(object):
 		return self
 
 	def create_result(self, index):
-		return self.root_objects[index].create_result()
+		logger.debug("creating results for %s with index %s", self.root_objects[index].get_name(), index)
+		a = self.root_objects[index].create_result()
+		logger.debug("result from %s:  are %s", self.root_objects[index].get_name(), a.get_result())
+		return a
 
 	def save(self):
 		if not self.produced:
