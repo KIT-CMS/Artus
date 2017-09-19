@@ -61,7 +61,7 @@ tauEsThreeProng_shifts = create_syst_variations("tauEsThreeProng", Different_pip
 
 zPt_shifts = create_syst_variations("zPtReweightWeight", Reapply_remove_weight)
 
-pt_1 = Variable("pt_1", Constant_Binning(50,0,100))
+pt_1 = Variable("pt_1", Constant_Binning(40,20,100))
 
 #definition of categories
 nobtag_tight_mt = Category( "nobtag_tight", MT(), Cuts(

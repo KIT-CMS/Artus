@@ -1,0 +1,106 @@
+{
+    "analysis_modules": [
+        "NormalizeByBinWidth", 
+        "Ratio"
+    ], 
+    "colors": [
+        "ztt", 
+        "zll", 
+        "wj", 
+        "tt", 
+        "qcd", 
+        "vv", 
+        "data", 
+        "data"
+    ], 
+    "energies": [
+        13.0
+    ], 
+    "filename": "mt_pt_1", 
+    "files": [
+        "outputfile.root"
+    ], 
+    "labels": [
+        "ztt", 
+        "zll", 
+        "wj", 
+        "tt", 
+        "qcd", 
+        "vv", 
+        "data", 
+        ""
+    ], 
+    "legend": [
+        0.7, 
+        0.4, 
+        0.95, 
+        0.83
+    ], 
+    "legend_markers": [
+        "F", 
+        "F", 
+        "F", 
+        "F", 
+        "F", 
+        "F", 
+        "ELP", 
+        "F"
+    ], 
+    "lumis": [
+        35.9
+    ], 
+    "markers": [
+        "HIST", 
+        "HIST", 
+        "HIST", 
+        "HIST", 
+        "HIST", 
+        "HIST", 
+        "E", 
+        "E"
+    ], 
+    "nicks": [
+        "ztt", 
+        "zll", 
+        "wj", 
+        "tt", 
+        "qcd", 
+        "vv", 
+        "data"
+    ], 
+    "ratio_denominator_nicks": [
+        "ztt zll wj tt qcd vv"
+    ], 
+    "ratio_numerator_nicks": [
+        "data"
+    ], 
+    "stacks": [
+        "mc", 
+        "mc", 
+        "mc", 
+        "mc", 
+        "mc", 
+        "mc", 
+        "data", 
+        "ratio"
+    ], 
+    "subplot_grid": "True", 
+    "title": "channel_mt", 
+    "x_expressions": [
+        "ZTT_mt_nobtag_tight_example_Run2016BCDEFGH_pt_1_Nominal", 
+        "ZLL_mt_nobtag_tight_example_Run2016BCDEFGH_pt_1_Nominal", 
+        "WJ_mt_nobtag_tight_example_Run2016BCDEFGH_pt_1_Nominal", 
+        "TT_mt_nobtag_tight_example_Run2016BCDEFGH_pt_1_Nominal", 
+        "QCD_mt_nobtag_tight_example_Run2016BCDEFGH_pt_1_Nominal", 
+        "VV_mt_nobtag_tight_example_Run2016BCDEFGH_pt_1_Nominal", 
+        "data_mt_nobtag_tight_example_Run2016BCDEFGH_pt_1_Nominal"
+    ], 
+    "x_label": "mt_pt_1", 
+    "y_label": "dN / dm_{#tau #tau}  (1 / GeV)", 
+    "y_subplot_label": "Obs./Exp.", 
+    "y_subplot_lims": [
+        0.0, 
+        2.0
+    ], 
+    "year": "2016"
+}
