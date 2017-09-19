@@ -162,12 +162,13 @@ class Root_objects(object):
 			if isinstance(root_object, list):
 				for r in root_object:
 					if r.get_name() in [ro.get_name() for ro in self.root_objects]:
-						logger.fatal("Unable to add root object with name \"%s\" because another one with the same name is already contained")
+						logger.fatal("Unable to add root object with name \"%s\" because another one with the same name is already contained", r.get_name())
+						logger.fatal("Already present: %s", [ro.get_name() for ro in self.root_objects])
 						raise KeyError
 				self.root_objects += root_object
 			else:
-				if root_objects.get_name() in [ro.get_name() for ro in self.root_objects]:
-						logger.fatal("Unable to add root object with name \"%s\" because another one with the same name is already contained")
+				if root_object.get_name() in [ro.get_name() for ro in self.root_objects]:
+						logger.fatal("Unable to add root object with name \"%s\" because another one with the same name is already contained", root_object.get_name())
 						raise KeyError
 				self.root_objects.append(root_object)
 

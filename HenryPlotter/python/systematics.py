@@ -96,7 +96,7 @@ class Systematics(object):
 		for systematic in self.systematics:
 			self.root_objects_holder.add(systematic.get_root_objects())
 		self.root_objects_holder.remove_duplicates()
-		self.root_objects_holder.produce_classic(processes=3)
+		self.root_objects_holder.produce_classic(processes=10)
 		
 
 	# TODO function to sort the estimation modules depending on what has to be previously ran
@@ -119,6 +119,9 @@ class Systematics(object):
 	def add_syst_var(self, syst_vars, **kwargs) :
 		for i in range(len(self.systematics)):
 			Found = True
+			# consider only Nominal values
+			if not self.systematics[i].get_syst_var().is_nominal():
+				continue
 			for key, value in kwargs.iteritems():
 				if hasattr(self.systematics[i], key):
 					if not getattr(self.systematics[i], key).get_name() in value:
@@ -136,5 +139,3 @@ class Systematics(object):
 					new_systematic = copy.deepcopy(self.systematics[i])
 					new_systematic.set_syst_var(syst_var)
 					self.systematics.append(new_systematic)
-
-		

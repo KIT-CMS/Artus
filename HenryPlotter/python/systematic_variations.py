@@ -37,6 +37,9 @@ class Systematic_variation(object):
 	def shifted_root_objects(self, h_settings):
 		return h_settings # do nothing
 
+	def is_nominal(self):
+		return False
+
 class Nominal(Systematic_variation):
 
 	def __init__(self, direction=None):
@@ -54,6 +57,9 @@ class Nominal(Systematic_variation):
 
 	def shifted_root_objects(self, h_settings):
 		return h_settings # do nothing
+
+	def is_nominal(self):
+		return True
 
 class Different_pipeline(Systematic_variation):
 	def __init__(self, name, pipeline, direction):
