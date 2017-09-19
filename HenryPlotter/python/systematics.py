@@ -95,12 +95,8 @@ class Systematics(object):
 		self.root_objects_holder = Root_objects("outputfile.root")
 		for systematic in self.systematics:
 			self.root_objects_holder.add(systematic.get_root_objects())
-		logger.debug("root objects before: %s", self.root_objects_holder.root_objects)
 		self.root_objects_holder.remove_duplicates()
 		self.root_objects_holder.produce_classic(processes=3)
-		# multiprocessing returns copies of the histograms. This function puts them back to the estimation methods
-		# works based on the histogram names, which hav to be unique
-		logger.debug("root objects after: %s", self.root_objects_holder.root_objects)
 		
 
 	# TODO function to sort the estimation modules depending on what has to be previously ran

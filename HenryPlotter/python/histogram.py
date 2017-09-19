@@ -191,7 +191,6 @@ class Root_objects(object):
 		logger.debug("searching for %s in %s", name, [a.get_name() for a in self.root_objects])
 		for index in range(len(self.root_objects)):
 			if self.root_objects[index].get_name() == name:
-				logger.debug("pos: %s, %s", index, self.root_objects[index])
 				return self.root_objects[index]
 
 	def create_output_file(self):
@@ -232,7 +231,6 @@ class Root_objects(object):
 			from pathos.multiprocessing import ProcessingPool as Pool
 			pool = Pool(processes=processes)
 			self.root_objects =  pool.map(self.create_result, range(len(self.root_objects)))
-			logger.debug("map result: %s",  [a for a in self.root_objects])
 			
 			
 		for h in self.root_objects: # write sequentially to prevent race conditions
@@ -241,10 +239,7 @@ class Root_objects(object):
 		return self
 
 	def create_result(self, index):
-		logger.debug("creating results for %s with index %s", self.root_objects[index].get_name(), index)
-		a = self.root_objects[index].create_result()
-		logger.debug("result from %s:  are %s", self.root_objects[index].get_name(), a.get_result())
-		return a
+		return self.root_objects[index].create_result()
 
 	def save(self):
 		if not self.produced:
