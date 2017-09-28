@@ -15,6 +15,7 @@
 	],
 	"InputIsData": "false",
 	"LumiMetadata": "lumiInfo",
+	"RunMetadata": "runInfo",
 	"OutputPath": "output.root",
 	"Pipelines": {
 		"hlt_info": {

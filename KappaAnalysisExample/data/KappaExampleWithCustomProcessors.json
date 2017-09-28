@@ -7,6 +7,7 @@
 	"comment1" : "Read in event/lumi metadata and the muon collection",
 	"EventMetadata" : "eventInfo",
 	"LumiMetadata" : "lumiInfo",
+	"RunMetadata" : "runInfo",
 	"Muons" : "muons",
 	
 	"OutputPath" : "output.root",

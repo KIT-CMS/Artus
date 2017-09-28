@@ -128,7 +128,7 @@ public:
 				this->m_event.m_eventInfo = this->m_event.m_genEventInfo;
 			}
 		}
-		
+
 		if (! settings.GetLumiMetadata().empty())
 		{
 			if(settings.GetInputIsData())
@@ -139,6 +139,14 @@ public:
 			{
 				this->m_event.m_genLumiInfo = this->template SecureFileInterfaceGetMeta<KGenLumiInfo>(settings.GetLumiMetadata());
 				this->m_event.m_lumiInfo = this->m_event.m_genLumiInfo;
+			}
+		}
+
+		if (! settings.GetRunMetadata().empty())
+		{
+			if (!settings.GetInputIsData())
+			{
+				this->m_event.m_genRunInfo = this->template SecureFileInterfaceGetMeta<KGenRunInfo>(settings.GetRunMetadata());
 			}
 		}
 		if (! settings.GetFilterMetadata().empty())
