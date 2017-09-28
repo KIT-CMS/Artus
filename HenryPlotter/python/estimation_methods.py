@@ -178,7 +178,8 @@ class TT_estimation(Estimation_method):
 	def get_weights(self):
 		return Weights(Weight("topPtReweightWeight", "topPtReweightWeight"),
 		               Weight("eventWeight", "eventWeight"),
-		               Weight("((gen_match_2 == 5)*0.95 + (gen_match_2 != 5))", "hadronic_tau_sf"))
+		               Weight("((gen_match_2 == 5)*0.95 + (gen_match_2 != 5))", "hadronic_tau_sf"),
+                               self.era.get_lumi_weight())
 
 	def get_files(self):
 		query = { "process" : "^TT$",
