@@ -143,7 +143,10 @@ class RootTools(object):
 		for root_file_name in root_file_names:
 			with TFileContextManager(root_file_name, "READ") as root_file:
 				for path_to_histogram in path_to_histograms:
-					tmp_root_histogram = root_file.Get(path_to_histogram)
+                                        for k in root_file.GetListOfKeys():
+                                            if path_to_histogram == k.GetName():
+                                                tmp_root_histogram = root_file.Get(k.GetName())
+                                                break
 					if tmp_root_histogram == None:
 						log.critical("Cannot find histogram \"%s\" in file \"%s\"!" % (path_to_histogram, root_file_name))
 						sys.exit(1)
