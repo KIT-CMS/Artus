@@ -1,8 +1,8 @@
 #!/bin/bash
 
-git clone https://github.com/artus-analysis/Artus.git -n
+git clone https://github.com/KIT-CMS/Artus.git -n
 cd Artus
-git remote add -f Artus https://github.com/artus-analysis/Artus.git
+git remote add -f Artus https://github.com/KIT-CMS/Artus.git
 git config core.sparsecheckout true
 echo "/HarryPlotter/" >> .git/info/sparse-checkout
 echo "/Utility/python/" >> .git/info/sparse-checkout

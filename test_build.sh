@@ -17,12 +17,12 @@ cmsenv
 
 cd src/
 
-git clone https://github.com/KappaAnalysis/Kappa.git
+git clone https://github.com/KIT-CMS/Kappa.git
 # remove when merging into master
 (cd Kappa && git checkout scramonly)
 
 
-git clone https://github.com/KappaAnalysis/KappaTools.git
+git clone https://github.com/KIT-CMS/KappaTools.git
 # remove when merging into master
 (cd KappaTools && git checkout scramonly)
 
