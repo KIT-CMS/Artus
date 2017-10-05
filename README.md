@@ -1,10 +1,10 @@
 Artus	
 =====
-[![Build Status](https://travis-ci.org/artus-analysis/Artus.svg)](https://travis-ci.org/artus-analysis/Artus)
+[![Build Status](https://travis-ci.org/KIT-CMS/Artus.svg)](https://travis-ci.org/KIT-CMS/Artus)
 
-Documentation is found in the [wiki](https://github.com/artus-analysis/Artus/wiki).
+Documentation is found in the [wiki](https://github.com/KIT-CMS/Artus/wiki).
 
-(a dedicated documentation for HarryPlotter can be found [here](https://github.com/artus-analysis/Artus/blob/master/HarryPlotter/README.md "HarryPlotter documentation"))
+(a dedicated documentation for HarryPlotter can be found [here](https://github.com/KIT-CMS/Artus/blob/master/HarryPlotter/README.md "HarryPlotter documentation"))
 
 Example
 -------
