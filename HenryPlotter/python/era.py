@@ -39,3 +39,27 @@ class Run2016BCDEFGH(Era):
 
 	def get_lumi_weight(self):
 		return Constant(str(self.luminosity), "lumi")
+
+class Run2017BCD(Era):
+	def __init__(self):
+		self.name = "Run2017BCD"
+		self.luminosity = 17.83*1000.0
+		self.data_format = "MINIAOD"
+		self.energy = 13
+
+	def data_files(self, channel):
+		if channel.get_name() == "mt":
+			query = {"data" : True, "campaign": "Run2017(B|C|D)", "scenario": "PromptRecov(1|2|3)"}
+			query["process"] = "SingleMuon"
+			files = datasetsHelper.get_nicks_with_query(query)
+		if channel.get_name() == "et":
+			query = {"data" : True, "campaign": "Run2017(B|C|D)"}
+			query["process"] = "SingleElectron"
+			files = datasetsHelper.get_nicks_with_query(query)
+		return files
+
+	def get_name(self):
+		return self.name
+
+	def get_lumi_weight(self):
+		return Constant(str(self.luminosity), "lumi")

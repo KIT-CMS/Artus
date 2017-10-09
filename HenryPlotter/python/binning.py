@@ -29,7 +29,7 @@ class Constant_Binning(Binning):
 	def __init__(self, nbinsx, xlow, xhigh):
 		self.nbinsx = int(nbinsx)
 		self.xlow = float(xlow)
-		self.xhigh = float(xhigh )
+		self.xhigh = float(xhigh)
 
 	def extract(self):
 		return "".join(["(", str(self.nbinsx), ",",  str(self.xlow), ",", str(self.xhigh), ")"])
