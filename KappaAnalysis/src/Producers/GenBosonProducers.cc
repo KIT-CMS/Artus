@@ -63,8 +63,9 @@ void GenBosonFromGenParticlesProducer::FindGenBoson(KappaEvent const& event, Kap
 	for (unsigned int genParticleIndex = startIndex; genParticleIndex < event.m_genParticles->size(); ++genParticleIndex)
 	{
 		KGenParticle* genParticle = &(event.m_genParticles->at(genParticleIndex));
-		if (Utility::Contains(settings.GetBosonPdgIds(), std::abs(genParticle->pdgId)) && Utility::Contains(settings.GetBosonStatuses(), genParticle->status()))
+		if (Utility::Contains(settings.GetBosonPdgIds(), std::abs(genParticle->pdgId)) && Utility::Contains(settings.GetBosonStatuses(), genParticle->status()) && genParticle->isLastCopy())
 		{
+			//if (!genParticle->isLastCopy()) std::cout << genParticle->isLastCopy() << std::endl;
 			product.m_genBosonParticle = genParticle;
 			product.m_genBosonLV = genParticle->p4;
 			product.m_genBosonLVFound = true;
