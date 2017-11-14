@@ -95,20 +95,20 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 			}
 		}
 		int pdgId = std::abs(closest.pdgId);
-		if (pdgId == 11 && closest.p4.Pt() > 8. && closest.isPrompt())
+		if (pdgId == 11 && closest.p4.Pt() > 8. && closest.isPrompt() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
 			return KappaEnumTypes::GenMatchingCode::IS_ELE_PROMPT;
-		else if (pdgId == 13 && closest.p4.Pt() > 8. && closest.isPrompt())
+		else if (pdgId == 13 && closest.p4.Pt() > 8. && closest.isPrompt() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
 			return KappaEnumTypes::GenMatchingCode::IS_MUON_PROMPT;
-		else if (pdgId == 11 && closest.p4.Pt() > 8. && closest.isDirectPromptTauDecayProduct())
+		else if (pdgId == 11 && closest.p4.Pt() > 8. && closest.isDirectPromptTauDecayProduct() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
 			return KappaEnumTypes::GenMatchingCode::IS_ELE_FROM_TAU;
-		else if (pdgId == 13 && closest.p4.Pt() > 8. && closest.isDirectPromptTauDecayProduct())
+		else if (pdgId == 13 && closest.p4.Pt() > 8. && closest.isDirectPromptTauDecayProduct() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
 			return KappaEnumTypes::GenMatchingCode::IS_MUON_FROM_TAU;
 		else
 		{
 			std::vector<RMFLV> genTaus = BuildGenTausUW(event);
 			for(auto genTau : genTaus)
 			{
-				if (ROOT::Math::VectorUtil::DeltaR(lepton->p4, genTau) < 0.2)
+				if (ROOT::Math::VectorUtil::DeltaR(lepton->p4, genTau) < 0.2 && genTau.Pt() > 15.)
 					return KappaEnumTypes::GenMatchingCode::IS_TAU_HAD_DECAY;
 			}
 			return KappaEnumTypes::GenMatchingCode::IS_FAKE;
