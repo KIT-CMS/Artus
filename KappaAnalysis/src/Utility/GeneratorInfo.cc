@@ -84,35 +84,37 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 	{
 		KGenParticle closest = event.m_genParticles->at(0);
 		double closestDR = 999;
+		std::vector<RMFLV> genTaus = BuildGenTausUW(event);
+		
+		//find closest lepton fulfilling the requirements
 		for (typename std::vector<KGenParticle>::iterator genParticle = event.m_genParticles->begin();
 			genParticle != event.m_genParticles->end(); ++genParticle)
 		{
-			double tmpDR = ROOT::Math::VectorUtil::DeltaR(lepton->p4, genParticle->p4);
-			if (tmpDR < closestDR)
-			{
-				closest = *genParticle;
-				closestDR = tmpDR;
+			int pdgId = std::abs(genParticle->pdgId);
+			if (genParticle->p4.Pt() > 8. && (pdgId == 11 || pdgId == 13) && (genParticle->isPrompt() || genParticle->isDirectPromptTauDecayProduct())){
+				double tmpDR = ROOT::Math::VectorUtil::DeltaR(lepton->p4, genParticle->p4);
+				if (tmpDR < closestDR)
+				{
+					closest = *genParticle;
+					closestDR = tmpDR;
+				}
 			}
 		}
-		int pdgId = std::abs(closest.pdgId);
-		if (pdgId == 11 && closest.p4.Pt() > 8. && closest.isPrompt() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
-			return KappaEnumTypes::GenMatchingCode::IS_ELE_PROMPT;
-		else if (pdgId == 13 && closest.p4.Pt() > 8. && closest.isPrompt() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
-			return KappaEnumTypes::GenMatchingCode::IS_MUON_PROMPT;
-		else if (pdgId == 11 && closest.p4.Pt() > 8. && closest.isDirectPromptTauDecayProduct() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
-			return KappaEnumTypes::GenMatchingCode::IS_ELE_FROM_TAU;
-		else if (pdgId == 13 && closest.p4.Pt() > 8. && closest.isDirectPromptTauDecayProduct() && ROOT::Math::VectorUtil::DeltaR(lepton->p4, closest.p4) < 0.2)
-			return KappaEnumTypes::GenMatchingCode::IS_MUON_FROM_TAU;
-		else
+		//check whether there are closer tau jets within a 0.2 cone
+		for(auto genTau : genTaus)
 		{
-			std::vector<RMFLV> genTaus = BuildGenTausUW(event);
-			for(auto genTau : genTaus)
-			{
-				if (ROOT::Math::VectorUtil::DeltaR(lepton->p4, genTau) < 0.2 && genTau.Pt() > 15.)
-					return KappaEnumTypes::GenMatchingCode::IS_TAU_HAD_DECAY;
-			}
-			return KappaEnumTypes::GenMatchingCode::IS_FAKE;
+			double tauDR = ROOT::Math::VectorUtil::DeltaR(lepton->p4, genTau);
+			if (genTau.Pt() > 15. && tauDR < 0.2 && tauDR < closestDR) return KappaEnumTypes::GenMatchingCode::IS_TAU_HAD_DECAY;
 		}
+		//since there are no closer tau jets check whether dR < 0.2 is fulfilled and return lepton type
+		int pdgId = std::abs(closest.pdgId);
+		if (closestDR < 0.2){
+			if (pdgId == 11 && closest.isPrompt()) return KappaEnumTypes::GenMatchingCode::IS_ELE_PROMPT;
+			if (pdgId == 13 && closest.isPrompt()) return KappaEnumTypes::GenMatchingCode::IS_MUON_PROMPT;
+			if (pdgId == 11 && closest.isDirectPromptTauDecayProduct()) return KappaEnumTypes::GenMatchingCode::IS_ELE_FROM_TAU;
+			if (pdgId == 13 && closest.isDirectPromptTauDecayProduct()) return KappaEnumTypes::GenMatchingCode::IS_MUON_FROM_TAU;
+		}
+		return KappaEnumTypes::GenMatchingCode::IS_FAKE;
 	}
 	return KappaEnumTypes::GenMatchingCode::NONE;
 }
