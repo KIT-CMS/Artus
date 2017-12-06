@@ -161,6 +161,7 @@ class ZProducerBase : public KappaProducerBase
 			product.m_zValid = false;
 		}
 	}
+        if(check_first_ll_collection && product.m_zValid == true && settings.GetInvalidateNonZLeptons()) invalidate_non_z_leptons(product);
 	return;
 }
 	private:
@@ -171,7 +172,7 @@ class ZProducerBase : public KappaProducerBase
 		bool check_cross_ll_collection;
 		bool lepton_pair_onZ(KLepton* const lep1, KLepton* const lep2, KappaSettings const& settings) const
 		{
-			if (lep1->charge() + lep2->charge() != 0) return false; // if charge not 0 can't be from Z
+			if ((lep1->charge() * lep2->charge() > 0) == settings.GetRequireOSZBoson()) return false; // if charge not 0 can't be from Z
 			KLV z_test;
 			z_test.p4 = lep1->p4 + lep2->p4;
 			double test_mass_diff = fabs(z_test.p4.M() - settings.GetZMass());
@@ -237,6 +238,21 @@ class ZProducerBase : public KappaProducerBase
 			lm = lm.Unit();
 			return std::acos(z.Dot(lm));
 		}
+                void invalidate_non_z_leptons(KappaProduct& product) const
+                {
+                    //std::cout << std::endl;
+                    //std::cout << "Leading Z Lepton: " << product.m_zLeptons.first << std::endl;
+                    //std::cout << "Trailing Z Lepton: " << product.m_zLeptons.second << std::endl;
+                    for(unsigned int i = 0; i < (product.*m_validLeptonsMember1).size();i++)
+                    {
+                        //std::cout << "Adress of valid Lepton: " << (product.*m_validLeptonsMember1).at(i) << std::endl;
+                        if(product.m_zLeptons.first != (product.*m_validLeptonsMember1).at(i) && product.m_zLeptons.second != (product.*m_validLeptonsMember1).at(i))
+                        {
+                            (product.*m_validLeptonsMember1).erase((product.*m_validLeptonsMember1).begin()+i);
+                            i--;
+                        }
+                    }
+                }
 };
 
 class ZmmProducer : public ZProducerBase<KMuon, KMuon>

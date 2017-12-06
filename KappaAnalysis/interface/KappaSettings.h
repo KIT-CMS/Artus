@@ -373,6 +373,8 @@ public:
 	IMPL_SETTING_DEFAULT(float, deltaRTolleranceForPF, 0.3);
 	IMPL_SETTING_DEFAULT(float, PtTolleranceForPF, 4.);
  	IMPL_SETTING_DEFAULT(bool, MatchPairToPFCandidates, false);
+ 	IMPL_SETTING_DEFAULT(bool, InvalidateNonZLeptons, false);
+ 	IMPL_SETTING_DEFAULT(bool, RequireOSZBoson, true);
 
 	// Needed for RochMuonCorrectionsProducer
 	IMPL_SETTING_DEFAULT(std::string, MuonEnergyCorrection, "none");
