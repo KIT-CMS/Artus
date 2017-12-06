@@ -271,15 +271,17 @@ public:
 		// JetID
 		// https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
 		// https://github.com/cms-sw/cmssw/blob/CMSSW_7_5_X/PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h
-		// jets, all eta
-		validJet = validJet
-				   && (jet->neutralHadronFraction < maxFraction)
-				   && (jet->photonFraction + jet->hfEMFraction < maxFraction)
-				   && (jet->nConstituents > 1)
-				   && (jet->muonFraction < maxMuFraction);
-		if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2010 || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2014)  // CMSSW <7.3.X
-			validJet = validJet && (jet->neutralHadronFraction + jet->hfHadronFraction < maxFraction);
-
+		// jets, |eta| < 2.7
+		if (std::abs(jet->p4.eta()) <= 2.7f)
+                {
+                    validJet = validJet
+                                       && (jet->neutralHadronFraction < maxFraction)
+                                       && (jet->photonFraction + jet->hfEMFraction < maxFraction)
+                                       && (jet->nConstituents > 1)
+                                       && (jet->muonFraction < maxMuFraction);
+                    if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2010 || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2014)  // CMSSW <7.3.X
+                            validJet = validJet && (jet->neutralHadronFraction + jet->hfHadronFraction < maxFraction);
+                }
 
 		// jets, |eta| < 2.4 (tracker)
 		if (std::abs(jet->p4.eta()) <= 2.4f)
