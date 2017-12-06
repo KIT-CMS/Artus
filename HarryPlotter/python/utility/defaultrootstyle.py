@@ -95,6 +95,9 @@ def set_default_root_style():
 	default_root_style.SetTitleFont(42, "X")
 	default_root_style.SetTitleFont(42, "Y")
 
+        default_root_style.SetHatchesSpacing(0.05)
+        default_root_style.SetHatchesLineWidth(5)
+
 	default_root_style.SetOptStat(0)
 	
 	default_root_style.SetPalette(1)

@@ -201,14 +201,15 @@ class PlotRoot(plotbase.PlotBase):
 			if fill_style is None:
 				fill_style = 0
 				if ("HIST" in marker.upper()) and (not "E" in marker.upper()):
-					line_width = 0
+					line_width = 1
 					fill_style = 1001
 				elif "LINE" in marker.upper():
 					marker = marker.upper().replace("LINE", "HIST")
 					fill_style = 0
-				elif ("E" in marker.upper()) and (not "HIST" in marker.upper()) and (marker.upper() != "E"):
+				elif ("E" in marker.upper()) and (not "HIST" in marker.upper()) and ((marker.upper() != "E") and (marker.upper() != "EX0")):
 					marker_style = 0
-					fill_style = 3001
+                                        line_width = 0
+					fill_style = 3144
 			
 			if legend_marker is None:
 				# TODO: implement defaults here
@@ -248,7 +249,7 @@ class PlotRoot(plotbase.PlotBase):
 			ROOT.gStyle.SetOptFit(0)
 		
 		# load custom painter (fixes for horizontal histograms)
-		roottools.RootTools.load_compile_macro(os.path.expandvars("$ARTUSPATH/HarryPlotter/python/utility/customhistogrampainter.C"))
+		#roottools.RootTools.load_compile_macro(os.path.expandvars("$ARTUSPATH/HarryPlotter/python/utility/customhistogrampainter.C"))
 
 	def create_canvas(self, plotData):
 		super(PlotRoot, self).create_canvas(plotData)
@@ -290,7 +291,7 @@ class PlotRoot(plotbase.PlotBase):
 				line_graph.SetPoint(0, -sys.float_info.max, y_line)
 				line_graph.SetPoint(1, +sys.float_info.max, y_line)
 				
-				line_graph.SetLineColor(ROOT.TColor.GetColor("#808080"))
+				line_graph.SetLineColor(ROOT.TColor.GetColor("#000000"))
 				line_graph.SetLineWidth(3)
 				line_graph.SetLineStyle(2)
 				self.subplot_line_graphs.append(line_graph)
@@ -610,9 +611,6 @@ class PlotRoot(plotbase.PlotBase):
 			self.subplot_axes_histogram.GetXaxis().SetNoExponent(True)
 			
 			self.subplot_axes_histogram.Draw("AXIS")
-			
-			for line_graph in self.subplot_line_graphs:
-				line_graph.Draw("L SAME")
 		
 		for nick, subplot, marker, colors, colormap in zip(
 				plotData.plotdict["nicks"],
@@ -650,6 +648,12 @@ class PlotRoot(plotbase.PlotBase):
 			
 			root_object.Draw(marker + " SAME")
 			pad.Update()
+
+		if plotData.plot.subplot_pad:
+                        plotData.plot.subplot_pad.cd()
+                        for line_graph in self.subplot_line_graphs:
+                                line_graph.Draw("L SAME")
+                        plotData.plot.subplot_pad.Update()
 	
 	def modify_axes(self, plotData):
 		super(PlotRoot, self).modify_axes(plotData)
