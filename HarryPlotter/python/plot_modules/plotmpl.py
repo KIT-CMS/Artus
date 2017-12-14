@@ -408,6 +408,8 @@ class PlotMpl(plotbase.PlotBase):
 
 		for y, linestyle in zip(plotData.plotdict["lines"], self.default_linestyles*len(plotData.plotdict["lines"])):
 			ax.axhline(y, color='black', linestyle=linestyle)
+		for x, linestyle in zip(plotData.plotdict["vertical_lines"], self.default_linestyles*len(plotData.plotdict["vertical_lines"])):
+			ax.axvline(x, color='black', linestyle=linestyle)
 
 		# do special things for subplots
 		if plotData.plotdict["subplot_nicks"]:
@@ -416,6 +418,8 @@ class PlotMpl(plotbase.PlotBase):
 			# Horizontal line at unity
 			for y, linestyle in zip(plotData.plotdict["subplot_lines"], self.default_linestyles*len(plotData.plotdict["subplot_lines"])):
 				ax2.axhline(y, color='black', linestyle=linestyle)
+			for x, linestyle in zip(plotData.plotdict["vertical_lines"], self.default_linestyles*len(plotData.plotdict["vertical_lines"])):
+				ax2.axvline(x, color='black', linestyle=linestyle)
 
 			if plotData.plotdict["y_subplot_lims"] != None:
 				ax2.set_ylim(*plotData.plotdict["y_subplot_lims"])
