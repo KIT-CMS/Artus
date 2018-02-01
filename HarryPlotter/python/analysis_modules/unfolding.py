@@ -66,7 +66,7 @@ class Unfolding(analysisbase.AnalysisBase):
         self.Unfolding_options.add_argument("--unfold-file", type=str, 
                 help="Name of the file for the cov matrix if it should be written")
         self.Unfolding_options.add_argument("--unfolding-method", type=str, default="dagostini",
-                choices=['dagostini', 'svd', 'binbybin', 'inversion'],
+                choices=['dagostini', 'svd', 'binbybin', 'inversion','tunfold'],
                 help="Method for unfolding. [Default: %(default)s]")
     
     def prepare_args(self, parser, plotData):
@@ -101,13 +101,14 @@ class Unfolding(analysisbase.AnalysisBase):
                 variation,
                 plotData.plotdict["write_matrix"],
                 plotData.plotdict["unfold_file"],
-                plotData.plotdict["unfolding_iterations"]
+                plotData.plotdict["unfolding_iterations"],
+                plotData.plotdict["unfolding_regularization"]
             )
             plotData.plotdict["root_objects"][new_nick] = unfolded_histo
             plotData.plotdict["nicks"].append(new_nick)
     
     
-    def do_unfolding(self, hResponse_input, hMeas, hTrue, hData, method, libRooUnfold_path, variation=0, write=False, unfold_file=None, iterations=4):
+    def do_unfolding(self, hResponse_input, hMeas, hTrue, hData, method, libRooUnfold_path, variation=0, write=False, unfold_file=None, iterations=4, regularization=1e-24):
         """return unfolded distribution"""
         ROOT.gSystem.Load(libRooUnfold_path)
     
@@ -126,11 +127,13 @@ class Unfolding(analysisbase.AnalysisBase):
             'svd': ROOT.RooUnfoldSvd,  # singular value decomposition
             'binbybin': ROOT.RooUnfoldBinByBin,  # bin-by-bin (simple correction factors)
             'inversion': ROOT.RooUnfoldInvert,  # inversion
+            'tunfold': ROOT.RooUnfoldTUnfold,  # TUnfold
         }
     
-        if method in ['dagostini', 'svd']:
+        if method in ['dagostini']:
             unfold = unfolding_methods[method](response, hData, iterations)
-            
+        elif method in ['tunfold', 'svd']:
+            unfold = unfolding_methods[method](response, hData, regularization)
         else:
             unfold = unfolding_methods[method](response, hData)
     
