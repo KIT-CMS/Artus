@@ -267,6 +267,13 @@ public:
 			maxMuFraction = 0.8f;
 			maxCEMFraction = maxFraction;
 		}
+        
+        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017)
+        {
+            maxFraction = 0.9f;
+            maxCEMFraction = 0.8f;
+            maxMuFraction = 0.8f;
+        }
 
 		// JetID
 		// https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
@@ -278,7 +285,7 @@ public:
                                        && (jet->neutralHadronFraction < maxFraction)
                                        && (jet->photonFraction + jet->hfEMFraction < maxFraction)
                                        && (jet->nConstituents > 1)
-                                       && (jet->muonFraction < maxMuFraction);
+                                       && (jet->muonFraction <= maxMuFraction);
                     if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2010 || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2014)  // CMSSW <7.3.X
                             validJet = validJet && (jet->neutralHadronFraction + jet->hfHadronFraction < maxFraction);
                 }
@@ -303,6 +310,11 @@ public:
 						&& (jet->neutralHadronFraction < 0.98f)
 						&& (jet->nConstituents - jet->nCharged > 2);
 		}
+        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f)
+		{
+			validJet = (jet->photonFraction + jet->hfEMFraction < 0.99f)
+						&& (jet->nConstituents - jet->nCharged > 2);
+		}
 		// for run 2 startup: temporarily no jet ID in forward region
 		if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID73Xtemp && std::abs(jet->p4.eta()) > 3.0f)
 			validJet = true;
@@ -312,6 +324,12 @@ public:
 		if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2015 || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016) && std::abs(jet->p4.eta()) > 3.0f)
 		{
 			validJet = (jet->photonFraction + jet->hfEMFraction < 0.90f)
+					   && (jet->nConstituents - jet->nCharged > 10);
+		}
+        if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017) && std::abs(jet->p4.eta()) > 3.0f)
+		{
+			validJet = (jet->photonFraction + jet->hfEMFraction < 0.90f)
+						&& (jet->neutralHadronFraction > 0.02f)
 					   && (jet->nConstituents - jet->nCharged > 10);
 		}
 		// ability to apply no jet ID
