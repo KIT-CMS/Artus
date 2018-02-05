@@ -246,17 +246,13 @@ public:
 			else if (electronID == ElectronID::FAKEABLE)
 				valid = valid && IsFakeableElectron(*electron, event, product);
 			else if (electronID == ElectronID::VETO)
-				valid = valid && (*electron)->getId("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto", event.m_electronMetadata);
-				//valid = valid && (*electron)->idVeto();
+				valid = valid && (*electron)->idVeto();
 			else if (electronID == ElectronID::LOOSE)
-				valid = valid && (*electron)->getId("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose", event.m_electronMetadata);
-				//valid = valid && (*electron)->idLoose();
+				valid = valid && (*electron)->idLoose();
 			else if (electronID == ElectronID::MEDIUM)
-				valid = valid && (*electron)->getId("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium", event.m_electronMetadata);
-				//valid = valid && (*electron)->idMedium();
+				valid = valid && (*electron)->idMedium();
 			else if (electronID == ElectronID::TIGHT)		
-				valid = valid && (*electron)->getId("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight", event.m_electronMetadata);
-				//valid = valid && (*electron)->idTight();
+				valid = valid && (*electron)->idTight();
 			else if (electronID != ElectronID::USER && electronID != ElectronID::NONE)
 				LOG(FATAL) << "Electron ID of type " << Utility::ToUnderlyingValue(electronID) << " not yet implemented!";
 
