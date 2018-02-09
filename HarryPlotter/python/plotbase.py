@@ -132,6 +132,8 @@ class PlotBase(processor.Processor):
 		self.labelling_options = parser.add_argument_group("Labelling options")
 		self.labelling_options.add_argument("-t", "--title", type=str,
 		                                    help="Plot title")
+		self.labelling_options.add_argument("--dataset-title", type=str,
+		                                    help="Dataset title (if given, this will appear in the upper-right corner)")
 		self.labelling_options.add_argument("-l", "--lumis", type=float, nargs="+",
 		                                    help="Luminosities for the given data in fb^(-1).")
 		self.labelling_options.add_argument("-e", "--energies", type=float, nargs="+",
@@ -407,22 +409,27 @@ class PlotBase(processor.Processor):
 	def add_texts(self, plotData):
 		self.dataset_title = ""
 		run_periods = []
-		# if lumi and energy are available:
-		if (not plotData.plotdict["lumis"] is None) and (not plotData.plotdict["energies"] is None):
-			for lumi, energy in zip(plotData.plotdict["lumis"], plotData.plotdict["energies"]):
-				if lumi < 0.5:
-					unit = "pb"
-					factor = 1000
-				else:
-					unit = "fb"
-					factor = 1
-				run_periods.append("%s \,\mathrm{%s}^{-1} (%s \,TeV)" % (str(round(lumi*factor, 2)), unit, str(int(energy))))
-		# if only energy is available (MC-plots):
-		elif (not plotData.plotdict["energies"] is None):
-			for energy in plotData.plotdict["energies"]:
-				run_periods.append("\sqrt{s} = %s \,TeV" % str(int(energy)))
-		if len(run_periods) > 0:
-			self.dataset_title = "$" + (" + ".join(run_periods)) + "$"
+		if plotData.plotdict["dataset_title"] is not None:
+			# if dataset_title is directly provided
+			self.dataset_title = plotData.plotdict["dataset_title"]
+		else:
+			# determine from run periods, energies, etc.
+			if (not plotData.plotdict["lumis"] is None) and (not plotData.plotdict["energies"] is None):
+				# if lumi and energy are available:
+				for lumi, energy in zip(plotData.plotdict["lumis"], plotData.plotdict["energies"]):
+					if lumi < 0.5:
+						unit = "pb"
+						factor = 1000
+					else:
+						unit = "fb"
+						factor = 1
+					run_periods.append("%s \,\mathrm{%s}^{-1} (%s \,TeV)" % (str(round(lumi*factor, 2)), unit, str(int(energy))))
+			# if only energy is available (MC-plots):
+			elif (not plotData.plotdict["energies"] is None):
+				for energy in plotData.plotdict["energies"]:
+					run_periods.append("\sqrt{s} = %s \,TeV" % str(int(energy)))
+			if len(run_periods) > 0:
+				self.dataset_title = "$" + (" + ".join(run_periods)) + "$"
 	
 	def plot_end(self, plotData):
 		if plotData.plotdict["dict"]:
