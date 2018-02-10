@@ -19,4 +19,13 @@ public:
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override;
 
+private:
+        bool isSingleMuon = false;
+        bool isSingleElectron = false;
+        bool isMuonEG = false;
+        bool isTau = false;
+        bool isDoubleEG = false;
+        bool isDoubleMuon = false;
+        bool isMC = false;
+        std::string nickname;
 };

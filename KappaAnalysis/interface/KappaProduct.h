@@ -31,7 +31,15 @@ public:
 	std::map<std::string, std::vector<std::string> > m_settingsTauTriggerFiltersByHltName;
 	std::map<std::string, std::vector<std::string> > m_settingsJetTriggerFiltersByHltName;
 
+        // filled by NicknameProducer
 	std::string m_nickname = "";
+        bool m_isSingleMuon = false;
+        bool m_isSingleElectron = false;
+        bool m_isMuonEG = false;
+        bool m_isTau = false;
+        bool m_isDoubleEG = false;
+        bool m_isDoubleMuon = false;
+        bool m_isMC = false;
 
 	// all weights in this map are multiplied into one "eventWeight" by the EventWeightProducer
 	// events in this map can be written out automatically by the KappaLambdaNtupleConsumer
