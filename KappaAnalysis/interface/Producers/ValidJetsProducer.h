@@ -247,9 +247,9 @@ public:
 	{
 		bool validJet = true;
 
+		float maxFraction = 1.0f;
 		float maxMuFraction = 1.0f;
 		float maxCEMFraction = 0.99f;
-		float maxFraction = 1.0f;
 		if (jetID == KappaEnumTypes::JetID::TIGHT || jetID == KappaEnumTypes::JetID::TIGHTLEPVETO)
 			maxFraction = 0.90f;
 		else if (jetID ==  KappaEnumTypes::JetID::MEDIUM)
@@ -261,18 +261,20 @@ public:
 			jetIDVersion == KappaEnumTypes::JetIDVersion::ID73X ||
 			jetIDVersion == KappaEnumTypes::JetIDVersion::ID73Xtemp ||
 			jetIDVersion == KappaEnumTypes::JetIDVersion::ID73XnoHF ||
-			(jetIDVersion == KappaEnumTypes::JetIDVersion::ID2015 && (jetID == KappaEnumTypes::JetID::TIGHTLEPVETO || jetID == KappaEnumTypes::JetID::LOOSELEPVETO)) ||
-			((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016 && (jetID == KappaEnumTypes::JetID::TIGHTLEPVETO || jetID == KappaEnumTypes::JetID::LOOSELEPVETO))))
+			(jetIDVersion == KappaEnumTypes::JetIDVersion::ID2015 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) ||
+			(jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO))
 		{
 			maxMuFraction = 0.8f;
 			maxCEMFraction = maxFraction;
 		}
-        
-        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017)
+        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHT)
         {
-            maxFraction = 0.9f;
-            maxCEMFraction = 0.8f;
+            maxCEMFraction = 1.0f;
+        }
+        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO)
+        {
             maxMuFraction = 0.8f;
+            maxCEMFraction = 0.8f;
         }
 
 		// JetID
@@ -313,6 +315,7 @@ public:
         if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f)
 		{
 			validJet = (jet->photonFraction + jet->hfEMFraction < 0.99f)
+						&& (jet->photonFraction + jet->hfEMFraction > 0.02f)
 						&& (jet->nConstituents - jet->nCharged > 2);
 		}
 		// for run 2 startup: temporarily no jet ID in forward region
