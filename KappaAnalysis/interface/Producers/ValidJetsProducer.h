@@ -267,30 +267,31 @@ public:
 			maxMuFraction = 0.8f;
 			maxCEMFraction = maxFraction;
 		}
-        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHT)
-        {
-            maxCEMFraction = 1.0f;
-        }
-        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO)
-        {
-            maxMuFraction = 0.8f;
-            maxCEMFraction = 0.8f;
-        }
+		if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHT)
+		{
+			maxMuFraction = -1.0f;
+			maxCEMFraction = -1.0f;
+		}
+		if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO)
+		{
+			maxMuFraction = 0.8f,
+			maxCEMFraction = 0.8f;
+		}
 
 		// JetID
 		// https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
 		// https://github.com/cms-sw/cmssw/blob/CMSSW_7_5_X/PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h
 		// jets, |eta| < 2.7
 		if (std::abs(jet->p4.eta()) <= 2.7f)
-                {
-                    validJet = validJet
-                                       && (jet->neutralHadronFraction < maxFraction)
-                                       && (jet->photonFraction + jet->hfEMFraction < maxFraction)
-                                       && (jet->nConstituents > 1)
-                                       && (jet->muonFraction <= maxMuFraction);
-                    if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2010 || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2014)  // CMSSW <7.3.X
-                            validJet = validJet && (jet->neutralHadronFraction + jet->hfHadronFraction < maxFraction);
-                }
+		{
+			validJet = validJet
+			                   && (jet->neutralHadronFraction < maxFraction)
+			                   && (jet->photonFraction + jet->hfEMFraction < maxFraction)
+			                   && (jet->nConstituents > 1)
+			                   && (jet->muonFraction < maxMuFraction || maxMuFraction < 0.0);
+			if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2010 || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2014)  // CMSSW <7.3.X
+				validJet = validJet && (jet->neutralHadronFraction + jet->hfHadronFraction < maxFraction);
+		}
 
 		// jets, |eta| < 2.4 (tracker)
 		if (std::abs(jet->p4.eta()) <= 2.4f)
@@ -298,7 +299,7 @@ public:
 			validJet = validJet
 					   && (jet->chargedHadronFraction > 0.0f)
 					   && (jet->nCharged > 0)
-					   && (jet->electronFraction < maxCEMFraction);  // == CEM
+					   && (jet->electronFraction < maxCEMFraction || maxCEMFraction < 0.0);  // == CEM
 		}
 		// for run2: new jet ID between 2.7 < |eta| <= 3.0
 		if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2015 && std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f)
@@ -312,7 +313,7 @@ public:
 						&& (jet->neutralHadronFraction < 0.98f)
 						&& (jet->nConstituents - jet->nCharged > 2);
 		}
-        if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f)
+		if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f)
 		{
 			validJet = (jet->photonFraction + jet->hfEMFraction < 0.99f)
 						&& (jet->photonFraction + jet->hfEMFraction > 0.02f)
@@ -329,7 +330,7 @@ public:
 			validJet = (jet->photonFraction + jet->hfEMFraction < 0.90f)
 					   && (jet->nConstituents - jet->nCharged > 10);
 		}
-        if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017) && std::abs(jet->p4.eta()) > 3.0f)
+		if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017) && std::abs(jet->p4.eta()) > 3.0f)
 		{
 			validJet = (jet->photonFraction + jet->hfEMFraction < 0.90f)
 						&& (jet->neutralHadronFraction > 0.02f)
