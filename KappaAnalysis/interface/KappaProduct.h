@@ -112,6 +112,7 @@ public:
 	
 	/// added by ValidGenJetsProducer
 	std::vector<KGenJet*> m_validGenJets;
+	std::vector<KLV*> m_simpleGenJets;
 	std::vector<KGenJet*> m_invalidGenJets;
 
 	/// added by GenParticleProducer
