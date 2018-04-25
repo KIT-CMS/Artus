@@ -38,6 +38,8 @@ public:
 			this->m_event.m_taus = this->template SecureFileInterfaceGet<KTaus>(settings.GetTaus());
 		if (! settings.GetTauMetadata().empty())
 			this->m_event.m_tauMetadata = this->template SecureFileInterfaceGetMeta<KTauMetadata>(settings.GetTauMetadata());
+		if (! settings.GetL1Taus().empty())
+			this->m_event.m_l1taus = this->template SecureFileInterfaceGet<KL1Taus>(settings.GetL1Taus());
 		if (! settings.GetGenTaus().empty())
 			this->m_event.m_genTaus = this->template SecureFileInterfaceGet<KGenTaus>(settings.GetGenTaus());
 		if (! settings.GetGenTauJets().empty())

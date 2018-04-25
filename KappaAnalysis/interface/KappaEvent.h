@@ -30,6 +30,7 @@ public:
 	/// pointer to tau collection
 	KTaus* m_taus = nullptr;
 	KTauMetadata* m_tauMetadata = nullptr;
+	KL1Taus* m_l1taus = nullptr;
 	KGenTaus* m_genTaus = nullptr;
 	KGenJets* m_genTauJets = nullptr;
 
