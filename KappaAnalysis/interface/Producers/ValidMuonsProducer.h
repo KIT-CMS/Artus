@@ -102,6 +102,9 @@ public:
 		FAKEABLE = 2,
 		TIGHT_2015 = 3,
 		LOOSE_2015 = 4,
+		TIGHT_2016 = 5,
+		MEDIUM_2016 = 6,
+		LOOSE_2016 = 7,
 	};
 	static MuonIso ToMuonIso(std::string const& muonIso)
 	{
@@ -110,6 +113,9 @@ public:
 		else if (muonIso == "fakeable") return MuonIso::FAKEABLE;
 		else if (muonIso == "tight_2015") return MuonIso::TIGHT_2015;
 		else if (muonIso == "loose_2015") return MuonIso::LOOSE_2015;
+		else if (muonIso == "tight_2016") return MuonIso::TIGHT_2016;
+		else if (muonIso == "medium_2016") return MuonIso::MEDIUM_2016;
+		else if (muonIso == "loose_2016") return MuonIso::LOOSE_2016;
 		else return MuonIso::NONE;
 	}
 
@@ -296,6 +302,12 @@ public:
 					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
 				else if (muonIso == MuonIso::LOOSE_2015)
 					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.30f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+				else if (muonIso == MuonIso::TIGHT_2016)
+					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+				else if (muonIso == MuonIso::MEDIUM_2016)
+					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+				else if (muonIso == MuonIso::LOOSE_2016)
+					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
 				else if (muonIso == MuonIso::FAKEABLE)
 					validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
 				else if (muonIso != MuonIso::NONE)
