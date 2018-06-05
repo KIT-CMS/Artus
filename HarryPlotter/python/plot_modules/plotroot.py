@@ -137,6 +137,8 @@ class PlotRoot(plotbase.PlotBase):
 		                                     help="Legend position. The four arguments define the rectangle (x1 y1 x2 y2) for the legend. Without (or with too few) arguments, the default values from [0.6, 0.6, 0.9, 0.9] are used. [Default: %(default)s]")
 		self.formatting_options.add_argument("--legend-markers", type=str, nargs="+",
 		                                     help="Draw options for legend entries.")
+		self.formatting_options.add_argument("--texts-below-legend", type=str, nargs="+", default=[None],
+		                                     help="Extra text written as additional legend entry ")
 		self.formatting_options.add_argument("--extra-text", type=str, nargs="?", default = "",
 		                                     help="Extra text written on plot, e.g. \"Preliminary\" ")
 		self.formatting_options.add_argument("--cms", nargs="?", type="bool", default=False, const=True,
@@ -827,6 +829,9 @@ class PlotRoot(plotbase.PlotBase):
 						legend_marker = "L"
 				if (not label is None) and (label != ""):
 					self.legend.AddEntry(root_object, label, legend_marker)
+			for text_below_legend in plotData.plotdict["texts_below_legend"]:
+				if (not text_below_legend is None) and (text_below_legend != ""):
+					self.legend.AddEntry(ROOT.TObject(), text_below_legend, "")
 			
 			defaultrootstyle.set_legend_style(self.legend)
 			self.legend.Draw()
