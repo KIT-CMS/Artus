@@ -60,10 +60,9 @@ class PlotRoot(plotbase.PlotBase):
 		
 		self.axes_histogram = None
 		self.subplot_axes_histogram = None
-		
+		self.plot_excludes = []
 		self.subplot_line_graphs = []
 		self.plot_vertical_lines = []
-		
 		self.nice_labels = labels.LabelsDict(latex_version="root")
 	
 	def modify_argument_parser(self, parser, args):
@@ -139,6 +138,10 @@ class PlotRoot(plotbase.PlotBase):
 		                                     help="Draw options for legend entries.")
 		self.formatting_options.add_argument("--texts-below-legend", type=str, nargs="+", default=[None],
 		                                     help="Extra text written as additional legend entry ")
+		self.formatting_options.add_argument("--exclude-after", type=float, nargs=1, default=None,
+		                                     help="Exclude region after x-position (Give x-position) ")
+		self.formatting_options.add_argument("--exclude-before", type=float, nargs=1, default=None,
+		                                     help="Exclude region before x-position (Give x-position) ")
 		self.formatting_options.add_argument("--extra-text", type=str, nargs="?", default = "",
 		                                     help="Extra text written on plot, e.g. \"Preliminary\" ")
 		self.formatting_options.add_argument("--cms", nargs="?", type="bool", default=False, const=True,
@@ -300,6 +303,7 @@ class PlotRoot(plotbase.PlotBase):
 		else:
 			plot_pad = canvas
 			plot_pad.Draw()
+		
 		for index, x_line in enumerate(plotData.plotdict["vertical_lines"]):
 			line_graph = ROOT.TGraph(2)
 			line_graph.SetName("vertical_line_graph_"+str(index)+"_"+str(x_line))
@@ -312,6 +316,8 @@ class PlotRoot(plotbase.PlotBase):
 			line_graph.SetLineWidth(3)
 			line_graph.SetLineStyle(2)
 			self.plot_vertical_lines.append(line_graph)
+		
+			
 		
 		self.plot_pad_right_margin = plot_pad.GetRightMargin()
 		plot_pad.SetRightMargin(0.25)
@@ -582,9 +588,37 @@ class PlotRoot(plotbase.PlotBase):
 			
 			self.axes_histogram.Draw("AXIS")
 
+			if plotData.plotdict["exclude_before"] is not None:
+				exclude_graph_before = ROOT.TGraph(2)
+				exclude_graph_before.SetName("exclude_before_graph")
+				exclude_graph_before.SetTitle()
+				exclude_graph_before.SetPoint(0, plotData.plotdict["exclude_before"], self.y_min)
+				exclude_graph_before.SetPoint(1, plotData.plotdict["exclude_before"], self.y_max)
+				exclude_graph_before.SetLineColor(2)
+				exclude_graph_before.SetLineWidth(1002)
+				exclude_graph_before.SetLineStyle(2)
+				exclude_graph_before.SetFillStyle(3004)
+				exclude_graph_before.SetFillColor(2)
+				self.plot_excludes.append(exclude_graph_before)
+			if plotData.plotdict["exclude_after"] is not None:
+				exclude_graph_after = ROOT.TGraph(2)
+				exclude_graph_after.SetName("exclude_after_graph")
+				exclude_graph_after.SetTitle()
+				print plotData.plotdict["exclude_after"]
+				print sys.float_info.max
+				exclude_graph_after.SetPoint(0, plotData.plotdict["exclude_after"], self.y_min)
+				exclude_graph_after.SetPoint(1, plotData.plotdict["exclude_after"], self.y_max)
+				exclude_graph_after.SetLineColor(2)
+				exclude_graph_after.SetLineWidth(-1002)
+				exclude_graph_after.SetLineStyle(2)
+				exclude_graph_after.SetFillStyle(3004)
+				exclude_graph_after.SetFillColor(2)
+				self.plot_excludes.append(exclude_graph_after)
+
 			for line_graph in self.plot_vertical_lines:
 				line_graph.Draw("L SAME")
-		
+			for line_graph in self.plot_excludes:
+				line_graph.Draw("C SAME")
 		if plotData.plot.subplot_pad:
 			plotData.plot.subplot_pad.cd()
 			if self.max_sub_dim == 2:
@@ -854,6 +888,7 @@ class PlotRoot(plotbase.PlotBase):
 			text_object = self.text_box.AddText(x, y, text)
 			if not size is None:
 				text_object.SetTextSize(size)
+				text_object.SetTextFont(42) 
 
 		# lumi and energy: outside plot, top right, with best possible offset
 		if self.dataset_title != "":
