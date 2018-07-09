@@ -193,6 +193,8 @@ public:
 	void Produce(event_type const& event, product_type& product,
 	                     setting_type const& settings) const override
 	{
+		LOG(DEBUG) << this->GetProducerId() << " -----START-----"; 
+		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent; 
 		assert(event.m_electrons);
 		assert(event.m_vertexSummary);
 		assert(event.m_electronMetadata);
@@ -200,6 +202,7 @@ public:
 		std::vector<KElectron*> electrons;
 		if ((validElectronsInput == ValidElectronsInput::AUTO && (product.m_correctedElectrons.size() > 0)) || (validElectronsInput == ValidElectronsInput::CORRECTED))
 		{
+                        LOG(DEBUG) << "Choosing corrected electrons as input source"; 
 			electrons.resize(product.m_correctedElectrons.size());
 			size_t electronIndex = 0;
 			for (std::vector<std::shared_ptr<KElectron> >::iterator electron = product.m_correctedElectrons.begin();
@@ -211,6 +214,7 @@ public:
 		}
 		else
 		{
+                        LOG(DEBUG) << "Choosing original electrons as input source"; 
 			electrons.resize(event.m_electrons->size());
 			size_t electronIndex = 0;
 			for (KElectrons::iterator electron = event.m_electrons->begin(); electron != event.m_electrons->end(); ++electron)
@@ -220,9 +224,11 @@ public:
 			}
 		}
 
+                LOG(DEBUG) << "Initial size of electrons: " << electrons.size(); 
 		for (std::vector<KElectron*>::iterator electron = electrons.begin(); electron != electrons.end(); ++electron)
 		{
 			bool valid = true;
+                        LOG(DEBUG) << "Checking electron with p4 " << (*electron)->p4; 
 
 			// POG recommondations
 			// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentification#Non_triggering_MVA
@@ -256,6 +262,8 @@ public:
 			else if (electronID != ElectronID::USER && electronID != ElectronID::NONE)
 				LOG(FATAL) << "Electron ID of type " << Utility::ToUnderlyingValue(electronID) << " not yet implemented!";
 
+                        LOG(DEBUG) << "\tPassing ID's? " << valid; 
+
 			// Electron Isolation
 			if (electronIsoType == ElectronIsoType::PF) {
 				if (electronIso == ElectronIso::MVANONTRIG)
@@ -271,6 +279,7 @@ public:
 			{
 				LOG(FATAL) << "Electron isolation type of type " << Utility::ToUnderlyingValue(electronIsoType) << " not yet implemented!";
 			}
+                        LOG(DEBUG) << "\tPassing isolation? " << valid; 
 
 			// Electron reconstruction
 			if (electronReco == ElectronReco::MVANONTRIG)
@@ -282,21 +291,26 @@ public:
 			{
 				LOG(FATAL) << "Electron reconstruction of type " << Utility::ToUnderlyingValue(electronReco) << " not yet implemented!";
 			}
+                                LOG(DEBUG) << "\tPassing requirements on missing inner hits? " << valid << " (missing inner hits: " << (*electron)->track.nInnerHits << ")";
 
 			// conversion veto per default
 			valid = valid && (! ((*electron)->electronType & (1 << KElectronType::hasConversionMatch)));
+                                LOG(DEBUG) << "\tPassing conversion requrements? " << valid;
 
 			// kinematic cuts
 			valid = valid && this->PassKinematicCuts(*electron, event, product);
+                                LOG(DEBUG) << "\tPassing kinematic cuts? " << valid;
 
 			// check possible analysis-specific criteria
 			valid = valid && AdditionalCriteria(*electron, event, product, settings);
+                                LOG(DEBUG) << "\tPassing additional analysis criteria? " << valid;
 
 			if (valid)
 				(product.*m_validElectronsMember).push_back(*electron);
 			else
 				(product.*m_invalidElectronsMember).push_back(*electron);
 		}
+		LOG(DEBUG) << this->GetProducerId() << " -----END-----"; 
 	}
 
 	static bool IsMVANonTrigElectron(const KElectron* electron, const KElectronMetadata* electronMeta)

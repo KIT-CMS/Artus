@@ -206,6 +206,8 @@ public:
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override
 	{
+		LOG(DEBUG) << this->GetProducerId() << " -----START-----"; 
+		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent; 
 		assert(event.m_taus);
 		assert(event.m_tauMetadata);
 	
@@ -213,6 +215,7 @@ public:
 		std::vector<KTau*> taus;
 		if ((validTausInput == ValidTausInput::AUTO && (product.m_correctedTaus.size() > 0)) || (validTausInput == ValidTausInput::CORRECTED))
 		{
+                        LOG(DEBUG) << "Choosing corrected taus as input source"; 
 			taus.resize(product.m_correctedTaus.size());
 			size_t tauIndex = 0;
 			for (std::vector<std::shared_ptr<KTau> >::iterator tau = product.m_correctedTaus.begin();
@@ -224,6 +227,7 @@ public:
 		}
 		else
 		{
+                        LOG(DEBUG) << "Choosing original taus as input source"; 
 			taus.resize(event.m_taus->size());
 			size_t tauIndex = 0;
 			for (KTaus::iterator tau = event.m_taus->begin(); tau != event.m_taus->end(); ++tau)
@@ -232,11 +236,12 @@ public:
 				++tauIndex;
 			}
 		}
-		
+                LOG(DEBUG) << "Initial size of taus: " << taus.size(); 
 		for (std::vector<KTau*>::iterator tau = taus.begin(); tau != taus.end(); ++tau)
 		{
 			bool validTau = true;
 			
+                        LOG(DEBUG) << "Checking tau with p4 " << (*tau)->p4; 
 			// check discriminators
 			for (std::map<size_t, std::vector<std::string> >::const_iterator discriminatorByIndex = discriminatorsByIndex.begin();
 				 validTau && (discriminatorByIndex != discriminatorsByIndex.end()); ++discriminatorByIndex)
@@ -259,16 +264,21 @@ public:
 					validTau = validTau && ApplyDiscriminators(*tau, discriminatorByHltName->second, event);
 				}
 			}
+                        LOG(DEBUG) << "\tPassing discriminators? " << validTau; 
 			
 			if(tauID == TauID::RECOMMENDATION13TEV)
 					validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs);
 			if(tauID == TauID::RECOMMENDATION13TEVAOD)
 					validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs, true);
+
+                        LOG(DEBUG) << "\tPassing DM finding & dZ cut? " << validTau; 
 			// kinematic cuts
 			validTau = validTau && this->PassKinematicCuts(*tau, event, product);
+                        LOG(DEBUG) << "\tPassing kinematic cuts? " << validTau; 
 			
 			// check possible analysis-specific criteria
 			validTau = validTau && AdditionalCriteria(*tau, event, product, settings);
+                        LOG(DEBUG) << "\tPassing additional analysis criteria? " << validTau; 
 			
 			if (validTau)
 			{
@@ -279,6 +289,7 @@ public:
 				product.m_invalidTaus.push_back(*tau);
 			}
 		}
+		LOG(DEBUG) << this->GetProducerId() << " -----END-----"; 
 	}
 
 
