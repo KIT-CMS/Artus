@@ -10,6 +10,7 @@ std::string ElectronTriggerMatchingProducer::GetProducerId() const
 ElectronTriggerMatchingProducer::ElectronTriggerMatchingProducer() :
 	TriggerMatchingProducerBase<KElectron>(&KappaProduct::m_triggerMatchedElectrons,
 	                                       &KappaProduct::m_detailedTriggerMatchedElectrons,
+	                                       &KappaProduct::m_electronTriggerMatch,
 	                                       &KappaProduct::m_validElectrons,
 	                                       &KappaProduct::m_invalidElectrons,
 	                                       &KappaProduct::m_settingsElectronTriggerFiltersByIndex,
@@ -36,6 +37,12 @@ void ElectronTriggerMatchingProducer::Produce(KappaEvent const& event, KappaProd
 	{
 		product.m_detailedTriggerMatchedLeptons[&(*(it->first))] = &(it->second);
 	}
+	
+	for (std::map<KElectron*, std::map<std::string, bool > >::iterator it = product.m_electronTriggerMatch.begin();
+	     it != product.m_electronTriggerMatch.end(); ++it)
+	{
+		product.m_leptonTriggerMatch[&(*(it->first))] = &(it->second);
+	}
 }
 
 
@@ -47,6 +54,7 @@ std::string MuonTriggerMatchingProducer::GetProducerId() const
 MuonTriggerMatchingProducer::MuonTriggerMatchingProducer() :
 	TriggerMatchingProducerBase<KMuon>(&KappaProduct::m_triggerMatchedMuons,
 	                                   &KappaProduct::m_detailedTriggerMatchedMuons,
+                                           &KappaProduct::m_muonTriggerMatch,
 	                                   &KappaProduct::m_validMuons,
 	                                   &KappaProduct::m_invalidMuons,
 	                                   &KappaProduct::m_settingsMuonTriggerFiltersByIndex,
@@ -73,6 +81,12 @@ void MuonTriggerMatchingProducer::Produce(KappaEvent const& event, KappaProduct&
 	{
 		product.m_detailedTriggerMatchedLeptons[&(*(it->first))] = &(it->second);
 	}
+
+	for (std::map<KMuon*, std::map<std::string, bool > >::iterator it = product.m_muonTriggerMatch.begin();
+	     it != product.m_muonTriggerMatch.end(); ++it)
+	{
+		product.m_leptonTriggerMatch[&(*(it->first))] = &(it->second);
+	}
 }
 
 
@@ -84,6 +98,7 @@ std::string TauTriggerMatchingProducer::GetProducerId() const
 TauTriggerMatchingProducer::TauTriggerMatchingProducer() :
 	TriggerMatchingProducerBase<KTau>(&KappaProduct::m_triggerMatchedTaus,
 	                                  &KappaProduct::m_detailedTriggerMatchedTaus,
+                                          &KappaProduct::m_tauTriggerMatch,
 	                                  &KappaProduct::m_validTaus,
 	                                  &KappaProduct::m_invalidTaus,
 	                                  &KappaProduct::m_settingsTauTriggerFiltersByIndex,
@@ -110,10 +125,17 @@ void TauTriggerMatchingProducer::Produce(KappaEvent const& event, KappaProduct& 
 	{
 		product.m_detailedTriggerMatchedLeptons[&(*(it->first))] = &(it->second);
 	}
+
+	for (std::map<KTau*, std::map<std::string, bool > >::iterator it = product.m_tauTriggerMatch.begin();
+	     it != product.m_tauTriggerMatch.end(); ++it)
+	{
+		product.m_leptonTriggerMatch[&(*(it->first))] = &(it->second);
+	}
+
         if (settings.GetTauTriggerCheckL1Match().size() > 0)
         {
-                for (std::map<KTau*, KLV*>::iterator it = product.m_triggerMatchedTaus.begin();
-                     it != product.m_triggerMatchedTaus.end(); ++it)
+                for (std::map<KTau*, std::map<std::string, bool > >::iterator it = product.m_tauTriggerMatch.begin();
+                     it != product.m_tauTriggerMatch.end(); ++it)
                 {
                         float deltaRMax = 0.5;
                         float bestL1Pt = -1.0;
@@ -146,6 +168,7 @@ std::string JetTriggerMatchingProducer::GetProducerId() const {
 JetTriggerMatchingProducer::JetTriggerMatchingProducer() :
 	TriggerMatchingProducerBase<KBasicJet>(&KappaProduct::m_triggerMatchedJets,
 	                                       &KappaProduct::m_detailedTriggerMatchedJets,
+                                               &KappaProduct::m_jetTriggerMatch,
 	                                       &KappaProduct::m_validJets,
 	                                       &KappaProduct::m_invalidJets,
 	                                       &KappaProduct::m_settingsJetTriggerFiltersByIndex,

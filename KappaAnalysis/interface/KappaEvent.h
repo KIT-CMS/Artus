@@ -80,7 +80,7 @@ public:
 
 	/// pointer to trigger infos and objects
 	KTriggerObjectMetadata* m_triggerObjectMetadata = nullptr;
-	KTriggerObjects* m_triggerObjects = nullptr;
+	KReducedTriggerObjects* m_triggerObjects = nullptr;
 
 	/// pointer to metadata // TODO: move to Artus/Provider
 	KEventInfo* m_eventInfo = nullptr;

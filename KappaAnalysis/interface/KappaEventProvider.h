@@ -89,7 +89,7 @@ public:
 		if (! settings.GetTriggerInfos().empty())
 			this->m_event.m_triggerObjectMetadata = this->template SecureFileInterfaceGetMeta<KTriggerObjectMetadata>(settings.GetTriggerInfos(), false);
 		if (! settings.GetTriggerObjects().empty())
-			this->m_event.m_triggerObjects = this->template SecureFileInterfaceGet<KTriggerObjects>(settings.GetTriggerObjects(), false);
+			this->m_event.m_triggerObjects = this->template SecureFileInterfaceGet<KReducedTriggerObjects>(settings.GetTriggerObjects(), false);
 		
 		// Generator info
 		if (! settings.GetGenParticles().empty())

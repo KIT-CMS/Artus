@@ -68,7 +68,6 @@
 #include "Artus/KappaAnalysis/interface/Consumers/KappaCutFlowTreeConsumer.h"
 #include "Artus/KappaAnalysis/interface/Consumers/KappaLambdaNtupleConsumer.h"
 #include "Artus/KappaAnalysis/interface/Consumers/KappaCollectionsConsumers.h"
-#include "Artus/KappaAnalysis/interface/Consumers/PrintHltConsumer.h"
 #include "Artus/KappaAnalysis/interface/Consumers/PrintEventsConsumer.h"
 #include "Artus/KappaAnalysis/interface/Consumers/PrintGenParticleDecayTreeConsumer.h"
 #include "Artus/Consumer/interface/RunTimeConsumer.h"

@@ -159,6 +159,15 @@ public:
 	std::map<KLepton*, std::map<std::string, std::map<std::string, std::vector<KLV*> > >* > m_detailedTriggerMatchedLeptons;
 	std::map<KLepton*, std::map<std::string, bool > > m_detailedL1MatchedLeptons;
 
+	/// added by TriggerMatchingProducer
+	// m_detailedTriggerMatchedElectrons[reco lepton][HLT name] = boolean match
+	std::map<KElectron*, std::map<std::string, bool> > m_electronTriggerMatch;
+	std::map<KMuon*, std::map<std::string, bool > > m_muonTriggerMatch;
+	std::map<KTau*, std::map<std::string, bool > > m_tauTriggerMatch;
+	std::map<KBasicJet*, std::map<std::string, bool > > m_jetTriggerMatch;
+	std::map<KJet*, std::map<std::string, bool > > m_taggedJetTriggerMatch;
+	std::map<KLepton*, std::map<std::string, bool >* > m_leptonTriggerMatch;
+
 	/// added by GenMatchingProducer
 	std::map<KElectron*, KGenParticle*> m_genParticleMatchedElectrons;
 	std::map<KMuon*, KGenParticle*> m_genParticleMatchedMuons;
