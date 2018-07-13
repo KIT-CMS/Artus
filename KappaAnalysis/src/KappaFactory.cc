@@ -350,8 +350,6 @@ ConsumerBaseUntemplated * KappaFactory::createConsumer ( std::string const& id )
 		return new KappaJetsConsumer();
 	else if(id == KappaTaggedJetsConsumer().GetConsumerId())
 		return new KappaTaggedJetsConsumer();
-	else if(id == PrintHltConsumer().GetConsumerId())
-		return new PrintHltConsumer();
 	else if(id == PrintGenParticleDecayTreeConsumer().GetConsumerId())
 		return new PrintGenParticleDecayTreeConsumer();
 	else if(id == PrintEventsConsumer().GetConsumerId())
