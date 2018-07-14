@@ -6,6 +6,7 @@
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
 #include <boost/regex.hpp>
+#include <typeinfo>
 
 
 
@@ -102,9 +103,20 @@ public:
 		{
                         LOG(DEBUG) << "Processing TO matching for " << (*validObject)->p4;
                         std::vector<std::pair<KLV,std::vector<std::string>>> deltaRMatchedTOs;
+                        RMFLV vec;
+                        // Take into account, that superCluster position must be taken for deltaR matching in case of electrons
+                        if( typeid((*validObject)) == typeid(KElectron*))
+                        {
+                            KElectron* elCopy = dynamic_cast<KElectron*>((*validObject));
+                            vec.SetCoordinates(elCopy->p4.Pt(), elCopy->superclusterPosition.Eta(), elCopy->superclusterPosition.Phi(), elCopy->p4.M());
+                        }
+                        else
+                        {
+                            vec = (*validObject)->p4;
+                        }
                         for (unsigned int i=0; i<triggerObjectsSize; i++)
                         {
-                                if (ROOT::Math::VectorUtil::DeltaR(event.m_triggerObjects->trgObjects.at(i).p4, (*validObject)->p4) < (settings.*GetDeltaRTriggerMatchingObjects)() && event.m_triggerObjects->trgObjects.at(i).p4.Pt() > settings.GetTriggerObjectLowerPtCut())
+                                if (ROOT::Math::VectorUtil::DeltaR(event.m_triggerObjects->trgObjects.at(i).p4, vec) < (settings.*GetDeltaRTriggerMatchingObjects)() && event.m_triggerObjects->trgObjects.at(i).p4.Pt() > settings.GetTriggerObjectLowerPtCut())
                                 {
                                         deltaRMatchedTOs.push_back(std::pair<KLV,std::vector<std::string>>(event.m_triggerObjects->trgObjects.at(i), event.m_triggerObjects->filterLabels.at(i)));
                                 }
