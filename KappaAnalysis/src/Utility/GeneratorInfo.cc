@@ -80,6 +80,9 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 		KLepton* lepton
 )
 {
+	LOG(DEBUG) << "----- Generator Matching (UW) -----";
+	LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent;
+        LOG(DEBUG) << "Considered reco lepton p4: " << lepton->p4;
 	if(event.m_genParticles && event.m_genParticles->size() > 0)
 	{
 		KGenParticle closest = event.m_genParticles->at(0);
@@ -93,6 +96,7 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 			int pdgId = std::abs(genParticle->pdgId);
 			if (genParticle->p4.Pt() > 8. && (pdgId == 11 || pdgId == 13) && (genParticle->isPrompt() || genParticle->isDirectPromptTauDecayProduct())){
 				double tmpDR = ROOT::Math::VectorUtil::DeltaR(lepton->p4, genParticle->p4);
+                                LOG(DEBUG) << "\tcomputed deltaR, Pt: " << tmpDR << ", " << genParticle->p4.Pt() << " for paticle " << pdgId;
 				if (tmpDR < closestDR)
 				{
 					closest = *genParticle;
@@ -100,12 +104,16 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 				}
 			}
 		}
+                LOG(DEBUG) << "Closest electron or muon found with deltaR = " << closestDR;
 		//check whether there are closer tau jets within a 0.2 cone
+                LOG(DEBUG) << "Processing visible hadronic gen taus";
 		for(auto genTau : genTaus)
 		{
 			double tauDR = ROOT::Math::VectorUtil::DeltaR(lepton->p4, genTau);
+                         LOG(DEBUG) << "\tcomputed deltaR, Pt: " << tauDR << ", " << genTau.Pt();
 			if (genTau.Pt() > 15. && tauDR < 0.2 && tauDR < closestDR) return KappaEnumTypes::GenMatchingCode::IS_TAU_HAD_DECAY;
 		}
+                LOG(DEBUG) << "No visible tau_h found with deltaR < 0.2 && with Pt > 15";
 		//since there are no closer tau jets check whether dR < 0.2 is fulfilled and return lepton type
 		int pdgId = std::abs(closest.pdgId);
 		if (closestDR < 0.2){
@@ -114,6 +122,7 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 			if (pdgId == 11 && closest.isDirectPromptTauDecayProduct()) return KappaEnumTypes::GenMatchingCode::IS_ELE_FROM_TAU;
 			if (pdgId == 13 && closest.isDirectPromptTauDecayProduct()) return KappaEnumTypes::GenMatchingCode::IS_MUON_FROM_TAU;
 		}
+                LOG(DEBUG) << "Closest lepton at deltaR >= 0.2";
 		return KappaEnumTypes::GenMatchingCode::IS_FAKE;
 	}
 	return KappaEnumTypes::GenMatchingCode::NONE;
