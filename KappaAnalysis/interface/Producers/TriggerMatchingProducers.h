@@ -6,6 +6,7 @@
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
 #include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 #include <typeinfo>
 
 
@@ -114,6 +115,7 @@ public:
                         {
                             vec = (*validObject)->p4;
                         }
+                        // match the trigger objects to the reco object by deltaR
                         for (unsigned int i=0; i<triggerObjectsSize; i++)
                         {
                                 if (ROOT::Math::VectorUtil::DeltaR(event.m_triggerObjects->trgObjects.at(i).p4, vec) < (settings.*GetDeltaRTriggerMatchingObjects)() && event.m_triggerObjects->trgObjects.at(i).p4.Pt() > settings.GetTriggerObjectLowerPtCut())
@@ -123,6 +125,27 @@ public:
                         }
                         LOG(DEBUG) << "Number of deltaR matched TOs: " << deltaRMatchedTOs.size();
                         LOG(DEBUG) << "Total number of TOs: " << triggerObjectsSize;
+                        // Merge matched trigger objects with the same p4 together
+                        std::map<std::array<float, 4>, std::vector<std::string>> mergedTOs; // filling of the array: pt, eta, phi, mass; needed to be able to order within map
+                        for (auto to : deltaRMatchedTOs)
+                        {
+                            std::array<float, 4> momentum_array = {{to.first.p4.Pt(), to.first.p4.Eta(), to.first.p4.Phi(), to.first.p4.mass()}};
+                            unsigned int initial_size = mergedTOs[momentum_array].size();
+                            mergedTOs[momentum_array].insert(mergedTOs[momentum_array].end(),to.second.begin(), to.second.end());
+                            if(mergedTOs[momentum_array].size() != initial_size && initial_size > 0)
+                            {
+                                LOG(DEBUG) << "Merging filters for (Pt, Eta, Phi, mass) = (" << momentum_array[0] << ", " << momentum_array[1] << ", " << momentum_array[2] << ", " <<  momentum_array[3] << ")";
+                            }
+                        }
+                        deltaRMatchedTOs.clear();
+                        // Filling the matched TOs again, this time with merged filtes
+                        for (auto to : mergedTOs)
+                        {
+                            KLV mergedTO;
+                            mergedTO.p4.SetCoordinates(to.first[0], to.first[1], to.first[2], to.first[3]);
+                            deltaRMatchedTOs.push_back(std::pair<KLV,std::vector<std::string>>(mergedTO, to.second));
+                        }
+                        // Prepare HLT path <----> filter matches relation & match TOs
 			for (std::map<std::string, std::vector<std::string>>::const_iterator objectTriggerFilterByHltName = (product.*m_settingsObjectTriggerFiltersByHltName).begin();
 			     objectTriggerFilterByHltName != (product.*m_settingsObjectTriggerFiltersByHltName).end();
 			     ++objectTriggerFilterByHltName)
@@ -131,18 +154,28 @@ public:
                                 for (auto triggerObject : deltaRMatchedTOs)
                                 {
                                         LOG(DEBUG) << "\tProcessing trigger object " << triggerObject.first.p4;
+                                        for (auto filterLabel : triggerObject.second)
+                                        {
+                                            LOG(DEBUG) << "\t\tavailable filters: " << filterLabel;
+                                        }
                                         // loop over the filter regexp associated with the given hlt in the config
                                         unsigned int countFilterMatches = 0;
-                                        for (std::vector<std::string>::const_iterator filterName = objectTriggerFilterByHltName->second.begin();
-                                             filterName != objectTriggerFilterByHltName->second.end();
-                                             ++filterName)
+                                        for (std::vector<std::string>::const_iterator filterNames = objectTriggerFilterByHltName->second.begin();
+                                             filterNames != objectTriggerFilterByHltName->second.end();
+                                             ++filterNames)
                                         {
-                                                LOG(DEBUG) << "\t\tcheck filterName = " << *filterName;
-                                                for (auto filterLabel : triggerObject.second)
+                                                LOG(DEBUG) << "\t\t\tcheck filterNames to be ORed = " << *filterNames;
+                                                std::vector<std::string> filterNamesList;
+                                                boost::split(filterNamesList, *filterNames, boost::is_any_of(","));
+                                                bool matchedToOr = false;
+                                                for (std::vector<std::string>::const_iterator filterName = objectTriggerFilterByHltName->second.begin();
+                                                     filterName != objectTriggerFilterByHltName->second.end();
+                                                     ++filterName)
                                                 {
-                                                    LOG(DEBUG) << "\t\t\tavailable filters: " << filterLabel;
+                                                        matchedToOr = (matchedToOr || (triggerObject.second.end() !=  std::find(triggerObject.second.begin(), triggerObject.second.end(), *filterName)));
+                                                        if(matchedToOr) break;
                                                 }
-                                                if(triggerObject.second.end() !=  std::find(triggerObject.second.begin(), triggerObject.second.end(), *filterName)) countFilterMatches++;
+                                                if(matchedToOr) countFilterMatches++;
                                         }
                                         if (countFilterMatches ==  objectTriggerFilterByHltName->second.size())
                                         {
