@@ -61,6 +61,8 @@ class Unfolding(analysisbase.AnalysisBase):
                 help="Location of libRooUnfold library file")
         self.Unfolding_options.add_argument("--unfolding-iterations", type=int, default=4,
                 help="Number of iterations for unfolding")
+        self.Unfolding_options.add_argument("--unfolding-regularization", type=int, default=1e-20,
+                help="Parameter of regularization for unfolding")
         self.Unfolding_options.add_argument("--write-matrix", type=bool, default=False,
                 help="Write the Covariance and Correlation Matrix in ROOT File")
         self.Unfolding_options.add_argument("--unfold-file", type=str, 
@@ -143,6 +145,19 @@ class Unfolding(analysisbase.AnalysisBase):
     
             recotruth_cov = unfold.Ereco()
             out_file = ROOT.TFile(unfold_file[0], 'RECREATE')
+            reco_hist = hMeas.Clone("reco_hist")
+            gen_hist = hTrue.Clone("gen_hist")
+            resp_hist = hResponse.Clone("resp_matrix")
+            resp_matrix = response.Mresponse()
+            resp_matrix_e = response.Eresponse()
+            #resp_matrix = ROOT.TMatrixD(hResponse.GetNbinsX()+1,hResponse.GetNbins()+1)
+            for x in xrange(1, resp_hist.GetNbinsX()+1):
+                for y in xrange(1, resp_hist.GetNbinsY()+1):
+                    resp_hist.SetBinContent(x, y, resp_matrix[x-1][y-1])
+                    resp_hist.SetBinError(x, y, resp_matrix_e[x-1][y-1])
+                    #resp_hist.SetBinContent(x, y, response.GetBinContent(x,y))
+                    #resp_hist.SetBinError(x, y, response.GetBinError(x,y))
+            recotruth_cov = unfold.Ereco()
             cov_matrix = hResponse.Clone("cov_matrix")
             for x in xrange(1, cov_matrix.GetNbinsX() + 1):
                 for y in xrange(1, cov_matrix.GetNbinsY() + 1):
@@ -159,8 +174,8 @@ class Unfolding(analysisbase.AnalysisBase):
                         corr_matrix.SetBinError(x, y, 0.)
                     except ZeroDivisionError:
                         corr_matrix.SetBinContent(x, y, 0.)
-                corr_matrix.SetBinError(x, y, 0.)
-                f.write(str(corr_matrix.ProjectionX().GetBinLowEdge(x))+" "+str(corr_matrix.ProjectionX().GetBinLowEdge(x)+corr_matrix.ProjectionX().GetBinWidth(x))+" "+str(corr_matrix.ProjectionY().GetBinLowEdge(y))+" "+str(corr_matrix.ProjectionY().GetBinLowEdge(y)+corr_matrix.ProjectionY().GetBinWidth(y))+" "+ str(corr_matrix.GetBinContent(x,y))+'\n')
+            corr_matrix.SetBinError(x, y, 0.)
+            f.write(str(corr_matrix.ProjectionX().GetBinLowEdge(x))+" "+str(corr_matrix.ProjectionX().GetBinLowEdge(x)+corr_matrix.ProjectionX().GetBinWidth(x))+" "+str(corr_matrix.ProjectionY().GetBinLowEdge(y))+" "+str(corr_matrix.ProjectionY().GetBinLowEdge(y)+corr_matrix.ProjectionY().GetBinWidth(y))+" "+ str(corr_matrix.GetBinContent(x,y))+'\n')
             out_file.Write()
             out_file.Close()
         return unfold.Hreco()
