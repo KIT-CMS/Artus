@@ -143,39 +143,45 @@ class Unfolding(analysisbase.AnalysisBase):
             unfold.SetNToys(10000000)
             unfold.RunToy()
     
-            recotruth_cov = unfold.Ereco()
+            resp_matrix = response.Mresponse()
+            resp_matrix_error = response.Eresponse()
+            cov_matrix = unfold.Ereco()
+            unfold_matrix = unfold.Hreco()
+            backfold_matrix = unfold.HrecoMeasured()
+            
             out_file = ROOT.TFile(unfold_file[0], 'RECREATE')
+            f = open(unfold_file[0].replace('.root','.txt'), 'w')
             reco_hist = hMeas.Clone("reco_hist")
             gen_hist = hTrue.Clone("gen_hist")
-            resp_hist = hResponse.Clone("resp_matrix")
-            resp_matrix = response.Mresponse()
-            resp_matrix_e = response.Eresponse()
-            #resp_matrix = ROOT.TMatrixD(hResponse.GetNbinsX()+1,hResponse.GetNbins()+1)
+            resp_hist = hResponse.Clone("resp_hist")
+            unfold_hist = hTrue.Clone("unfold_hist")
+            backfold_hist = hMeas.Clone("backfold_hist")
+            cov_hist = hResponse.Clone("cov_hist")
+            corr_hist = hResponse.Clone("corr_hist")
+            
             for x in xrange(1, resp_hist.GetNbinsX()+1):
                 for y in xrange(1, resp_hist.GetNbinsY()+1):
                     resp_hist.SetBinContent(x, y, resp_matrix[x-1][y-1])
-                    resp_hist.SetBinError(x, y, resp_matrix_e[x-1][y-1])
-                    #resp_hist.SetBinContent(x, y, response.GetBinContent(x,y))
-                    #resp_hist.SetBinError(x, y, response.GetBinError(x,y))
-            recotruth_cov = unfold.Ereco()
-            cov_matrix = hResponse.Clone("cov_matrix")
-            for x in xrange(1, cov_matrix.GetNbinsX() + 1):
-                for y in xrange(1, cov_matrix.GetNbinsY() + 1):
-                    cov_matrix.SetBinContent(x, y, recotruth_cov[x-1][y-1])
-                    cov_matrix.SetBinError(x, y, 0.)
+                    resp_hist.SetBinError(x, y, resp_matrix_error[x-1][y-1])
             
-    
-            corr_matrix = cov_matrix.Clone("corr_matrix")
-            f = open(unfold_file[0].replace('.root','.txt'), 'w')
-            for x in xrange(1, corr_matrix.GetNbinsX() + 1):
-                for y in xrange(1, corr_matrix.GetNbinsY() + 1):
+            for x in xrange(1,gen_hist.GetNbinsX()+1):
+                unfold_hist.SetBinContent(x,unfold_matrix.GetBinContent(x))
+                unfold_hist.SetBinError(x,unfold_matrix.GetBinError(x))
+            for y in xrange(1,reco_hist.GetNbinsX()+1):
+                backfold_hist.SetBinContent(y,backfold_matrix.GetBinContent(y))
+                backfold_hist.SetBinError(y,backfold_matrix.GetBinError(y))
+            
+            for x in xrange(1, cov_hist.GetNbinsX()+1):
+                for y in xrange(1, cov_hist.GetNbinsY()+1):
+                    cov_hist.SetBinContent(x,y,cov_matrix[x-1][y-1])
                     try:
-                        corr_matrix.SetBinContent(x, y, cov_matrix.GetBinContent(x,y) / (math.sqrt(cov_matrix.GetBinContent(x,x)) * math.sqrt(cov_matrix.GetBinContent(y,y))))
-                        corr_matrix.SetBinError(x, y, 0.)
+                        corr_hist.SetBinContent(x,y,cov_matrix[x-1][y-1]/(math.sqrt(cov_matrix[x-1][x-1]) * math.sqrt(cov_matrix[y-1][y-1])))
                     except ZeroDivisionError:
-                        corr_matrix.SetBinContent(x, y, 0.)
-            corr_matrix.SetBinError(x, y, 0.)
-            f.write(str(corr_matrix.ProjectionX().GetBinLowEdge(x))+" "+str(corr_matrix.ProjectionX().GetBinLowEdge(x)+corr_matrix.ProjectionX().GetBinWidth(x))+" "+str(corr_matrix.ProjectionY().GetBinLowEdge(y))+" "+str(corr_matrix.ProjectionY().GetBinLowEdge(y)+corr_matrix.ProjectionY().GetBinWidth(y))+" "+ str(corr_matrix.GetBinContent(x,y))+'\n')
+                        corr_hist.SetBinContent(x,y,0.)
+                    f.write(str(corr_hist.ProjectionX().GetBinLowEdge(x))+" "+str(corr_hist.ProjectionX().GetBinLowEdge(x)+corr_hist.ProjectionX().GetBinWidth(x))+" "+str(corr_hist.ProjectionY().GetBinLowEdge(y))+" "+str(corr_hist.ProjectionY().GetBinLowEdge(y)+corr_hist.ProjectionY().GetBinWidth(y))+" "+ str(corr_hist.GetBinContent(x,y))+'\n')
+                    cov_hist.SetBinError(x,y,0.)
+                    corr_hist.SetBinError(x,y,0.)
+            
             out_file.Write()
             out_file.Close()
         return unfold.Hreco()
