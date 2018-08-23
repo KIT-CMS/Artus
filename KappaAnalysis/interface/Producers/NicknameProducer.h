@@ -27,5 +27,6 @@ private:
         bool isDoubleEG = false;
         bool isDoubleMuon = false;
         bool isMC = false;
+        bool isEmbedded = false;
         std::string nickname;
 };

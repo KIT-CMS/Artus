@@ -40,6 +40,7 @@ public:
         bool m_isDoubleEG = false;
         bool m_isDoubleMuon = false;
         bool m_isMC = false;
+        bool m_isEmbedded = false;
 
 	// all weights in this map are multiplied into one "eventWeight" by the EventWeightProducer
 	// events in this map can be written out automatically by the KappaLambdaNtupleConsumer
