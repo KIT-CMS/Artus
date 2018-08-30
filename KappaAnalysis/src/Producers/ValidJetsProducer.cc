@@ -25,7 +25,9 @@ std::string ValidTaggedJetsProducer::GetProducerId() const {
 void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 {
 	ValidJetsProducerBase<KJet, KBasicJet>::Init(settings);
-	
+
+	debug = settings.GetValidTaggedJetsProducerDebug();
+
 	puJetIdsByIndex = Utility::ParseMapTypes<size_t, std::string>(
 			Utility::ParseVectorToMap(settings.GetPuJetIDs()),
 			puJetIdsByHltName
@@ -110,7 +112,34 @@ bool ValidTaggedJetsProducer::AdditionalCriteria(KJet* jet, KappaEvent const& ev
 			LOG(FATAL) << "HLT name dependent PU Jet is not yet implemented!";
 		}
 	}
-	
+
+	if (debug)
+	{
+		std::string name = settings.GetBTaggedJetCombinedSecondaryVertexName();
+		std::vector<std::string> vnames;
+		boost::split(vnames, name, boost::is_any_of("+"), boost::token_compress_on);
+		std::vector<float> selected_tags;
+		std::cout << "\tBTaggedJetCombinedSecondaryVertexName: " << name << "\n\tvnames:" << std::endl;
+		for (unsigned int j = 0; j < vnames.size(); ++j)
+		{
+			std::cout << "\tvnames[" << j << "] = " << vnames[j] << std::endl;
+			for (unsigned int i = 0; i < event.m_jetMetadata->tagNames.size(); ++i)
+			{
+				if (event.m_jetMetadata->ReplaceAll(event.m_jetMetadata->tagNames[i], ":", "") == vnames[j])
+				{
+					std::cout << "\t\t " << i << ") "
+						<< event.m_jetMetadata->tagNames[i]
+						<< " ==> " << event.m_jetMetadata->ReplaceAll(event.m_jetMetadata->tagNames[i], ":", "")
+						<< ".... selected tag" << std::endl;
+					selected_tags.push_back(jet->tags[i]);
+				}
+				std::cout << "\t\t " << i << ") "
+					<< event.m_jetMetadata->tagNames[i]
+					<< " ==> " << event.m_jetMetadata->ReplaceAll(event.m_jetMetadata->tagNames[i], ":", "") << std::endl;
+			}
+		}
+	}
+
 	// Jet taggers
 	for (std::map<std::string, std::vector<float> >::const_iterator jetTaggerLowerCut = jetTaggerLowerCutsByTaggerName.begin();
 	     jetTaggerLowerCut != jetTaggerLowerCutsByTaggerName.end() && validJet; ++jetTaggerLowerCut)

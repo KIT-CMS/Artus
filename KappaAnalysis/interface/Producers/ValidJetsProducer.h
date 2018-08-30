@@ -406,6 +406,7 @@ private:
 	std::map<std::string, std::vector<float> > jetTaggerUpperCutsByTaggerName;
 
 	bool PassPuJetIds(KJet* jet, std::vector<std::string> const& puJetIds, KJetMetadata* taggerMetadata) const;
+	bool debug;
 };
 
 
