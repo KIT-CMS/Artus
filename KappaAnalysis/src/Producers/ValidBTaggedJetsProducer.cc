@@ -31,7 +31,7 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 			return it != product.m_bTaggedJetsByWp.end() ? product.m_bTaggedJetsByWp.at(bTagWorkingPoint.first).size() : 0;
 		});
 	}
-	
+
 	// add possible quantities for the lambda ntuples consumers
 	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets", [](KappaEvent const& event, KappaProduct const& product) {
 		return product.m_bTaggedJets.size();
@@ -102,17 +102,17 @@ void ValidBTaggedJetsProducer::Produce(KappaEvent const& event, KappaProduct& pr
 			}
 
 			validBJet = validBJet && AdditionalCriteria(tjet, event, product, settings);
-			
+
 			//entry point for Scale Factor (SF) of btagged jets
 			if (settings.GetApplyBTagSF() && !settings.GetInputIsData())
 			{
 				//https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods#2a_Jet_by_jet_updating_of_the_b
 				if (m_bTagSFMethod == KappaEnumTypes::BTagScaleFactorMethod::PROMOTIONDEMOTION) {
-				
+
 					int jetflavor = tjet->hadronFlavour;
 					unsigned int btagSys = BTagSF::kNo;
 					unsigned int bmistagSys = BTagSF::kNo;
-					
+
 					if (settings.GetBTagShift()<0)
 						btagSys = BTagSF::kDown;
 					if (settings.GetBTagShift()>0)
@@ -122,8 +122,8 @@ void ValidBTaggedJetsProducer::Produce(KappaEvent const& event, KappaProduct& pr
 					if (settings.GetBMistagShift()>0)
 						bmistagSys = BTagSF::kUp;
 
-					LOG_N_TIMES(1, DEBUG) << "Btagging shifts tag/mistag : " << settings.GetBTagShift() << " " << settings.GetBMistagShift(); 
-					
+					LOG_N_TIMES(1, DEBUG) << "Btagging shifts tag/mistag : " << settings.GetBTagShift() << " " << settings.GetBMistagShift();
+
 					bool taggedBefore = validBJet;
 					validBJet = m_bTagSfMap.at(*workingPoint).isbtagged(
 							tjet->p4.pt(),
@@ -135,11 +135,11 @@ void ValidBTaggedJetsProducer::Produce(KappaEvent const& event, KappaProduct& pr
 							settings.GetYear(),
 							bTagWorkingPoint
 					);
-					
+
 					if (taggedBefore != validBJet)
 						LOG_N_TIMES(20, DEBUG) << "Promoted/demoted : " << validBJet;
 				}
-				
+
 				else if (m_bTagSFMethod == KappaEnumTypes::BTagScaleFactorMethod::OTHER) {
 					//todo
 				}

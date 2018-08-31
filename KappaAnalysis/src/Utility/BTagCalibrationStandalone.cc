@@ -58,9 +58,9 @@ BTagEntry::BTagEntry(const std::string &csvLine)
 	char chars[] = " \"\n";
 	for (unsigned int i = 0; i < strlen(chars); ++i)
 	{
-		vec[1].erase(remove(vec[1].begin(),vec[1].end(),chars[i]),vec[1].end());
-		vec[2].erase(remove(vec[2].begin(),vec[2].end(),chars[i]),vec[2].end());
-		vec[10].erase(remove(vec[10].begin(),vec[10].end(),chars[i]),vec[10].end());
+		vec[1].erase(remove(vec[1].begin(), vec[1].end(), chars[i]), vec[1].end());
+		vec[2].erase(remove(vec[2].begin(), vec[2].end(), chars[i]), vec[2].end());
+		vec[10].erase(remove(vec[10].begin(), vec[10].end(), chars[i]), vec[10].end());
 	}
 
 	// Make formula
@@ -265,9 +265,8 @@ std::string BTagEntry::trimStr(std::string str)
 	if (std::string::npos == s || std::string::npos == e)
 		return "";
 	else
-		return str.substr(s, e-s+1);
+		return str.substr(s, e - s+1);
 }
-
 
 #include <fstream>
 #include <sstream>
@@ -316,7 +315,7 @@ void BTagCalibration::readCSV(std::istream &s)
 	std::string line;
 
 	// First line might be the header
-	getline(s,line);
+	getline(s, line);
 	if (line.find("OperatingPoint") == std::string::npos)
 		addEntry(BTagEntry(line));
 
@@ -390,7 +389,7 @@ double BTagCalibrationReader::eval(BTagEntry::JetFlavor jf,
 			{
 				if (e.discrMin <= discr && discr < e.discrMax)
 					return e.func.Eval(discr);
-				}
+			}
 			else
 			{
 				return e.func.Eval(pt);
@@ -426,5 +425,5 @@ void BTagCalibrationReader::setupTmpData(const BTagCalibration* c)
 
 		if (te.etaMin < 0)
 			useAbsEta[be.params.jetFlavor] = false;
-		}
 	}
+}

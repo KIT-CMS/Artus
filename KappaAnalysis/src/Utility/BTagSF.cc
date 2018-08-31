@@ -123,13 +123,13 @@ void BTagSF::initBtagwp(std::string btagwp)
 }
 
 bool BTagSF::isbtagged(double pt, float eta, float csv, Int_t jetflavor,
-	                     unsigned int btagsys, unsigned int mistagsys, int year, float btagWP) const
+						 unsigned int btagsys, unsigned int mistagsys, int year, float btagWP) const
 {
 	randm.SetSeed(static_cast<int>((eta + 5) * 100000.));
 	double randval = randm.Uniform();
 
 	float csv_WP = 0.679;
-	if(year == 2015 || year == 2016 || year == 2017)
+	if (year == 2015 || year == 2016 || year == 2017)
 		csv_WP = btagWP;
 
 	bool btagged = false;
@@ -167,13 +167,13 @@ bool BTagSF::isbtagged(double pt, float eta, float csv, Int_t jetflavor,
 			else if (std::abs(jetflavor) == 4)
 			{
 				eff = 0.192 * sf; // eff_c in MC for CSVM = (-1.5734604211*x*x*x*x +
-		                     // 1.52798999269*x*x*x +  0.866697059943*x*x +
-		                     // -1.66657942274*x +  0.780639301724), x = 0.679
+							 // 1.52798999269*x*x*x +  0.866697059943*x*x +
+							 // -1.66657942274*x +  0.780639301724), x = 0.679
 			}
 			else
 			{
 				eff = getMistag(pt, eta);
-		}
+			}
 		}
 
 		promoteProb_btag = std::abs(sf - 1.0) / ((1.0 / eff) - 1.0);
@@ -207,11 +207,11 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 
 		if ((pt > MaxBJetPt) || (pt < MinBJetPt))
 		{
-		  DoubleUncertainty = true;
-		  if (pt > MaxBJetPt)
-				  pt = MaxBJetPt;
-		  else
-				  pt = MinBJetPt;
+			DoubleUncertainty = true;
+			if (pt > MaxBJetPt)
+				pt = MaxBJetPt;
+			else
+				pt = MinBJetPt;
 		}
 
 		double jet_scalefactor = reader_mujets.eval(BTagEntry::FLAV_B, std::abs(eta), pt);
@@ -220,8 +220,8 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 
 		if (DoubleUncertainty)
 		{
-		  jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor;
-		  jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor;
+			jet_scalefactor_up = 2 * (jet_scalefactor_up - jet_scalefactor) + jet_scalefactor;
+			jet_scalefactor_do = 2 * (jet_scalefactor_do - jet_scalefactor) + jet_scalefactor;
 		}
 
 		if (btagsys == kDown) return jet_scalefactor_do;
@@ -231,78 +231,79 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 	else
 	{
 
-	// pT dependent scale factors
-	// Tagger: CSVM within 30 < pt < 670 GeV, abs(eta) < 2.4, x = pt
-	// SFb = 0.6981*((1.+(0.414063*x))/(1.+(0.300155*x))); (2011)
-	// SFb = (0.938887+(0.00017124*x))+(-2.76366e-07*(x*x)); (2012)
-	// for pt > 670 (800) GeV: use the SFb value at 670 (800) GeV with twice the
-	// quoted uncertainty for 2011 (2012)
-	// for pt < 30 (20) GeV: use the SFb value at 30 (20) GeV with a +/-0.12
-	// absolute uncertainty (twice the quoted uncertainty) for 2011 (2012)
-	// i.e SFb(pt<30) = SFb(pt=30) +/- 0.12, so the relative uncertainty is
-	// 0.12/SFb(pt=30) for 2011
+		// pT dependent scale factors
+		// Tagger: CSVM within 30 < pt < 670 GeV, abs(eta) < 2.4, x = pt
+		// SFb = 0.6981*((1.+(0.414063*x))/(1.+(0.300155*x))); (2011)
+		// SFb = (0.938887+(0.00017124*x))+(-2.76366e-07*(x*x)); (2012)
+		// for pt > 670 (800) GeV: use the SFb value at 670 (800) GeV with twice the
+		// quoted uncertainty for 2011 (2012)
+		// for pt < 30 (20) GeV: use the SFb value at 30 (20) GeV with a +/-0.12
+		// absolute uncertainty (twice the quoted uncertainty) for 2011 (2012)
+		// i.e SFb(pt<30) = SFb(pt=30) +/- 0.12, so the relative uncertainty is
+		// 0.12/SFb(pt=30) for 2011
 
-	double x = pt;
+		double x = pt;
 		if (year==2011 && pt >= 670.0) x = 669.9;
 		if (year==2011 && pt < 30.0) x = 30.0;
 		if (year==2012 && pt >= 800.0) x = 799.9;
 		if (year==2012 && pt < 20.0) x = 20.0;
 
-	double SFb = 1.0;
-	if (year==2011)
-		SFb = 0.6981 * (1.0 + 0.414063 * x) / (1.0 + 0.300155 * x);
-	else
-		SFb = 0.938887 + 0.00017124 * x - 2.76366e-07 * x * x;
+		double SFb = 1.0;
+		if (year == 2011)
+			SFb = 0.6981 * (1.0 + 0.414063 * x) / (1.0 + 0.300155 * x);
+		else
+			SFb = 0.938887 + 0.00017124 * x - 2.76366e-07 * x * x;
 
 		if (btagsys == kNo) return SFb;
 
-	double SFb_error_2011[] = {0.0295675, 0.0295095, 0.0210867, 0.0219349, 0.0227033,
-	                           0.0204062, 0.0185857, 0.0256242, 0.0383341, 0.0409675,
-	                           0.0420284, 0.0541299, 0.0578761, 0.0655432};
-	double ptmin_2011[] = {30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500};
-	double ptmax_2011[] = {40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 670};
-	double SFb_error_2012[] = {0.0415707, 0.0204209, 0.0223227, 0.0206655, 0.0199325, 0.0174121,
-	                           0.0202332, 0.0182446, 0.0159777, 0.0218531, 0.0204688, 0.0265191,
-	                           0.0313175, 0.0415417, 0.0740446, 0.0596716};
-	double ptmin_2012[] = {20, 30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600};
-	double ptmax_2012[] = {30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600, 800};
+		double SFb_error_2011[] = {0.0295675, 0.0295095, 0.0210867, 0.0219349, 0.0227033,
+								   0.0204062, 0.0185857, 0.0256242, 0.0383341, 0.0409675,
+								   0.0420284, 0.0541299, 0.0578761, 0.0655432};
+		double ptmin_2011[] = {30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500};
+		double ptmax_2011[] = {40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 670};
+		double SFb_error_2012[] = {0.0415707, 0.0204209, 0.0223227, 0.0206655, 0.0199325, 0.0174121,
+								   0.0202332, 0.0182446, 0.0159777, 0.0218531, 0.0204688, 0.0265191,
+								   0.0313175, 0.0415417, 0.0740446, 0.0596716};
+		double ptmin_2012[] = {20, 30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600};
+		double ptmax_2012[] = {30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600, 800};
 
 
-	double SFb_error_x = 0.0;
+		double SFb_error_x = 0.0;
 
-	unsigned int nbins = 16;
-	if(year==2011) nbins = 14;
+		unsigned int nbins = 16;
+		if (year == 2011) nbins = 14;
 
-	for (unsigned int ibin = 0; ibin < nbins; ++ibin)
-	{
-		if (year==2011)
+		for (unsigned int ibin = 0; ibin < nbins; ++ibin)
 		{
-			if (x >= ptmin_2011[ibin] && x < ptmax_2011[ibin])
-				SFb_error_x = SFb_error_2011[ibin];
+			if (year == 2011)
+			{
+				if (x >= ptmin_2011[ibin] && x < ptmax_2011[ibin])
+					SFb_error_x = SFb_error_2011[ibin];
+			}
+			else
+			{
+				if (x >= ptmin_2012[ibin] && x < ptmax_2012[ibin])
+					SFb_error_x = SFb_error_2012[ibin];
+			}
+		}
+
+		if (year == 2011)
+		{
+			if (pt >= 670.0) SFb_error_x = 2.0 * 0.0655432;
+			if (pt < 30.0) SFb_error_x = 0.12;
 		}
 		else
 		{
-			if (x >= ptmin_2012[ibin] && x < ptmax_2012[ibin])
-				SFb_error_x = SFb_error_2012[ibin];
-		}
-	}
-	if (year==2011)
-	{
-			if (pt >= 670.0) SFb_error_x = 2.0 * 0.0655432;
-			if (pt < 30.0) SFb_error_x = 0.12;
-	}
-	else
-	{
 			if (pt >= 800.0) SFb_error_x = 2.0 * 0.0717567;
 			if (pt < 20.0) SFb_error_x = 2.0 * 0.0554504;
-	}
+		}
 
-	double scalefactor = SFb;
+		double scalefactor = SFb;
 
 		if (btagsys == kDown) scalefactor = (SFb - SFb_error_x);
 		if (btagsys == kUp) scalefactor = (SFb + SFb_error_x);
 
-	return scalefactor;
+		return scalefactor;
 	}
 }
 
@@ -318,9 +319,9 @@ double BTagSF::getSFc(double pt, float eta, unsigned int btagsys, int year) cons
 	{
 	  DoubleUncertainty = true;
 	  if (pt > MaxBJetPt)
-	          pt = MaxBJetPt;
+			  pt = MaxBJetPt;
 	  else
-	          pt = MinBJetPt;
+			  pt = MinBJetPt;
 	}
 
 	double jet_scalefactor = reader_mujets.eval(BTagEntry::FLAV_C, std::abs(eta), pt);
@@ -363,13 +364,13 @@ double BTagSF::getSFc(double pt, float eta, unsigned int btagsys, int year) cons
 		return SFc;
 
 	double SFb_error_2011[] = {0.0295675, 0.0295095, 0.0210867, 0.0219349, 0.0227033,
-	                           0.0204062, 0.0185857, 0.0256242, 0.0383341, 0.0409675,
-	                           0.0420284, 0.0541299, 0.0578761, 0.0655432};
+							   0.0204062, 0.0185857, 0.0256242, 0.0383341, 0.0409675,
+							   0.0420284, 0.0541299, 0.0578761, 0.0655432};
 	double ptmin_2011[] = {30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500};
 	double ptmax_2011[] = {40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 670};
 	double SFb_error_2012[] = {0.0415707, 0.0204209, 0.0223227, 0.0206655, 0.0199325, 0.0174121,
-	                           0.0202332, 0.0182446, 0.0159777, 0.0218531, 0.0204688, 0.0265191,
-	                           0.0313175, 0.0415417, 0.0740446, 0.0596716};
+							   0.0202332, 0.0182446, 0.0159777, 0.0218531, 0.0204688, 0.0265191,
+							   0.0313175, 0.0415417, 0.0740446, 0.0596716};
 	double ptmin_2012[] = {20, 30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600};
 	double ptmax_2012[] = {30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600, 800};
 
@@ -545,7 +546,7 @@ double BTagSF::getEfficiencyFromFile(int flavour, double pt, float eta) const
 		effHisto = (TH2D*) effFile->Get("btag_eff_oth");
 	}
 
-	if (pt > effHisto->GetXaxis()->GetBinLowEdge(effHisto->GetNbinsX()+1))
+	if (pt > effHisto->GetXaxis()->GetBinLowEdge(effHisto->GetNbinsX() + 1))
 		eff = effHisto->GetBinContent(effHisto->GetNbinsX(), effHisto->GetYaxis()->FindBin(std::abs(eta)));
 	else
 		eff = effHisto->GetBinContent(effHisto->GetXaxis()->FindBin(pt), effHisto->GetYaxis()->FindBin(std::abs(eta)));
