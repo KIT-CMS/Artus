@@ -40,51 +40,49 @@ BTagEntry::BTagEntry(const std::string &csvLine)
 	std::stringstream buff(csvLine);
 	std::vector<std::string> vec;
 	std::string token;
-	while (std::getline(buff, token, ","[0])) {
+
+	while (std::getline(buff, token, ','))
+	{
 		token = BTagEntry::trimStr(token);
-		if (token.empty()) {
-			continue;
-		}
+		if (token.empty()) continue;
+
 		vec.push_back(token);
 	}
-	if (vec.size() != 11) {
-		std::cerr << "ERROR in BTagCalibration: "
-		          << "Invalid csv line; num tokens != 11: "
-		          << csvLine;
+	if (vec.size() != 11)
+	{
+		std::cerr << "ERROR in BTagCalibration:  Invalid csv line; num tokens != 11: " << csvLine;
 		throw std::exception();
 	}
 
-	// clean string values
+	// Clean string values
 	char chars[] = " \"\n";
-	for (unsigned int i = 0; i < strlen(chars); ++i) {
+	for (unsigned int i = 0; i < strlen(chars); ++i)
+	{
 		vec[1].erase(remove(vec[1].begin(),vec[1].end(),chars[i]),vec[1].end());
 		vec[2].erase(remove(vec[2].begin(),vec[2].end(),chars[i]),vec[2].end());
 		vec[10].erase(remove(vec[10].begin(),vec[10].end(),chars[i]),vec[10].end());
 	}
 
-	// make formula
+	// Make formula
 	formula = vec[10];
-	TF1 f1("", formula.c_str());  // compile formula to check validity
-	if (f1.IsZombie()) {
-		std::cerr << "ERROR in BTagCalibration: "
-		          << "Invalid csv line; formula does not compile: "
-		          << csvLine;
+	TF1 f1("", formula.c_str());
+	if (f1.IsZombie())  // compile formula to check validity
+	{
+		std::cerr << "ERROR in BTagCalibration: Invalid csv line; formula does not compile: " << csvLine;
 		throw std::exception();
 	}
 
-	// make parameters
+	// Construct parameters
 	unsigned op = stoi(vec[0]);
-	if (op > 3) {
-		std::cerr << "ERROR in BTagCalibration: "
-		          << "Invalid csv line; OperatingPoint > 3: "
-		          << csvLine;
+	if (op > 3)
+	{
+		std::cerr << "ERROR in BTagCalibration: Invalid csv line; OperatingPoint > 3: " << csvLine;
 		throw std::exception();
 	}
 	unsigned jf = stoi(vec[3]);
-	if (jf > 2) {
-		std::cerr << "ERROR in BTagCalibration: "
-		          << "Invalid csv line; JetFlavor > 2: "
-		          << csvLine;
+	if (jf > 2)
+	{
+		std::cerr << "ERROR in BTagCalibration: Invalid csv line; JetFlavor > 2: " << csvLine;
 		throw std::exception();
 	}
 	params = BTagEntry::Parameters(
@@ -259,11 +257,12 @@ std::string BTagEntry::makeCSVLine() const
 	return buff.str();
 }
 
-std::string BTagEntry::trimStr(std::string str) {
+std::string BTagEntry::trimStr(std::string str)
+{
 	size_t s = str.find_first_not_of(" \n\r\t");
 	size_t e = str.find_last_not_of (" \n\r\t");
 
-	if((std::string::npos == s) || (std::string::npos == e))
+	if (std::string::npos == s || std::string::npos == e)
 		return "";
 	else
 		return str.substr(s, e-s+1);
@@ -293,11 +292,11 @@ void BTagCalibration::addEntry(const BTagEntry &entry)
 	data_[token(entry.params)].push_back(entry);
 }
 
-const std::vector<BTagEntry>& BTagCalibration::getEntries(
-	const BTagEntry::Parameters &par) const
+const std::vector<BTagEntry>& BTagCalibration::getEntries(const BTagEntry::Parameters &par) const
 {
 	std::string tok = token(par);
-	if (!data_.count(tok)) {
+	if (!data_.count(tok))
+	{
 		std::cerr << "ERROR in BTagCalibration: "
 		          << "(OperatingPoint, measurementType, sysType) not available: "
 		          << tok;
@@ -316,17 +315,16 @@ void BTagCalibration::readCSV(std::istream &s)
 {
 	std::string line;
 
-	// firstline might be the header
+	// First line might be the header
 	getline(s,line);
-	if (line.find("OperatingPoint") == std::string::npos) {
+	if (line.find("OperatingPoint") == std::string::npos)
 		addEntry(BTagEntry(line));
-	}
 
-	while (getline(s,line)) {
+	while (getline(s,line))
+	{
 		line = BTagEntry::trimStr(line);
-		if (line.empty()) {  // skip empty lines
-			continue;
-		}
+		if (line.empty()) continue;
+
 		addEntry(BTagEntry(line));
 	}
 }
@@ -378,24 +376,23 @@ double BTagCalibrationReader::eval(BTagEntry::JetFlavor jf,
 	                                 float discr) const
 {
 	bool use_discr = (params.operatingPoint == BTagEntry::OP_RESHAPING);
-	if (useAbsEta[jf] && eta < 0) {
-		eta = -eta;
-	}
+	if (useAbsEta[jf] && eta < 0) eta = -eta;
 
-	// search linearly through eta, pt and discr ranges and eval
+	// Search linearly through eta, pt and discr ranges and eval
 	// future: find some clever data structure based on intervals
 	const std::vector<TmpEntry> &entries = tmpData_.at(jf);
-	for (unsigned i=0; i<entries.size(); ++i) {
+	for (unsigned i = 0; i < entries.size(); ++i)
+	{
 		const BTagCalibrationReader::TmpEntry &e = entries.at(i);
-		if (
-			e.etaMin <= eta && eta < e.etaMax                   // find eta
-			&& e.ptMin <= pt && pt < e.ptMax                    // check pt
-		){
-			if (use_discr) {                                    // discr. reshaping?
-				if (e.discrMin <= discr && discr < e.discrMax) {  // check discr
+		if (e.etaMin <= eta && eta < e.etaMax && e.ptMin <= pt && pt < e.ptMax)
+		{
+			if (use_discr)  // discr. reshaping?
+			{
+				if (e.discrMin <= discr && discr < e.discrMax)
 					return e.func.Eval(discr);
 				}
-			} else {
+			else
+			{
 				return e.func.Eval(pt);
 			}
 		}
@@ -408,7 +405,9 @@ void BTagCalibrationReader::setupTmpData(const BTagCalibration* c)
 {
 	useAbsEta = std::vector<bool>(4, true);
 	const std::vector<BTagEntry> &entries = c->getEntries(params);
-	for (unsigned i=0; i<entries.size(); ++i) {
+
+	for (unsigned i = 0; i < entries.size(); ++i)
+	{
 		const BTagEntry &be = entries[i];
 		BTagCalibrationReader::TmpEntry te;
 		te.etaMin = be.params.etaMin;
@@ -418,17 +417,14 @@ void BTagCalibrationReader::setupTmpData(const BTagCalibration* c)
 		te.discrMin = be.params.discrMin;
 		te.discrMax = be.params.discrMax;
 
-		if (params.operatingPoint == BTagEntry::OP_RESHAPING) {
-			te.func = TF1("", be.formula.c_str(),
-			              be.params.discrMin, be.params.discrMax);
-		} else {
-			te.func = TF1("", be.formula.c_str(),
-			              be.params.ptMin, be.params.ptMax);
-		}
+		if (params.operatingPoint == BTagEntry::OP_RESHAPING)
+			te.func = TF1("", be.formula.c_str(), be.params.discrMin, be.params.discrMax);
+		else
+			te.func = TF1("", be.formula.c_str(), be.params.ptMin, be.params.ptMax);
 
 		tmpData_[be.params.jetFlavor].push_back(te);
-		if (te.etaMin < 0) {
+
+		if (te.etaMin < 0)
 			useAbsEta[be.params.jetFlavor] = false;
 		}
 	}
-}

@@ -13,7 +13,8 @@ BTagSF::BTagSF(std::string csvfile, std::string efficiencyfile) :
 	TDirectory *savedir(gDirectory);
 	TFile *savefile(gFile);
 
-	if (effFile->IsZombie()) {
+	if (effFile->IsZombie())
+	{
 		std::cout << "BTagSF: file " << efficiencyfile << " is not found...   quitting " << std::endl;
 		exit(-1);
 	}
@@ -139,15 +140,10 @@ bool BTagSF::isbtagged(double pt, float eta, float csv, Int_t jetflavor,
 	double demoteProb_btag  = 0.0;  // ~probability to demote from tagged
 
 	// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools#Hadron_parton_based_jet_flavour
-	// real b-jet
 	if (std::abs(jetflavor) == 5)
 		sf = getSFb(pt, eta, btagsys, year);
-
-	// c-jet
 	else if (std::abs(jetflavor) == 4)
 		sf = getSFc(pt, eta, btagsys, year);
-
-	// light-flavour jet
 	else
 		sf = getSFl(pt, eta, mistagsys, year);
 
@@ -165,18 +161,25 @@ bool BTagSF::isbtagged(double pt, float eta, float csv, Int_t jetflavor,
 		else
 		{
 			if (std::abs(jetflavor) == 5)
+			{
 				eff = 0.719;
+			}
 			else if (std::abs(jetflavor) == 4)
+			{
 				eff = 0.192 * sf; // eff_c in MC for CSVM = (-1.5734604211*x*x*x*x +
 		                     // 1.52798999269*x*x*x +  0.866697059943*x*x +
 		                     // -1.66657942274*x +  0.780639301724), x = 0.679
+			}
 			else
+			{
 				eff = getMistag(pt, eta);
 		}
+		}
+
 		promoteProb_btag = std::abs(sf - 1.0) / ((1.0 / eff) - 1.0);
 	}
 
-	if (csv > csv_WP) // if tagged
+	if (csv > csv_WP)
 	{
 		if (demoteProb_btag > 0. && randval < demoteProb_btag)
 			btagged = false;  // demote jet
@@ -196,8 +199,8 @@ bool BTagSF::isbtagged(double pt, float eta, float csv, Int_t jetflavor,
 
 double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) const
 {
-	if(year == 2015 || year == 2016 || year == 2017){
-
+	if (year == 2015 || year == 2016 || year == 2017)
+	{
 		float MaxBJetPt = 1000.;
 		float MinBJetPt = 20.;
 		bool DoubleUncertainty = false;
@@ -215,7 +218,8 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 		double jet_scalefactor_up = reader_mujets_up.eval(BTagEntry::FLAV_B, std::abs(eta), pt);
 		double jet_scalefactor_do = reader_mujets_do.eval(BTagEntry::FLAV_B, std::abs(eta), pt);
 
-		if (DoubleUncertainty) {
+		if (DoubleUncertainty)
+		{
 		  jet_scalefactor_up = 2*(jet_scalefactor_up - jet_scalefactor) + jet_scalefactor;
 		  jet_scalefactor_do = 2*(jet_scalefactor_do - jet_scalefactor) + jet_scalefactor;
 		}
@@ -224,7 +228,8 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 		else if (btagsys == kUp) return jet_scalefactor_up;
 		else return jet_scalefactor;
 	}
-	else{
+	else
+	{
 
 	// pT dependent scale factors
 	// Tagger: CSVM within 30 < pt < 670 GeV, abs(eta) < 2.4, x = pt
@@ -238,24 +243,18 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 	// 0.12/SFb(pt=30) for 2011
 
 	double x = pt;
-	if (year==2011 && pt >= 670.0)
-		x = 669.9;
-	if (year==2011 && pt < 30.0)
-		x = 30.0;
-	if (year==2012 && pt >= 800.0)
-		x = 799.9;
-	if (year==2012 && pt < 20.0)
-		x = 20.0;
+		if (year==2011 && pt >= 670.0) x = 669.9;
+		if (year==2011 && pt < 30.0) x = 30.0;
+		if (year==2012 && pt >= 800.0) x = 799.9;
+		if (year==2012 && pt < 20.0) x = 20.0;
 
 	double SFb = 1.0;
 	if (year==2011)
 		SFb = 0.6981 * (1.0 + 0.414063 * x) / (1.0 + 0.300155 * x);
 	else
-	{
 		SFb = 0.938887 + 0.00017124 * x - 2.76366e-07 * x * x;
-	}
-	if (btagsys == kNo)
-		return SFb;
+
+		if (btagsys == kNo) return SFb;
 
 	double SFb_error_2011[] = {0.0295675, 0.0295095, 0.0210867, 0.0219349, 0.0227033,
 	                           0.0204062, 0.0185857, 0.0256242, 0.0383341, 0.0409675,
@@ -289,25 +288,19 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 	}
 	if (year==2011)
 	{
-		if (pt >= 670.0)
-			SFb_error_x = 2.0 * 0.0655432;
-		if (pt < 30.0)
-			SFb_error_x = 0.12;
+			if (pt >= 670.0) SFb_error_x = 2.0 * 0.0655432;
+			if (pt < 30.0) SFb_error_x = 0.12;
 	}
 	else
 	{
-		if (pt >= 800.0)
-			SFb_error_x = 2.0 * 0.0717567;
-		if (pt < 20.0)
-			SFb_error_x = 2.0 * 0.0554504;
+			if (pt >= 800.0) SFb_error_x = 2.0 * 0.0717567;
+			if (pt < 20.0) SFb_error_x = 2.0 * 0.0554504;
 	}
 
 	double scalefactor = SFb;
 
-	if (btagsys == kDown)
-		scalefactor = (SFb - SFb_error_x);
-	if (btagsys == kUp)
-		scalefactor = (SFb + SFb_error_x);
+		if (btagsys == kDown) scalefactor = (SFb - SFb_error_x);
+		if (btagsys == kUp) scalefactor = (SFb + SFb_error_x);
 
 	return scalefactor;
 	}
