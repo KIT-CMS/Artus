@@ -46,7 +46,7 @@ class AddHistograms(analysisbase.AnalysisBase):
 				)
 			if not plotData.plotdict["add_result_nicks"][index] in plotData.plotdict["nicks"]:
 				plotData.plotdict["nicks"].insert(
-						plotData.plotdict["nicks"].index(plotData.plotdict["add_nicks"][index][0]),
+						plotData.plotdict["nicks"].index(plotData.plotdict["add_nicks"][index][-1])+1,
 						plotData.plotdict["add_result_nicks"][index]
 				)
 

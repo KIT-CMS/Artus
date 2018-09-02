@@ -31,7 +31,7 @@ class Chi2Test(analysisbase.AnalysisBase):
 				"--chi2test-compare", nargs="+", default=["UU"],
 				help="Specify the type of histograms to compare. See TH1::Chi2Test. [Default: %(default)s]"
 		)
-
+		
 	def prepare_args(self, parser, plotData):
 		super(Chi2Test, self).prepare_args(parser, plotData)
 
@@ -54,3 +54,5 @@ class Chi2Test(analysisbase.AnalysisBase):
 		):
 			print "chi2test between ", chi2test_nicks[0], " and ", chi2test_nicks[1]
 			chi2test_result = plotData.plotdict["root_objects"][chi2test_nicks[0]].Chi2Test(plotData.plotdict["root_objects"][chi2test_nicks[1]], chi2test_compare)
+			print chi2test_result
+			plotData.plotdict["texts_below_legend"] = ["#chi^{2}/ndf = "+str(round(chi2test_result,3))]

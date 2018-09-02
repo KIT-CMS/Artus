@@ -61,6 +61,7 @@ class PlotRoot(plotbase.PlotBase):
 		self.axes_histogram = None
 		self.subplot_axes_histogram = None
 		self.plot_excludes = []
+		self.arrows = []
 		self.subplot_line_graphs = []
 		self.plot_vertical_lines = []
 		self.nice_labels = labels.LabelsDict(latex_version="root")
@@ -140,6 +141,8 @@ class PlotRoot(plotbase.PlotBase):
 		                                     help="Extra text written as additional legend entry ")
 		self.formatting_options.add_argument("--exclude-after", type=float, nargs=1, default=None,
 		                                     help="Exclude region after x-position (Give x-position) ")
+		self.formatting_options.add_argument("--arrow-x", type=float, nargs=1, default=None,
+		                                     help="Print arrow at x-axis at given position ")
 		self.formatting_options.add_argument("--exclude-before", type=float, nargs=1, default=None,
 		                                     help="Exclude region before x-position (Give x-position) ")
 		self.formatting_options.add_argument("--extra-text", type=str, nargs="?", default = "",
@@ -205,7 +208,7 @@ class PlotRoot(plotbase.PlotBase):
 			
 			if fill_style is None:
 				fill_style = 0
-				if ("HIST" in marker.upper()) and (not "E" in marker.upper()):
+				if (("HIST" in marker.upper()) and (not "E" in marker.upper())) or "E2" in marker.upper():
 					line_width = 1
 					fill_style = 1001
 				elif "LINE" in marker.upper():
@@ -362,13 +365,11 @@ class PlotRoot(plotbase.PlotBase):
 			root_object.SetLineColor(colors[0])
 			root_object.SetLineStyle(line_style)
 			root_object.SetLineWidth(line_width)
-			
+			root_object.SetFillColor(colors[1])
+			root_object.SetFillStyle(fill_style)			
 			root_object.SetMarkerColor(colors[0])
 			root_object.SetMarkerStyle(marker_style)
 			root_object.SetMarkerSize(marker_size)
-			
-			root_object.SetFillColor(colors[1])
-			root_object.SetFillStyle(fill_style)
 			
 			# axis labels
 			if subplot:
@@ -395,7 +396,7 @@ class PlotRoot(plotbase.PlotBase):
 				for z_bin in range(min(root_object.GetNbinsZ(), len(plotData.plotdict["z_tick_labels"]))):
 					root_object.GetZaxis().SetBinLabel(z_bin+1, plotData.plotdict["z_tick_labels"][z_bin])
 			
-			ROOT.TGaxis.SetMaxDigits(3)
+			ROOT.TGaxis.SetMaxDigits(5)
 
 	def determine_plot_lims(self, plotData):
 		super(PlotRoot, self).determine_plot_lims(plotData)
@@ -585,9 +586,20 @@ class PlotRoot(plotbase.PlotBase):
 			
 			# shift the exponent for y-axis to avoid overlapping with title
 			ROOT.TGaxis.SetExponentOffset(-0.069,0.015,"y")
-			
 			self.axes_histogram.Draw("AXIS")
-
+			
+			if plotData.plotdict["arrow_x"] is not None:
+				if not plotData.plotdict["y_log"]:
+					arr = ROOT.TArrow(plotData.plotdict["arrow_x"], self.axes_histogram.GetMinimum()+(self.axes_histogram.GetMaximum()-self.axes_histogram.GetMinimum())/32.0, plotData.plotdict["arrow_x"], self.axes_histogram.GetMinimum()+(self.axes_histogram.GetMaximum()-self.axes_histogram.GetMinimum())/8.0, 0.02, "<|")
+				else:
+					arr = ROOT.TArrow(plotData.plotdict["arrow_x"], 1.5*self.axes_histogram.GetMinimum(), plotData.plotdict["arrow_x"], 5*self.axes_histogram.GetMinimum(), 0.02, "<|")					
+				arr.SetLineColor(ROOT.kBlack);
+				arr.SetFillColor(ROOT.kBlack);
+				arr.SetFillStyle(1001);
+				arr.SetLineWidth(6);
+				arr.SetLineStyle(1);
+				arr.SetAngle(60);
+				self.arrows.append(arr)
 			if plotData.plotdict["exclude_before"] is not None:
 				exclude_graph_before = ROOT.TGraph(2)
 				exclude_graph_before.SetName("exclude_before_graph")
@@ -595,8 +607,8 @@ class PlotRoot(plotbase.PlotBase):
 				exclude_graph_before.SetPoint(0, plotData.plotdict["exclude_before"], self.y_min)
 				exclude_graph_before.SetPoint(1, plotData.plotdict["exclude_before"], self.y_max)
 				exclude_graph_before.SetLineColor(2)
-				exclude_graph_before.SetLineWidth(1002)
-				exclude_graph_before.SetLineStyle(2)
+				exclude_graph_before.SetLineWidth(1004)
+				exclude_graph_before.SetLineStyle(7)
 				exclude_graph_before.SetFillStyle(3004)
 				exclude_graph_before.SetFillColor(2)
 				self.plot_excludes.append(exclude_graph_before)
@@ -609,16 +621,15 @@ class PlotRoot(plotbase.PlotBase):
 				exclude_graph_after.SetPoint(0, plotData.plotdict["exclude_after"], self.y_min)
 				exclude_graph_after.SetPoint(1, plotData.plotdict["exclude_after"], self.y_max)
 				exclude_graph_after.SetLineColor(2)
-				exclude_graph_after.SetLineWidth(-1002)
-				exclude_graph_after.SetLineStyle(2)
+				exclude_graph_after.SetLineWidth(-1004)
+				exclude_graph_after.SetLineStyle(7)
 				exclude_graph_after.SetFillStyle(3004)
 				exclude_graph_after.SetFillColor(2)
 				self.plot_excludes.append(exclude_graph_after)
 
 			for line_graph in self.plot_vertical_lines:
 				line_graph.Draw("L SAME")
-			for line_graph in self.plot_excludes:
-				line_graph.Draw("C SAME")
+
 		if plotData.plot.subplot_pad:
 			plotData.plot.subplot_pad.cd()
 			if self.max_sub_dim == 2:
@@ -925,6 +936,10 @@ class PlotRoot(plotbase.PlotBase):
 
 		# Draw the text box on the main plot in plot_pad
 		plotData.plot.plot_pad.cd()
+		for arrow in self.arrows:
+			arrow.Draw("<|same")
+		for line_graph in self.plot_excludes:
+			line_graph.Draw("C SAME")
 		self.text_box.Draw()
 	
 	@staticmethod
