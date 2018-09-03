@@ -135,6 +135,8 @@ class PlotRoot(plotbase.PlotBase):
 		                                     help="Line width of plots line. [Default: %(default)s]")
 		self.formatting_options.add_argument("--legend", type=float, nargs="*", default=None,
 		                                     help="Legend position. The four arguments define the rectangle (x1 y1 x2 y2) for the legend. Without (or with too few) arguments, the default values from [0.6, 0.6, 0.9, 0.9] are used. [Default: %(default)s]")
+		self.formatting_options.add_argument("--subplot-legend", type=float, nargs="*", default=None,
+		                                     help="Subplot legend position. The four arguments define the rectangle (x1 y1 x2 y2) for the subplot legend. Needs to be set, or no subplot legend is printed.")
 		self.formatting_options.add_argument("--legend-markers", type=str, nargs="+",
 		                                     help="Draw options for legend entries.")
 		self.formatting_options.add_argument("--texts-below-legend", type=str, nargs="+", default=[None],
@@ -844,25 +846,39 @@ class PlotRoot(plotbase.PlotBase):
 		transformed_legend_pos = tools.flattenList(zip(legend_pos_x_user, legend_pos_y_user))
 		"""
 		transformed_legend_pos = plotData.plotdict["legend"]
+		transformed_subplot_legend_pos = plotData.plotdict["subplot_legend"]
 		
 		plotData.plot.plot_pad.cd()
 		self.legend = None
+		self.subplot_legend = None
 		if plotData.plotdict["legend"] != None:
 			ROOT.gStyle.SetLegendBorderSize(0)
 			self.legend = ROOT.TLegend(*transformed_legend_pos)
 			self.legend.SetNColumns(plotData.plotdict["legend_cols"])
 			self.legend.SetColumnSeparation(0.1)
-			
+			if (plotData.plotdict["subplot_legend"] is not None):
+				self.subplot_legend = ROOT.TLegend(*transformed_subplot_legend_pos)
+				self.subplot_legend.SetNColumns(plotData.plotdict["subplot_legend_cols"])
+				self.subplot_legend.SetColumnSeparation(0.1)
 			for subplot, nick, label, legend_marker in zip(
 					plotData.plotdict["subplots"],
 					plotData.plotdict["nicks"],
 					plotData.plotdict["labels"],
 					plotData.plotdict["legend_markers"],
 			):
-				if subplot == True:
-					# TODO handle possible subplot legends
-					continue
 				root_object = plotData.plotdict["root_objects"][nick]
+
+				if (subplot == True) and (plotData.plotdict["subplot_legend"] is not None):
+					if legend_marker is None:
+						legend_marker = "FLP"
+						if isinstance(root_object, ROOT.TH1):
+							legend_marker = "F"
+						elif isinstance(root_object, ROOT.TGraph):
+							legend_marker = "LP"
+						elif isinstance(root_object, ROOT.TF1):
+							legend_marker = "L"
+					if (not label is None) and (label != ""):
+						self.subplot_legend.AddEntry(root_object, label, legend_marker)
 				if legend_marker is None:
 					# TODO: defaults should be defined in prepare_args function
 					legend_marker = "FLP"
@@ -872,12 +888,19 @@ class PlotRoot(plotbase.PlotBase):
 						legend_marker = "LP"
 					elif isinstance(root_object, ROOT.TF1):
 						legend_marker = "L"
-				if (not label is None) and (label != ""):
+				if (not label is None) and (label != "") and (nick not in plotData.plotdict["subplot_nicks"]):
 					self.legend.AddEntry(root_object, label, legend_marker)
 			for text_below_legend in plotData.plotdict["texts_below_legend"]:
 				if (not text_below_legend is None) and (text_below_legend != ""):
 					self.legend.AddEntry(ROOT.TObject(), text_below_legend, "")
-			
+
+			if (self.subplot_legend is not None) and (plotData.plotdict["subplot_legend"] is not None):
+				plotData.plot.subplot_pad.cd()
+				defaultrootstyle.set_legend_style(self.subplot_legend)
+				self.subplot_legend.Draw()
+				
+			plotData.plot.plot_pad.cd()
+			plotData.plot.subplot_pad.Update()			
 			defaultrootstyle.set_legend_style(self.legend)
 			self.legend.Draw()
 	

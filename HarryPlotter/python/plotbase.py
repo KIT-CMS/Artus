@@ -115,6 +115,8 @@ class PlotBase(processor.Processor):
 		                                     help="Location of the legend. Use 'None' to not set any legend")
 		self.formatting_options.add_argument("--legend-cols", type=int, default=1,
 		                                     help="Number of columns in the legend. [Default: %(default)s]")
+		self.formatting_options.add_argument("--subplot-legend-cols", type=int, default=1,
+		                                     help="Number of columns in the legend. [Default: %(default)s]")
 		self.formatting_options.add_argument("-G", "--grid", nargs="?", default=False, const=True,
 		                                     help="Place an axes grid on the plot. Optional arguments are 'vertical'/'horizontal' for only vertical/horizontal lines. [Default: %(default)s]")
 		self.formatting_options.add_argument("--subplot-grid", nargs="?", default=False, const=True,
