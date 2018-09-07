@@ -393,4 +393,6 @@ public:
 
 	IMPL_SETTING_DEFAULT(std::string, DatabasePDG, "$ROOTSYS/etc/pdg_table.txt");
 	IMPL_SETTING_DEFAULT(std::string, GenCollectionToPrint, "all");
+
+	IMPL_SETTING_DEFAULT(bool, ValidTaggedJetsProducerDebug, false);
 };

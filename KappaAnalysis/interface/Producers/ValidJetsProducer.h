@@ -138,7 +138,7 @@ public:
 		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("thirdJetMass", [](KappaEvent const& event, KappaProduct const& product) {
 			return product.m_validJets.size() >= 3 ? product.m_validJets.at(2)->p4.mass() : DefaultValues::UndefinedFloat;
 		});
-		
+
 		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("fourthJetLV", [](KappaEvent const& event, KappaProduct const& product) {
 			return product.m_validJets.size() >= 4 ? product.m_validJets.at(3)->p4 : DefaultValues::UndefinedRMFLV;
 		});
@@ -154,7 +154,7 @@ public:
 		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("fourthJetMass", [](KappaEvent const& event, KappaProduct const& product) {
 			return product.m_validJets.size() >= 4 ? product.m_validJets.at(3)->p4.mass() : DefaultValues::UndefinedFloat;
 		});
-		
+
 		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("fifthJetLV", [](KappaEvent const& event, KappaProduct const& product) {
 			return product.m_validJets.size() >= 5 ? product.m_validJets.at(4)->p4 : DefaultValues::UndefinedRMFLV;
 		});
@@ -170,7 +170,7 @@ public:
 		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("fifthJetMass", [](KappaEvent const& event, KappaProduct const& product) {
 			return product.m_validJets.size() >= 5 ? product.m_validJets.at(4)->p4.mass() : DefaultValues::UndefinedFloat;
 		});
-		
+
 		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("sixthJetLV", [](KappaEvent const& event, KappaProduct const& product) {
 			return product.m_validJets.size() >= 6 ? product.m_validJets.at(5)->p4 : DefaultValues::UndefinedRMFLV;
 		});
@@ -406,6 +406,7 @@ private:
 	std::map<std::string, std::vector<float> > jetTaggerUpperCutsByTaggerName;
 
 	bool PassPuJetIds(KJet* jet, std::vector<std::string> const& puJetIds, KJetMetadata* taggerMetadata) const;
+	bool debug;
 };
 
 
