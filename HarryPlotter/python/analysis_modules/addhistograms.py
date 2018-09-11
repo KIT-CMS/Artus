@@ -27,10 +27,13 @@ class AddHistograms(analysisbase.AnalysisBase):
 				"--add-result-nicks", nargs="+",
 				help="Nick names for the resulting sum histograms."
 		)
-
+		self.add_histograms_options.add_argument(
+				"--add-result-position",
+				help="Position where added histogram is inserted in draw order. 0=first, 1=second etc. (Default: after last nick that was used to add)", default=None
+		)
 	def prepare_args(self, parser, plotData):
 		super(AddHistograms, self).prepare_args(parser, plotData)
-		self.prepare_list_args(plotData, ["add_nicks", "add_result_nicks", "add_scale_factors"])
+		self.prepare_list_args(plotData, ["add_nicks", "add_result_nicks", "add_scale_factors", "add_result_position"])
 		
 		for index, (add_nicks, add_result_nick, add_scale_factors) in enumerate(zip(
 				*[plotData.plotdict[k] for k in ["add_nicks", "add_result_nicks", "add_scale_factors"]]
@@ -45,10 +48,16 @@ class AddHistograms(analysisbase.AnalysisBase):
 						"_".join(plotData.plotdict["add_nicks"][index]),
 				)
 			if not plotData.plotdict["add_result_nicks"][index] in plotData.plotdict["nicks"]:
-				plotData.plotdict["nicks"].insert(
-						plotData.plotdict["nicks"].index(plotData.plotdict["add_nicks"][index][-1])+1,
-						plotData.plotdict["add_result_nicks"][index]
-				)
+				if not plotData.plotdict["add_result_position"][0]:
+					plotData.plotdict["nicks"].insert(
+							plotData.plotdict["nicks"].index(plotData.plotdict["add_nicks"][index][-1])+1,
+							plotData.plotdict["add_result_nicks"][index]
+					)
+				else:
+					plotData.plotdict["nicks"].insert(
+							plotData.plotdict["add_result_position"][0],
+							plotData.plotdict["add_result_nicks"][index]
+					)
 
 	def run(self, plotData=None):
 		super(AddHistograms, self).run(plotData)

@@ -135,8 +135,12 @@ class PlotRoot(plotbase.PlotBase):
 		                                     help="Line width of plots line. [Default: %(default)s]")
 		self.formatting_options.add_argument("--legend", type=float, nargs="*", default=None,
 		                                     help="Legend position. The four arguments define the rectangle (x1 y1 x2 y2) for the legend. Without (or with too few) arguments, the default values from [0.6, 0.6, 0.9, 0.9] are used. [Default: %(default)s]")
+		self.formatting_options.add_argument("--legend-fontsize", type=float, nargs="?", default=None,
+		                                     help="Legend font size (in fraction of pad width)")
 		self.formatting_options.add_argument("--subplot-legend", type=float, nargs="*", default=None,
 		                                     help="Subplot legend position. The four arguments define the rectangle (x1 y1 x2 y2) for the subplot legend. Needs to be set, or no subplot legend is printed.")
+		self.formatting_options.add_argument("--subplot-legend-fontsize", type=float, nargs="?", default=None,
+		                                     help="Legend font size (in fraction of pad width)")
 		self.formatting_options.add_argument("--legend-markers", type=str, nargs="+",
 		                                     help="Draw options for legend entries.")
 		self.formatting_options.add_argument("--texts-below-legend", type=str, nargs="+", default=[None],
@@ -859,7 +863,7 @@ class PlotRoot(plotbase.PlotBase):
 			if (plotData.plotdict["subplot_legend"] is not None):
 				self.subplot_legend = ROOT.TLegend(*transformed_subplot_legend_pos)
 				self.subplot_legend.SetNColumns(plotData.plotdict["subplot_legend_cols"])
-				self.subplot_legend.SetColumnSeparation(0.1)
+				self.subplot_legend.SetColumnSeparation(0.01)
 			for subplot, nick, label, legend_marker in zip(
 					plotData.plotdict["subplots"],
 					plotData.plotdict["nicks"],
@@ -897,11 +901,17 @@ class PlotRoot(plotbase.PlotBase):
 			if (self.subplot_legend is not None) and (plotData.plotdict["subplot_legend"] is not None):
 				plotData.plot.subplot_pad.cd()
 				defaultrootstyle.set_legend_style(self.subplot_legend)
+				if plotData.plotdict["subplot_legend_fontsize"] is not None:
+					print plotData.plotdict["subplot_legend_fontsize"]
+					self.subplot_legend.SetTextSize(plotData.plotdict["subplot_legend_fontsize"])
 				self.subplot_legend.Draw()
+				plotData.plot.subplot_pad.Update()
+
 				
 			plotData.plot.plot_pad.cd()
-			plotData.plot.subplot_pad.Update()			
 			defaultrootstyle.set_legend_style(self.legend)
+			if plotData.plotdict["legend_fontsize"] is not None:
+				self.legend.SetTextSize(plotData.plotdict["legend_fontsize"])
 			self.legend.Draw()
 	
 	def add_texts(self, plotData):

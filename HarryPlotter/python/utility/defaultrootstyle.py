@@ -187,3 +187,4 @@ def set_legend_style(legend):
 	legend.SetFillColor(0)
 	legend.SetBorderSize(0)
 	legend.SetTextFont(42)
+	legend.SetTextSize(0.04)
