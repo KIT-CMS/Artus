@@ -70,6 +70,8 @@ class InputRoot(inputfile.InputFile):
 		                                help="Read in the config stored in Artus ROOT outputs. [Default: %(default)s]")
 		self.input_options.add_argument("--hide-progressbar", nargs ="?", type="bool", default=False, const=True,
 		                                help="Show progress of the individual plot. [Default: %(default)s]")
+		self.input_options.add_argument("--multiply-uncertainties", nargs=1, type=float, default=None, 
+		                                help="Multiply histogram uncertainties with given number.. [Default: %(default)s]")
 
 	def prepare_args(self, parser, plotData):
 		super(InputRoot, self).prepare_args(parser, plotData)
@@ -176,6 +178,10 @@ class InputRoot(inputfile.InputFile):
 			
 			# save histogram in plotData
 			# merging histograms with same nick names is done in upper class
+			if plotData.plotdict["multiply_uncertainties"]:
+				for i_bin in range(root_histogram.GetNbinsX()):
+					error_before=root_histogram.GetBinError(i_bin)
+					root_histogram.SetBinError(i_bin,plotData.plotdict["multiply_uncertainties"]*error_before)
 			plotData.plotdict.setdefault("root_objects", {}).setdefault(nick, []).append(root_histogram)
 
 		# run upper class function at last
