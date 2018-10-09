@@ -23,7 +23,9 @@ class StatisticalErrors(analysisbase.AnalysisBase):
 
 		self.StatisticalErrors_options = parser.add_argument_group("StatisticalErrors options")
 		self.StatisticalErrors_options.add_argument("--stat-error-nicks", type=str, nargs="+",
-				help="Nick names of the histograms/graphs to be modified in place.")
+				help="Nick names of the histograms/graphs to be modified.")
+		self.StatisticalErrors_options.add_argument("--stat-error-newnicks", type=str, nargs="+",
+				help="Nick names of the resulting histograms/graphs.")
 		self.StatisticalErrors_options.add_argument("--stat-error-relative", nargs="?", type="bool", default=False, const=True,
 				help="Do not plot absolute errors, but relative to bin content. [Default: %(default)s]")
 		self.StatisticalErrors_options.add_argument("--stat-error-relative-percent", nargs="?", type="bool", default=False, const=True,
@@ -33,25 +35,28 @@ class StatisticalErrors(analysisbase.AnalysisBase):
 		super(StatisticalErrors, self).prepare_args(parser, plotData)
 		if plotData.plotdict["stat_error_nicks"] is None:
 			plotData.plotdict["stat_error_nicks"] = plotData.plotdict["nicks"]
+		if plotData.plotdict["stat_error_newnicks"] is None:
+			plotData.plotdict["stat_error_newnicks"] = ["stat_errors_"+x for x in plotData.plotdict["nicks"]]
 	
 	def run(self, plotData=None):
 		super(StatisticalErrors, self).run(plotData)
-
-		for nick in plotData.plotdict["stat_error_nicks"]:
+		for nick,newnick in zip(*[plotData.plotdict[k] for k in ["stat_error_nicks","stat_error_newnicks"]]):
 			root_object = plotData.plotdict["root_objects"][nick]
-			
+			root_object_new = plotData.plotdict["root_objects"][nick].Clone(newnick)
+			plotData.plotdict['nicks'].append(newnick)
 			if isinstance(root_object, ROOT.TH1) and not isinstance(root_object, ROOT.TProfile):
 				for x_bin in xrange(1, root_object.GetNbinsX()+1):
 					for y_bin in xrange(1, root_object.GetNbinsY()+1):
 						for z_bin in xrange(1, root_object.GetNbinsZ()+1):
 							global_bin = root_object.GetBin(x_bin, y_bin, z_bin)
-							root_object.SetBinContent(global_bin, StatisticalErrors.rel_error(
+							root_object_new.SetBinContent(global_bin, StatisticalErrors.rel_error(
 									root_object.GetBinContent(global_bin),
 									root_object.GetBinError(global_bin),
 									relative=plotData.plotdict["stat_error_relative"],
 									percent=plotData.plotdict["stat_error_relative_percent"]
 							))
-							root_object.SetBinError(global_bin, 0.0)
+							root_object_new.SetBinError(global_bin, 0.0)
+				plotData.plotdict['root_objects'][newnick] = root_object_new
 			
 			elif isinstance(root_object, ROOT.TGraph) and (not isinstance(root_object, ROOT.TGraph2D)):
 				has_errors = isinstance(root_object, ROOT.TGraphErrors)
