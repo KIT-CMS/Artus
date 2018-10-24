@@ -86,11 +86,13 @@ void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 bool ValidTaggedJetsProducer::AdditionalCriteria(KJet* jet, KappaEvent const& event,
                                                  KappaProduct& product, KappaSettings const& settings) const
 {
+        LOG(DEBUG) << "\t\tChecking additional analysis criteria";
 	assert(event.m_jetMetadata);
 
 	bool validJet = ValidJetsProducerBase<KJet, KBasicJet>::AdditionalCriteria(jet, event, product, settings);
 
 	// PU Jet ID
+	LOG(DEBUG) << "\t\tNumber of checked PU ID's: byIndex = " << puJetIdsByIndex.size() << " byHltName (???) = " << puJetIdsByHltName.size();
 	for (std::map<size_t, std::vector<std::string> >::const_iterator puJetIdByIndex = puJetIdsByIndex.begin();
 	     puJetIdByIndex != puJetIdsByIndex.end() && validJet; ++puJetIdByIndex)
 	{
@@ -112,6 +114,7 @@ bool ValidTaggedJetsProducer::AdditionalCriteria(KJet* jet, KappaEvent const& ev
 			LOG(FATAL) << "HLT name dependent PU Jet is not yet implemented!";
 		}
 	}
+        LOG(DEBUG) << "\t\tPassing PU Jet ID's? " << validJet;
 
 	if (debug)
 	{
