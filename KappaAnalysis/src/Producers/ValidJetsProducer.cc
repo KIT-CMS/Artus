@@ -92,7 +92,7 @@ bool ValidTaggedJetsProducer::AdditionalCriteria(KJet* jet, KappaEvent const& ev
 	bool validJet = ValidJetsProducerBase<KJet, KBasicJet>::AdditionalCriteria(jet, event, product, settings);
 
 	// PU Jet ID
-	LOG(DEBUG) << "\t\tNumber of checked PU ID's: byIndex = " << puJetIdsByIndex.size() << " byHltName (???) = " << puJetIdsByHltName.size();
+	LOG(DEBUG) << "\t\tNumber of checked PU ID's: byIndex = " << puJetIdsByIndex.size() << " byHltName = " << puJetIdsByHltName.size();
 	for (std::map<size_t, std::vector<std::string> >::const_iterator puJetIdByIndex = puJetIdsByIndex.begin();
 	     puJetIdByIndex != puJetIdsByIndex.end() && validJet; ++puJetIdByIndex)
 	{
