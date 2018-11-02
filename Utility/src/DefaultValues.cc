@@ -1,9 +1,9 @@
 
 #include "Artus/Utility/interface/DefaultValues.h"
 
-const int DefaultValues::UndefinedInt = -999;
-const float DefaultValues::UndefinedFloat = -999.0f;
-const double DefaultValues::UndefinedDouble = -999.0;
+const int DefaultValues::UndefinedInt = -10;
+const float DefaultValues::UndefinedFloat = -10.0f;
+const double DefaultValues::UndefinedDouble = -10.0;
 const RMFLV DefaultValues::UndefinedRMFLV = RMFLV(99999.0, 0.0, 0.0, 99999.0);
 
 const float DefaultValues::EtaBorderEB = 1.479f;

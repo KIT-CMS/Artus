@@ -95,7 +95,7 @@ virtual std::vector<std::string>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsStringList(GetPropTree(), #SNAME )) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with GetAsStringList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -108,7 +108,7 @@ std::vector<std::string>& Get##SNAME () const { \
 		RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsStringList(GetPropTree(), #SNAME )) \
 	} \
 	catch(...) { \
-		LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+		LOG(FATAL) << "Could not read with GetAsStringList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 		throw; \
 	} \
 }
@@ -140,7 +140,7 @@ virtual std::vector<std::string>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, Utility::Sorted(PropertyTreeSupport::GetAsStringList(GetPropTree(), #SNAME ))) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with Sorted GetAsStringList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -173,7 +173,7 @@ virtual std::vector<double>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsDoubleList(GetPropTree(), #SNAME )) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with GetAsDoubleList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -206,7 +206,7 @@ virtual std::vector<double>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, Utility::Sorted(PropertyTreeSupport::GetAsDoubleList(GetPropTree(), #SNAME ))) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read value with Sorted GetAsDoubleList for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -239,7 +239,7 @@ virtual std::vector<float>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsFloatList(GetPropTree(), #SNAME )) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with GetAsFloatList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -272,7 +272,7 @@ virtual std::vector<float>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, Utility::Sorted(PropertyTreeSupport::GetAsFloatList(GetPropTree(), #SNAME ))) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with Sorted GetAsFloatList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -305,7 +305,7 @@ virtual std::vector<int>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsIntList(GetPropTree(), #SNAME )) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with GetAsIntList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -338,7 +338,7 @@ virtual std::vector<int>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, Utility::Sorted(PropertyTreeSupport::GetAsIntList(GetPropTree(), #SNAME ))) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with Sorted GetAsIntList  value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -372,7 +372,7 @@ virtual std::vector<uint64_t>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsUInt64List(GetPropTree(), #SNAME )) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with GetAsUInt64List value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \
@@ -406,7 +406,7 @@ virtual std::vector<uint64_t>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, Utility::Sorted(PropertyTreeSupport::GetAsUInt64List(GetPropTree(), #SNAME ))) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with Sorted GetAsUInt64List value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
 			throw; \
 		} \
 	} \

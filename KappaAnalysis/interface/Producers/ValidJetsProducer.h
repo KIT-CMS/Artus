@@ -191,12 +191,15 @@ public:
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override
 	{
+		LOG(DEBUG) << this->GetProducerId() << " -----START-----"; 
+		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent; 
 		assert((event.*m_basicJetsMember));
 
 		// select input source
 		std::vector<TJet*> jets;
 		if ((validJetsInput == KappaEnumTypes::ValidJetsInput::AUTO && ((product.*m_correctedJetsMember).size() > 0)) || (validJetsInput == KappaEnumTypes::ValidJetsInput::CORRECTED))
 		{
+                        LOG(DEBUG) << "Choosing corrected jets as input source"; 
 			jets.resize((product.*m_correctedJetsMember).size());
 			size_t jetIndex = 0;
 			for (typename std::vector<std::shared_ptr<TJet> >::iterator jet = (product.*m_correctedJetsMember).begin();
@@ -208,6 +211,7 @@ public:
 		}
 		else
 		{
+                        LOG(DEBUG) << "Choosing original jets as input source"; 
 			jets.resize((event.*m_basicJetsMember)->size());
 			size_t jetIndex = 0;
 			for (typename std::vector<TJet>::iterator jet = (event.*m_basicJetsMember)->begin(); jet != (event.*m_basicJetsMember)->end(); ++jet)
@@ -217,11 +221,14 @@ public:
 			}
 		}
 
+                LOG(DEBUG) << "Initial size of jets: " << jets.size(); 
 		for (typename std::vector<TJet*>::iterator jet = jets.begin(); jet != jets.end(); ++jet)
 		{
 			bool validJet = true;
+                        LOG(DEBUG) << "Checking jet with p4 " << (*jet)->p4; 
 
 			validJet = validJet && passesJetID(*jet, jetIDVersion, jetID);
+                        LOG(DEBUG) << "\tPassing ID's? " << validJet; 
 
 			// remove leptons from list of jets via simple DeltaR isolation
 			for (std::vector<KLepton*>::const_iterator lepton = product.m_validLeptons.begin();
@@ -229,12 +236,20 @@ public:
 			{
 				validJet = validJet && ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4) > settings.GetJetLeptonLowerDeltaRCut();
 			}
+                        LOG(DEBUG) << "\tPassing lepton overlap check? " << validJet; 
 
 			// kinematic cuts
 			validJet = validJet && this->PassKinematicCuts(*jet, event, product);
+                                LOG(DEBUG) << "\tPassing kinematic cuts? " << validJet;
+                        // EE noise jets
+                        bool eenoise = ((*jet)->p4.Pt() < 50 && std::abs((*jet)->p4.Eta()) < 3.139 && std::abs((*jet)->p4.Eta()) > 2.65);
+			validJet = validJet && !eenoise;
+                                LOG(DEBUG) << "\tPassing ee noise veto? " << validJet;
+
 
 			// check possible analysis-specific criteria
 			validJet = validJet && AdditionalCriteria(*jet, event, product, settings);
+                                LOG(DEBUG) << "\tPassing additional analysis criteria? " << validJet;
 
 			if (validJet)
 				product.m_validJets.push_back(*jet);
