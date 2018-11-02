@@ -26,10 +26,10 @@ void ElectronTriggerMatchingProducer::Produce(KappaEvent const& event, KappaProd
 {
 	TriggerMatchingProducerBase<KElectron>::Produce(event, product, settings);
 	
-	for (std::map<KElectron*, KLV*>::iterator it = product.m_triggerMatchedElectrons.begin();
+	for (std::map<KElectron*, KLV>::iterator it = product.m_triggerMatchedElectrons.begin();
 	     it != product.m_triggerMatchedElectrons.end(); ++it)
 	{
-		product.m_triggerMatchedLeptons[&(*(it->first))] = &(*(it->second));
+		product.m_triggerMatchedLeptons[&(*(it->first))] = it->second;
 	}
 	
 	for (std::map<KElectron*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > >::iterator it = product.m_detailedTriggerMatchedElectrons.begin();
@@ -70,10 +70,10 @@ void MuonTriggerMatchingProducer::Produce(KappaEvent const& event, KappaProduct&
 {
 	TriggerMatchingProducerBase<KMuon>::Produce(event, product, settings);
 	
-	for (std::map<KMuon*, KLV*>::iterator it = product.m_triggerMatchedMuons.begin();
+	for (std::map<KMuon*, KLV>::iterator it = product.m_triggerMatchedMuons.begin();
 	     it != product.m_triggerMatchedMuons.end(); ++it)
 	{
-		product.m_triggerMatchedLeptons[&(*(it->first))] = &(*(it->second));
+		product.m_triggerMatchedLeptons[&(*(it->first))] = it->second;
 	}
 	
 	for (std::map<KMuon*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > >::iterator it = product.m_detailedTriggerMatchedMuons.begin();
@@ -114,10 +114,10 @@ void TauTriggerMatchingProducer::Produce(KappaEvent const& event, KappaProduct& 
 {
 	TriggerMatchingProducerBase<KTau>::Produce(event, product, settings);
 	
-	for (std::map<KTau*, KLV*>::iterator it = product.m_triggerMatchedTaus.begin();
+	for (std::map<KTau*, KLV>::iterator it = product.m_triggerMatchedTaus.begin();
 	     it != product.m_triggerMatchedTaus.end(); ++it)
 	{
-		product.m_triggerMatchedLeptons[&(*(it->first))] = &(*(it->second));
+                product.m_triggerMatchedLeptons[&(*(it->first))] = it->second;
 	}
 	
 	for (std::map<KTau*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > >::iterator it = product.m_detailedTriggerMatchedTaus.begin();
