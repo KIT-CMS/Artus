@@ -141,13 +141,13 @@ public:
 	std::vector<int> m_selectedHltPrescales;
 
 	/// added by TriggerMatchingProducer
-	std::map<KElectron*, KLV*> m_triggerMatchedElectrons;
-	std::map<KMuon*, KLV*> m_triggerMatchedMuons;
-	std::map<KTau*, KLV*> m_triggerMatchedTaus;
-	std::map<KBasicJet*, KLV*> m_triggerMatchedJets;
-	std::map<KJet*, KLV*> m_triggerMatchedTaggedJets;
+	std::map<KElectron*, KLV> m_triggerMatchedElectrons;
+	std::map<KMuon*, KLV> m_triggerMatchedMuons;
+	std::map<KTau*, KLV> m_triggerMatchedTaus;
+	std::map<KBasicJet*, KLV> m_triggerMatchedJets;
+	std::map<KJet*, KLV> m_triggerMatchedTaggedJets;
 
-	std::map<KLepton*, KLV*> m_triggerMatchedLeptons;
+	std::map<KLepton*, KLV> m_triggerMatchedLeptons;
 
 	/// added by TriggerMatchingProducer
 	// m_detailedTriggerMatchedElectrons[reco lepton][HLT name][filter name] = {trigger objects}

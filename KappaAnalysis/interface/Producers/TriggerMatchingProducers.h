@@ -47,7 +47,7 @@ public:
 		return hltNames;
 	}
 	
-	TriggerMatchingProducerBase(std::map<TValidObject*, KLV*> KappaProduct::*triggerMatchedObjects,
+	TriggerMatchingProducerBase(std::map<TValidObject*, KLV> KappaProduct::*triggerMatchedObjects,
 	                            std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > KappaProduct::*detailedTriggerMatchedObjects,
 	                            std::map<TValidObject*, std::map<std::string, bool > > KappaProduct::*objectTriggerMatch,
 	                            std::vector<TValidObject*> KappaProduct::*validObjects,
@@ -181,6 +181,7 @@ public:
                                         {
                                                 LOG(DEBUG) << "\tFound HLT match! ";
                                                 (product.*m_objectTriggerMatch)[*validObject][objectTriggerFilterByHltName->first] = true;
+                                                (product.*m_triggerMatchedObjects)[*validObject] = triggerObject.first;
                                                 break;
                                         }
                                 }
@@ -190,7 +191,7 @@ public:
 
 
 private:
-	std::map<TValidObject*, KLV*> KappaProduct::*m_triggerMatchedObjects;
+	std::map<TValidObject*, KLV> KappaProduct::*m_triggerMatchedObjects;
 	std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > KappaProduct::*m_detailedTriggerMatchedObjects;
 	std::map<TValidObject*, std::map<std::string, bool > > KappaProduct::*m_objectTriggerMatch;
 	std::vector<TValidObject*> KappaProduct::*m_validObjects;
