@@ -168,8 +168,8 @@ public:
                                                 std::vector<std::string> filterNamesList;
                                                 boost::split(filterNamesList, *filterNames, boost::is_any_of(","));
                                                 bool matchedToOr = false;
-                                                for (std::vector<std::string>::const_iterator filterName = objectTriggerFilterByHltName->second.begin();
-                                                     filterName != objectTriggerFilterByHltName->second.end();
+                                                for (std::vector<std::string>::const_iterator filterName = filterNamesList.begin();
+                                                     filterName != filterNamesList.end();
                                                      ++filterName)
                                                 {
                                                         matchedToOr = (matchedToOr || (triggerObject.second.end() !=  std::find(triggerObject.second.begin(), triggerObject.second.end(), *filterName)));
