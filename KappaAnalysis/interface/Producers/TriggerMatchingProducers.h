@@ -23,14 +23,14 @@ public:
 
 	// reccommended access to product.m_detailedTriggerMatched.... by using only the HLT paths where all configured filters match with the valid object
 	static std::vector<std::string> GetHltNamesWhereAllFiltersMatched(
-			std::map<std::string, std::map<std::string, std::vector<KLV*> > > const& detailedTriggerMatchedObjects
+			std::map<std::string, std::map<std::string, std::vector<KLV> > > const& detailedTriggerMatchedObjects
 	) {
 		std::vector<std::string> hltNames;
 		
-		for (std::pair<std::string, std::map<std::string, std::vector<KLV*> > > hltName : detailedTriggerMatchedObjects)
+		for (std::pair<std::string, std::map<std::string, std::vector<KLV> > > hltName : detailedTriggerMatchedObjects)
 		{
 			bool allFiltersMatched = true;
-			for (std::pair<std::string, std::vector<KLV*> > filterName : hltName.second)
+			for (std::pair<std::string, std::vector<KLV> > filterName : hltName.second)
 			{
 				if (filterName.second.size() == 0)
 				{
@@ -48,7 +48,7 @@ public:
 	}
 	
 	TriggerMatchingProducerBase(std::map<TValidObject*, KLV*> KappaProduct::*triggerMatchedObjects,
-	                            std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > KappaProduct::*detailedTriggerMatchedObjects,
+	                            std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV> > > > KappaProduct::*detailedTriggerMatchedObjects,
 	                            std::map<TValidObject*, std::map<std::string, bool > > KappaProduct::*objectTriggerMatch,
 	                            std::vector<TValidObject*> KappaProduct::*validObjects,
 	                            std::vector<TValidObject*> KappaProduct::*invalidObjects,
@@ -172,7 +172,12 @@ public:
                                                      filterName != filterNamesList.end();
                                                      ++filterName)
                                                 {
-                                                        matchedToOr = (matchedToOr || (triggerObject.second.end() !=  std::find(triggerObject.second.begin(), triggerObject.second.end(), *filterName)));
+                                                        bool foundFilterName = std::find(triggerObject.second.begin(), triggerObject.second.end(), *filterName) != triggerObject.second.end();
+                                                        matchedToOr = (matchedToOr || foundFilterName);
+                                                        if (foundFilterName)
+                                                        {
+                                                            (product.*m_detailedTriggerMatchedObjects)[*validObject][objectTriggerFilterByHltName->first][*filterName].push_back(triggerObject.first);
+                                                        }
                                                         if(matchedToOr) break;
                                                 }
                                                 if(matchedToOr) countFilterMatches++;
@@ -191,7 +196,7 @@ public:
 
 private:
 	std::map<TValidObject*, KLV*> KappaProduct::*m_triggerMatchedObjects;
-	std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > KappaProduct::*m_detailedTriggerMatchedObjects;
+	std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV> > > > KappaProduct::*m_detailedTriggerMatchedObjects;
 	std::map<TValidObject*, std::map<std::string, bool > > KappaProduct::*m_objectTriggerMatch;
 	std::vector<TValidObject*> KappaProduct::*m_validObjects;
 	std::vector<TValidObject*> KappaProduct::*m_invalidObjects;
