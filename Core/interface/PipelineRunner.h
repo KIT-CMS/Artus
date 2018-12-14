@@ -110,6 +110,7 @@ public:
 	void RunPipelines(TEventProvider & evtProvider,
 			setting_type const& settings)
 	{
+		LOG(DEBUG) << "RunPipelines begin";
 		long long firstEvent = settings.GetFirstEvent();
 		long long nEvents = evtProvider.GetEntries();
 		long long processNEvents = settings.GetProcessNEvents();
@@ -274,6 +275,7 @@ public:
 			}
 			++curLevel;
 		}
+		LOG(DEBUG) << "RunPipelines end";
 	}
 
 	void AddProgressReport(ProgressReportBase * p)

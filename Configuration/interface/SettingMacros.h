@@ -95,7 +95,7 @@ virtual std::vector<std::string>& Get##SNAME () const { \
 			RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsStringList(GetPropTree(), #SNAME )) \
 		} \
 		catch(...) { \
-			LOG(FATAL) << "Could not read with GetAsStringList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+			LOG(FATAL) << "Could not read with GetAsStringList GetPipelinePrefix value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible! GetPipelinePrefix: " <<  GetPipelinePrefix() << " sname: " << (#SNAME); \
 			throw; \
 		} \
 	} \
@@ -108,7 +108,7 @@ std::vector<std::string>& Get##SNAME () const { \
 		RETURN_CACHED(m_##SNAME, PropertyTreeSupport::GetAsStringList(GetPropTree(), #SNAME )) \
 	} \
 	catch(...) { \
-		LOG(FATAL) << "Could not read with GetAsStringList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible!"; \
+		LOG(FATAL) << "Could not read with GetAsStringList value for config tag \"" << (#SNAME) << "\" in pipeline or global settings! It is either not specified or the specified type is incompatible! " << " sname: "  << (##SNAME); \
 		throw; \
 	} \
 }
