@@ -318,7 +318,7 @@ private:
 		for (std::vector<std::string>::const_iterator discriminator = discriminators.begin();
 		     validTau && (discriminator != discriminators.end()); ++discriminator)
 		{
-			validTau = validTau && tau->getId(*discriminator, event.m_tauMetadata);
+			validTau = validTau && bool(tau->getDiscriminator(*discriminator, event.m_tauMetadata));
 		}
 
 		return validTau;
