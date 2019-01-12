@@ -128,6 +128,7 @@ void ValidBTaggedJetsProducer::Produce(KappaEvent const& event, KappaProduct& pr
 					validBJet = m_bTagSfMap.at(*workingPoint).isbtagged(
 							tjet->p4.pt(),
 							tjet->p4.eta(),
+							tjet->p4.phi(),
 							combinedSecondaryVertex,
 							jetflavor,
 							btagSys,

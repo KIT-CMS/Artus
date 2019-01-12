@@ -20,7 +20,7 @@ public:
 
 	void initBtagwp(std::string btagwp);
 
-	bool isbtagged(double pt, float eta, float csv, Int_t jetflavor,
+	bool isbtagged(double pt, float eta, float phi, float csv, Int_t jetflavor,
 	               unsigned int btagsys, unsigned int mistagsys, int year, float btagWP) const;
 	double getSFb(double pt, float eta, unsigned int btagsys, int year) const;
 	double getSFc(double pt, float eta, unsigned int btagsys, int year) const;

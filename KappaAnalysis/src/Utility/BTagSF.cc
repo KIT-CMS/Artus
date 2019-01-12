@@ -122,10 +122,10 @@ void BTagSF::initBtagwp(std::string btagwp)
 	gFile = savefile;
 }
 
-bool BTagSF::isbtagged(double pt, float eta, float csv, Int_t jetflavor,
+bool BTagSF::isbtagged(double pt, float eta, float phi, float csv, Int_t jetflavor,
 						 unsigned int btagsys, unsigned int mistagsys, int year, float btagWP) const
 {
-	randm.SetSeed(static_cast<int>((eta + 5) * 100000.));
+	randm.SetSeed(static_cast<int>((eta + 5) * 1000) * 1000 + static_cast<int>((phi + 4) * 1000));
 	double randval = randm.Uniform();
 
 	float csv_WP = 0.679;
