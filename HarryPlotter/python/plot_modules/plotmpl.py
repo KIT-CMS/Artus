@@ -405,10 +405,17 @@ class PlotMpl(plotbase.PlotBase):
 				if plotData.plotdict[axis+'_ticks'] is not None:
 					getattr(ax, 'set_{}ticks'.format(axis))(plotData.plotdict[axis+'_ticks'])
 					getattr(ax, 'get_{}axis'.format(axis))().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-
-		for y, linestyle in zip(plotData.plotdict["lines"], self.default_linestyles*len(plotData.plotdict["lines"])):
+		try:
+			plotData.plotdict["lines_styles"]
+		except:
+			plotData.plotdict["lines_styles"] = self.default_linestyles*len(plotData.plotdict["lines"])
+		for y, linestyle in zip(plotData.plotdict["lines"], plotData.plotdict["lines_styles"]*len(plotData.plotdict["lines"])):
 			ax.axhline(y, color='black', linestyle=linestyle)
-		for x, linestyle in zip(plotData.plotdict["vertical_lines"], self.default_linestyles*len(plotData.plotdict["vertical_lines"])):
+		try:
+			plotData.plotdict["vertical_lines_styles"]
+		except:
+			plotData.plotdict["vertical_lines_styles"] = self.default_linestyles*len(plotData.plotdict["vertical_lines"])
+		for x, linestyle in zip(plotData.plotdict["vertical_lines"], plotData.plotdict["vertical_lines_styles"]*len(plotData.plotdict["vertical_lines"])):
 			ax.axvline(x, color='black', linestyle=linestyle)
 
 		# do special things for subplots
@@ -416,9 +423,17 @@ class PlotMpl(plotbase.PlotBase):
 			ax2 = plotData.plot.axes[1]
 
 			# Horizontal line at unity
-			for y, linestyle in zip(plotData.plotdict["subplot_lines"], self.default_linestyles*len(plotData.plotdict["subplot_lines"])):
+			try:
+				plotData.plotdict["subplot_lines_styles"]
+			except:
+				plotData.plotdict["subplot_lines_styles"] = self.default_linestyles*len(plotData.plotdict["subplot_lines"])
+			for y, linestyle in zip(plotData.plotdict["subplot_lines"],plotData.plotdict["subplot_lines_styles"]*len(plotData.plotdict["subplot_lines"])):
 				ax2.axhline(y, color='black', linestyle=linestyle)
-			for x, linestyle in zip(plotData.plotdict["vertical_lines"], self.default_linestyles*len(plotData.plotdict["vertical_lines"])):
+			try:
+				plotData.plotdict["vertical_lines_styles"]
+			except:
+				plotData.plotdict["vertical_lines_styles"] = self.default_linestyles*len(plotData.plotdict["vertical_lines"])
+			for x, linestyle in zip(plotData.plotdict["vertical_lines"],plotData.plotdict["vertical_lines_styles"]*len(plotData.plotdict["vertical_lines"])):
 				ax2.axvline(x, color='black', linestyle=linestyle)
 
 			if plotData.plotdict["y_subplot_lims"] != None:
