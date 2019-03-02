@@ -37,6 +37,7 @@ KappaEnumTypes::JetIDVersion KappaEnumTypes::ToJetIDVersion(std::string const& j
 	else if (jetIDVersion == "2015") return KappaEnumTypes::JetIDVersion::ID2015;
 	else if (jetIDVersion == "2016") return KappaEnumTypes::JetIDVersion::ID2016;
 	else if (jetIDVersion == "2017") return KappaEnumTypes::JetIDVersion::ID2017;
+	else if (jetIDVersion == "2018") return KappaEnumTypes::JetIDVersion::ID2018;
 	else LOG(FATAL) << "Jet ID version '" << jetIDVersion << "' is not available";
 	return KappaEnumTypes::JetIDVersion::ID2016;
 }
