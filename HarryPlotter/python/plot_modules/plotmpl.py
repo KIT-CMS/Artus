@@ -215,6 +215,9 @@ class PlotMpl(plotbase.PlotBase):
 
 	def set_style(self, plotData):
 		# modify if custom aspect ratio is necessary
+		if(plotData.plotdict['fig_size'] != None):
+			matplotlib.rcParams['figure.figsize'] = plotData.plotdict['fig_size']
+		super(PlotMpl, self).set_style(plotData)
 		if(plotData.plotdict['aspect_ratio'] != 1.):
 			matplotlib.rcParams['figure.figsize'] = 7. * plotData.plotdict['aspect_ratio'], 7. / plotData.plotdict['aspect_ratio']
 		super(PlotMpl, self).set_style(plotData)
