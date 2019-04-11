@@ -241,11 +241,12 @@ public:
 			// kinematic cuts
 			validJet = validJet && this->PassKinematicCuts(*jet, event, product);
                                 LOG(DEBUG) << "\tPassing kinematic cuts? " << validJet;
+			if(settings.GetJetApplyEENoiseVeto()){
                         // EE noise jets
-                        bool eenoise = ((*jet)->p4.Pt() < 50 && std::abs((*jet)->p4.Eta()) < 3.139 && std::abs((*jet)->p4.Eta()) > 2.65);
-			validJet = validJet && !eenoise;
-                                LOG(DEBUG) << "\tPassing ee noise veto? " << validJet;
-
+                         bool eenoise = ((*jet)->p4.Pt() < 50 && std::abs((*jet)->p4.Eta()) < 3.139 && std::abs((*jet)->p4.Eta()) > 2.65);
+			 validJet = validJet && !eenoise;
+                                 LOG(DEBUG) << "\tPassing ee noise veto? " << validJet;
+			}
 
 			// check possible analysis-specific criteria
 			validJet = validJet && AdditionalCriteria(*jet, event, product, settings);
