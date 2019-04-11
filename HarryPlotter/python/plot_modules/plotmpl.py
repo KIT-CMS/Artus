@@ -104,6 +104,10 @@ class PlotMpl(plotbase.PlotBase):
 		                                     help="Fill style of the markers in the plot")
 		self.formatting_options.add_argument("--aspect-ratio", type=float, nargs="?", default=1,
 											 help="Aspect ratio of the plot. Default is quadratic, ")
+		self.formatting_options.add_argument("--lines-styles", type=str, nargs="?", default=None,
+											 help="Set styles of lines. If left blank, default is used")
+		self.formatting_options.add_argument("--figsize", type=float, nargs="?", default=[7.0,7.0],
+											 help="Set size of figure. Default is (7.0,7.0)")
 		self.formatting_options.add_argument("--subplot-fraction", type=int, nargs="?", default=25,
 											 help="Hight fraction of the subplot in percent")
 		self.formatting_options.add_argument("--subplot-legend", type=str, nargs="?", default=None,
@@ -215,11 +219,9 @@ class PlotMpl(plotbase.PlotBase):
 
 	def set_style(self, plotData):
 		# modify if custom aspect ratio is necessary
-		if(plotData.plotdict['fig_size'] != None):
-			matplotlib.rcParams['figure.figsize'] = plotData.plotdict['fig_size']
-		super(PlotMpl, self).set_style(plotData)
+		matplotlib.rcParams['figure.figsize'] = plotData.plotdict['figsize']
 		if(plotData.plotdict['aspect_ratio'] != 1.):
-			matplotlib.rcParams['figure.figsize'] = 7. * plotData.plotdict['aspect_ratio'], 7. / plotData.plotdict['aspect_ratio']
+			matplotlib.rcParams['figure.figsize'] = plotData.plotdict['figsize'] * plotData.plotdict['aspect_ratio'], plotData.plotdict['figsize'] / plotData.plotdict['aspect_ratio']
 		super(PlotMpl, self).set_style(plotData)
 	
 	def create_canvas(self, plotData):
@@ -408,9 +410,7 @@ class PlotMpl(plotbase.PlotBase):
 				if plotData.plotdict[axis+'_ticks'] is not None:
 					getattr(ax, 'set_{}ticks'.format(axis))(plotData.plotdict[axis+'_ticks'])
 					getattr(ax, 'get_{}axis'.format(axis))().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-		try:
-			plotData.plotdict["lines_styles"]
-		except:
+		if plotData.plotdict["lines_styles"] == None:
 			plotData.plotdict["lines_styles"] = self.default_linestyles*len(plotData.plotdict["lines"])
 		for y, linestyle in zip(plotData.plotdict["lines"], plotData.plotdict["lines_styles"]*len(plotData.plotdict["lines"])):
 			ax.axhline(y, color='black', linestyle=linestyle)
@@ -542,8 +542,6 @@ class PlotMpl(plotbase.PlotBase):
 		matplotlib.rcParams['mathtext.default'] = 'rm'
 		# matplotlib.rcParams['font.sans-serif'] = 'helvetica, Helvetica, Nimbus Sans L, Mukti Narrow, FreeSans'
 
-		# figure
-		matplotlib.rcParams['figure.figsize'] = 7., 7.
 		# axes
 		matplotlib.rcParams['axes.linewidth'] = 1
 		matplotlib.rcParams['axes.labelsize'] = 20
