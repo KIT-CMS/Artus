@@ -281,9 +281,9 @@ def options():
 		help="Number of desired pile-up bins. [default: %(default)s].")
 	parser.add_argument('-r', '--rebin', action='store_true',
 		help="merge low and high range bins")
-	parser.add_argument('-w', '--weight-limits', nargs="*", default=[0, 4], type=float,
+	parser.add_argument('-w', '--weight-limits', nargs="*", type=float,
 		help="Limit excessive weights. No value: no limits. One value: max if >1, "
-			 "else min. Two values: min and max. [Default: %(default)s]")
+			 "else min. Two values: min and max. Suggested [0, 4][Default: %(default)s]")
 	parser.add_argument('-v', '--verbose', action='store_true',
 		help="verbosity")
 	parser.add_argument('-c', '--check', action='store_true',
@@ -313,7 +313,7 @@ def options():
 			if args.files[1].endswith('.txt'):  # data[txt, root], mc.txt
 				with open(args.files[1]) as f:
 				    content = f.readlines()
-				# you may also want to remove whitespace characters like `\n` at the end of each line
+				# remove whitespace characters like `\n` at the end of each line
 				content = [x.strip() for x in content]
 				args.mfile = content
 			elif args.files[1].endswith('.root'):  # data[txt, root], mc.root
@@ -321,9 +321,6 @@ def options():
 		if len(args.files) > 2 and args.files[0][:8] == args.files[1][:8]:  # {mc.root}
 			args.dfile = ""
 			args.mfile = args.files
-
-	# if not args.dfile or not args.mfile:
-	# 	args.save = True
 
 	# construct default names from (JSON) input files
 	# data: data_190456-208686_8TeV_22Jan2013ReReco.root
@@ -365,13 +362,13 @@ def options():
 	# ensure all weight limits are present
 	if not args.weight_limits:
 		args.weight_limits = (float("-inf"), float("inf"))
-	if len(args.weight_limits) == 1:
+	elif len(args.weight_limits) == 1:
 		args.weight_limits = (float("-inf"), args.weight_limits[0]) if args.weight_limits[0] > 1 else (args.weight_limits[0], float("inf"))
-	if len(args.weight_limits) > 2:
+	elif len(args.weight_limits) > 2:
 		print "WARNING: ignoring additional weight limits",
 		args.weight_limits = args.weight_limits[:2]
 	assert args.weight_limits[0] < args.weight_limits[1], "Lower weight limit must be smaller than upper limit"
-
+	print "args.weight_limits:", args.weight_limits
 	if args.verbose:
 		print "Using options:"
 		print args
