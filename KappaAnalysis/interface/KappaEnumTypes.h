@@ -101,5 +101,75 @@ public:
 		LHE = 2,
 	};
 	static GenCollectionToPrint ToGenCollectionToPrint(std::string const& genCollectionToPrint);
+
+	enum class JetEnergyUncertaintyShiftName : int
+	{
+		NONE,
+		AbsoluteFlavMap,
+		AbsoluteMPFBias,
+		AbsoluteScale,
+		AbsoluteStat,
+		FlavorQCD,
+		Fragmentation,
+		PileUpDataMC,
+		PileUpPtBB,
+		PileUpPtEC1,
+		PileUpPtEC2,
+		PileUpPtHF,
+		PileUpPtRef,
+		RelativeBal,
+		RelativeSample,
+		RelativeFSR,
+		RelativeJEREC1,
+		RelativeJEREC2,
+		RelativeJERHF,
+		RelativePtBB,
+		RelativePtEC1,
+		RelativePtEC2,
+		RelativePtHF,
+		RelativeStatEC,
+		RelativeStatFSR,
+		RelativeStatHF,
+		SinglePionECAL,
+		SinglePionHCAL,
+		TimePtEta,
+		Total,
+		Closure // individual uncertainties added in quadrature. to be compared to 'Total' for closure test
+	};
+
+	static JetEnergyUncertaintyShiftName ToJetEnergyUncertaintyShiftName(std::string const& jetEnergyCorrectionUncertainty)
+	{
+		if (jetEnergyCorrectionUncertainty == "AbsoluteFlavMap") return JetEnergyUncertaintyShiftName::AbsoluteFlavMap;
+		else if (jetEnergyCorrectionUncertainty == "AbsoluteMPFBias") return JetEnergyUncertaintyShiftName::AbsoluteMPFBias;
+		else if (jetEnergyCorrectionUncertainty == "AbsoluteScale") return JetEnergyUncertaintyShiftName::AbsoluteScale;
+		else if (jetEnergyCorrectionUncertainty == "AbsoluteStat") return JetEnergyUncertaintyShiftName::AbsoluteStat;
+		else if (jetEnergyCorrectionUncertainty == "FlavorQCD") return JetEnergyUncertaintyShiftName::FlavorQCD;
+		else if (jetEnergyCorrectionUncertainty == "Fragmentation") return JetEnergyUncertaintyShiftName::Fragmentation;
+		else if (jetEnergyCorrectionUncertainty == "PileUpDataMC") return JetEnergyUncertaintyShiftName::PileUpDataMC;
+		else if (jetEnergyCorrectionUncertainty == "PileUpPtBB") return JetEnergyUncertaintyShiftName::PileUpPtBB;
+		else if (jetEnergyCorrectionUncertainty == "PileUpPtEC1") return JetEnergyUncertaintyShiftName::PileUpPtEC1;
+		else if (jetEnergyCorrectionUncertainty == "PileUpPtEC2") return JetEnergyUncertaintyShiftName::PileUpPtEC2;
+		else if (jetEnergyCorrectionUncertainty == "PileUpPtHF") return JetEnergyUncertaintyShiftName::PileUpPtHF;
+		else if (jetEnergyCorrectionUncertainty == "PileUpPtRef") return JetEnergyUncertaintyShiftName::PileUpPtRef;
+		else if (jetEnergyCorrectionUncertainty == "RelativeBal") return JetEnergyUncertaintyShiftName::RelativeBal;
+		else if (jetEnergyCorrectionUncertainty == "RelativeSample") return JetEnergyUncertaintyShiftName::RelativeSample;
+		else if (jetEnergyCorrectionUncertainty == "RelativeFSR") return JetEnergyUncertaintyShiftName::RelativeFSR;
+		else if (jetEnergyCorrectionUncertainty == "RelativeJEREC1") return JetEnergyUncertaintyShiftName::RelativeJEREC1;
+		else if (jetEnergyCorrectionUncertainty == "RelativeJEREC2") return JetEnergyUncertaintyShiftName::RelativeJEREC2;
+		else if (jetEnergyCorrectionUncertainty == "RelativeJERHF") return JetEnergyUncertaintyShiftName::RelativeJERHF;
+		else if (jetEnergyCorrectionUncertainty == "RelativePtBB") return JetEnergyUncertaintyShiftName::RelativePtBB;
+		else if (jetEnergyCorrectionUncertainty == "RelativePtEC1") return JetEnergyUncertaintyShiftName::RelativePtEC1;
+		else if (jetEnergyCorrectionUncertainty == "RelativePtEC2") return JetEnergyUncertaintyShiftName::RelativePtEC2;
+		else if (jetEnergyCorrectionUncertainty == "RelativePtHF") return JetEnergyUncertaintyShiftName::RelativePtHF;
+		else if (jetEnergyCorrectionUncertainty == "RelativeStatEC") return JetEnergyUncertaintyShiftName::RelativeStatEC;
+		else if (jetEnergyCorrectionUncertainty == "RelativeStatFSR") return JetEnergyUncertaintyShiftName::RelativeStatFSR;
+		else if (jetEnergyCorrectionUncertainty == "RelativeStatHF") return JetEnergyUncertaintyShiftName::RelativeStatHF;
+		else if (jetEnergyCorrectionUncertainty == "SinglePionECAL") return JetEnergyUncertaintyShiftName::SinglePionECAL;
+		else if (jetEnergyCorrectionUncertainty == "SinglePionHCAL") return JetEnergyUncertaintyShiftName::SinglePionHCAL;
+		else if (jetEnergyCorrectionUncertainty == "TimePtEta") return JetEnergyUncertaintyShiftName::TimePtEta;
+		else if (jetEnergyCorrectionUncertainty == "Total") return JetEnergyUncertaintyShiftName::Total;
+		else if (jetEnergyCorrectionUncertainty == "Closure") return JetEnergyUncertaintyShiftName::Closure;
+		else return JetEnergyUncertaintyShiftName::NONE;
+	}
 };
 

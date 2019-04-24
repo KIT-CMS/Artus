@@ -98,15 +98,43 @@ public:
 			LOG(DEBUG) << "\t\t" << settings.GetJetEnergyCorrectionUncertaintySource();
 			LOG(DEBUG) << "\t\t" << settings.GetJetEnergyCorrectionUncertaintyParameters();
 		}
+
+                uncertaintyFile = settings.GetJetEnergyCorrectionSplitUncertaintyParameters();
+                individualUncertainties = settings.GetJetEnergyCorrectionSplitUncertaintyParameterNames();
+
+                // make sure the necessary parameters are configured
+                assert(uncertaintyFile != "");
+                if (settings.GetUseGroupedJetEnergyCorrectionUncertainty()) assert(individualUncertainties.size() > 0);
+
+                for (auto const& uncertainty : individualUncertainties)
+                {
+                        // only do string comparison once per uncertainty
+                        KappaEnumTypes::JetEnergyUncertaintyShiftName individualUncertainty = KappaEnumTypes::ToJetEnergyUncertaintyShiftName(uncertainty);
+                        if (individualUncertainty == KappaEnumTypes::JetEnergyUncertaintyShiftName::NONE)
+                                continue;
+                        individualUncertaintyEnums.push_back(individualUncertainty);
+
+                        // create uncertainty map (only if shifts are to be applied)
+                        if (settings.GetUseGroupedJetEnergyCorrectionUncertainty()
+                                && settings.GetJetEnergyCorrectionUncertaintyShift() != 0.0
+                                && individualUncertainty != KappaEnumTypes::JetEnergyUncertaintyShiftName::Closure)
+                        {
+                                JetCorrectorParameters const * jetCorPar = new JetCorrectorParameters(uncertaintyFile, uncertainty);
+                                JetCorParMap[individualUncertainty] = jetCorPar;
+
+                                JetCorrectionUncertainty * jecUnc(new JetCorrectionUncertainty(*JetCorParMap[individualUncertainty]));
+                                JetUncMap[individualUncertainty] = jecUnc;
+                        }
+	}
 	}
 
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override
 	{
+                LOG(DEBUG) << "\nStarting " << this->GetProducerId() <<  ". Consider pipeline: " << settings.GetRootFileFolder();
 		assert((event.*m_basicJetsMember));
 		assert(event.m_pileupDensity);
 		assert(event.m_vertexSummary);
-
 		// create a copy of all jets in the event (first temporarily for the JEC)
 		(product.*m_correctedJetsMember).clear();
 		std::vector<TJet> correctJetsForJecTools((event.*m_basicJetsMember)->size());
@@ -118,12 +146,43 @@ public:
 			++jetIndex;
 		}
 
+                if (settings.GetUseGroupedJetEnergyCorrectionUncertainty() && settings.GetJetEnergyCorrectionUncertaintyShift() != 0.0)
+                {
+                        // run over all jets
+                        for (typename std::vector<TJet>::iterator jet = correctJetsForJecTools.begin();
+                                 jet != correctJetsForJecTools.end(); ++jet)
+                        {
+                                LOG(DEBUG) << "\tConsidering jet with p4 = " << jet->p4;
+                                // add jet momentum to met shift and later subtract shifted momentum in order to get MET shift
+                                product.m_MET_shift.p4 += jet->p4;
+                                // shift corrected jets
+                                double grouped_unc = 0.0;
+                                for (auto const& uncertainty : individualUncertaintyEnums)
+                                {
+                                        double unc = 0.0;
+
+                                        if (std::abs(jet->p4.Eta()) < 5.2 && jet->p4.Pt() > 9.)
+                                        {
+                                                JetUncMap.at(uncertainty)->setJetEta(jet->p4.Eta());
+                                                JetUncMap.at(uncertainty)->setJetPt(jet->p4.Pt());
+                                                unc = JetUncMap.at(uncertainty)->getUncertainty(true);
+                                                grouped_unc += unc * unc;
+                                        }
+                                }
+                                grouped_unc = sqrt(grouped_unc);
+                                jet->p4 = jet->p4 * (1 + grouped_unc * settings.GetJetEnergyCorrectionUncertaintyShift());
+                                product.m_MET_shift.p4 -= jet->p4;
+                                LOG(DEBUG) << "\tGrouped uncertainty applied: " << grouped_unc << " shifted p4: " << jet->p4;
+                        }
+                }
+                else if (settings.GetJetEnergyCorrectionUncertaintyShift() != 0.0)
+                {
 		// apply jet energy corrections and uncertainty shift (if uncertainties are not to be splitted into individual contributions)
 		float shift = settings.GetJetEnergyCorrectionSplitUncertainty() ? 0.0 : settings.GetJetEnergyCorrectionUncertaintyShift();
 		correctJets(&correctJetsForJecTools, factorizedJetCorrector, jetCorrectionUncertainty,
 		            event.m_pileupDensity->rho, event.m_vertexSummary->nVertices, -1,
 		            shift);
-
+                }
 		// create the shared pointers to store in the product
 		(product.*m_correctedJetsMember).clear();
 		(product.*m_correctedJetsMember).resize(correctJetsForJecTools.size());
@@ -136,14 +195,12 @@ public:
 			++jetIndex;
 		}
 
-		// perform corrections on copied jets
+		// perform additional corrections on copied jets
 		for (typename std::vector<std::shared_ptr<TJet> >::iterator jet = (product.*m_correctedJetsMember).begin();
 			 jet != (product.*m_correctedJetsMember).end(); ++jet)
 		{
-			// No general correction available
-
-			// perform possible analysis-specific corrections
 			AdditionalCorrections(jet->get(), event, product, settings);
+                        LOG(DEBUG) << "\tFinal jet p4: " << (*jet)->p4;
 		}
 
 		// sort vectors of corrected jets by pt
@@ -164,6 +221,13 @@ protected:
 private:
 	std::vector<TJet>* KappaEvent::*m_basicJetsMember;
 	std::vector<std::shared_ptr<TJet> > KappaProduct::*m_correctedJetsMember;
+
+	std::string uncertaintyFile;
+	std::vector<std::string> individualUncertainties;
+	std::vector<KappaEnumTypes::JetEnergyUncertaintyShiftName> individualUncertaintyEnums;
+
+	std::map<KappaEnumTypes::JetEnergyUncertaintyShiftName, JetCorrectorParameters const*> JetCorParMap;
+	std::map<KappaEnumTypes::JetEnergyUncertaintyShiftName, JetCorrectionUncertainty *> JetUncMap;
 
 	FactorizedJetCorrector* factorizedJetCorrector = nullptr;
 	JetCorrectionUncertainty* jetCorrectionUncertainty = nullptr;
