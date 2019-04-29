@@ -162,7 +162,10 @@ public:
 
                                         if (std::abs(jet->p4.Eta()) < 5.2 && jet->p4.Pt() > 9.)
                                         {
-                                                grouped_unc = JetUncMap.at(individualUncertaintyEnums.at(0))->getUncertainty(true);
+                                                auto const& uncertainty = individualUncertaintyEnums.at(0);
+                                                JetUncMap.at(uncertainty)->setJetEta(jet->p4.Eta());
+                                                JetUncMap.at(uncertainty)->setJetPt(jet->p4.Pt());
+                                                grouped_unc = JetUncMap.at(uncertainty)->getUncertainty(true);
                                         }
 				}
 				else
