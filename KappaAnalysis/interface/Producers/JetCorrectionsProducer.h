@@ -157,19 +157,30 @@ public:
                                 product.m_MET_shift.p4 += jet->p4;
                                 // shift corrected jets
                                 double grouped_unc = 0.0;
-                                for (auto const& uncertainty : individualUncertaintyEnums)
-                                {
-                                        double unc = 0.0;
+				if(individualUncertaintyEnums.size() == 1)
+				{
 
                                         if (std::abs(jet->p4.Eta()) < 5.2 && jet->p4.Pt() > 9.)
                                         {
-                                                JetUncMap.at(uncertainty)->setJetEta(jet->p4.Eta());
-                                                JetUncMap.at(uncertainty)->setJetPt(jet->p4.Pt());
-                                                unc = JetUncMap.at(uncertainty)->getUncertainty(true);
-                                                grouped_unc += unc * unc;
+                                                grouped_unc = JetUncMap.at(individualUncertaintyEnums.at(0))->getUncertainty(true);
                                         }
-                                }
-                                grouped_unc = sqrt(grouped_unc);
+				}
+				else
+				{
+					for (auto const& uncertainty : individualUncertaintyEnums)
+					{
+						double unc = 0.0;
+
+						if (std::abs(jet->p4.Eta()) < 5.2 && jet->p4.Pt() > 9.)
+						{
+							JetUncMap.at(uncertainty)->setJetEta(jet->p4.Eta());
+							JetUncMap.at(uncertainty)->setJetPt(jet->p4.Pt());
+							unc = JetUncMap.at(uncertainty)->getUncertainty(true);
+							grouped_unc += unc * unc;
+						}
+					}
+					grouped_unc = sqrt(grouped_unc);
+				}
                                 jet->p4 = jet->p4 * (1 + grouped_unc * settings.GetJetEnergyCorrectionUncertaintyShift());
                                 product.m_MET_shift.p4 -= jet->p4;
                                 LOG(DEBUG) << "\tGrouped uncertainty applied: " << grouped_unc << " shifted p4: " << jet->p4;
