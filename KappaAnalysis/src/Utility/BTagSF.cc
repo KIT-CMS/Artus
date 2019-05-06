@@ -129,7 +129,7 @@ bool BTagSF::isbtagged(double pt, float eta, float phi, float csv, Int_t jetflav
 	double randval = randm.Uniform();
 
 	float csv_WP = 0.679;
-	if (year == 2015 || year == 2016 || year == 2017)
+	if (year == 2015 || year == 2016 || year == 2017 || year == 2018)
 		csv_WP = btagWP;
 
 	bool btagged = false;
