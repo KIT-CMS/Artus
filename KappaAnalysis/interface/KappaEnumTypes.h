@@ -85,6 +85,15 @@ public:
 	};
 	static JetID ToJetID(std::string const& jetID);
 
+	enum class PUJetID : int
+	{
+		NONE = -1,
+		LOOSE = 2,
+		MEDIUM = 1,
+		TIGHT = 0,
+	};
+	static PUJetID ToPUJetID(std::string const& puJetID);
+
 	enum class BTagScaleFactorMethod : int
 	{
 		NONE = -1,

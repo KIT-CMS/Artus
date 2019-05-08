@@ -53,6 +53,15 @@ KappaEnumTypes::JetID KappaEnumTypes::ToJetID(std::string const& jetID)
 	return KappaEnumTypes::JetID::NONE;
 }
 
+KappaEnumTypes::PUJetID KappaEnumTypes::ToPUJetID(std::string const& puJetID)
+{
+	if (puJetID == "loose") return KappaEnumTypes::PUJetID::LOOSE;
+	else if (puJetID == "medium") return KappaEnumTypes::PUJetID::MEDIUM;
+	else if (puJetID == "tight") return KappaEnumTypes::PUJetID::TIGHT;
+	else LOG(FATAL) << "PU Jet ID of type '" << puJetID << "' not implemented!";
+	return KappaEnumTypes::PUJetID::NONE;
+}
+
 KappaEnumTypes::BTagScaleFactorMethod KappaEnumTypes::ToBTagScaleFactorMethod(std::string const& bTagSFMethod)
 {
 	if (bTagSFMethod == "promotiondemotion") return KappaEnumTypes::BTagScaleFactorMethod::PROMOTIONDEMOTION;

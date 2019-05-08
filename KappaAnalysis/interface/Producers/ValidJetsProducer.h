@@ -59,6 +59,7 @@ public:
 		validJetsInput = KappaEnumTypes::ToValidJetsInput(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetValidJetsInput())));
 		jetIDVersion = KappaEnumTypes::ToJetIDVersion(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetJetIDVersion())));
 		jetID = KappaEnumTypes::ToJetID(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetJetID())));
+                puJetID = KappaEnumTypes::ToPUJetID(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetJetPUIDForEENoiseWP())));
 
 		if (jetID == KappaEnumTypes::JetID::MEDIUM && jetIDVersion != KappaEnumTypes::JetIDVersion::ID2010)
 			LOG(WARNING) << "Since 2012, the medium jet ID is not supported officially any longer.";
@@ -242,10 +243,20 @@ public:
 			validJet = validJet && this->PassKinematicCuts(*jet, event, product);
                                 LOG(DEBUG) << "\tPassing kinematic cuts? " << validJet;
 			if(settings.GetJetApplyEENoiseVeto()){
-                        // EE noise jets
-                         bool eenoise = ((*jet)->uncorrectedP4.Pt() < 50 && std::abs((*jet)->uncorrectedP4.Eta()) < 3.139 && std::abs((*jet)->uncorrectedP4.Eta()) > 2.65);
-			 validJet = validJet && !eenoise;
-                                 LOG(DEBUG) << "\tPassing ee noise veto? " << validJet;
+                            // EE noise jets
+                            bool eenoise_area = ((*jet)->uncorrectedP4.Pt() < 50 && std::abs((*jet)->uncorrectedP4.Eta()) < 3.139 && std::abs((*jet)->uncorrectedP4.Eta()) > 2.65);
+                            bool eenoise = eenoise_area;
+                            // Allow further check of pile-up ID to reject EE noise jets
+                            if(settings.GetJetApplyPUIDForEENoise() && eenoise_area)
+                            {
+                                int puID = static_cast<int>(static_cast<KJet*>((*jet))->getTag(settings.GetJetPUIDForEENoiseName(), event.m_jetMetadata));
+                                int WP = static_cast<int>(puJetID);
+                                bool passed_puID  = (puID  & (1 << WP)); // see PU Jet ID Twiki: https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID#Information_for_13_TeV_data_anal
+                                LOG(DEBUG) << "\tpuID result: " << puID <<  " chosen WP: " << WP << " passed? " << passed_puID;
+                                eenoise = eenoise_area && !passed_puID;
+                            }
+                            validJet = validJet && !eenoise;
+                                    LOG(DEBUG) << "\tPassing ee noise veto? " << validJet;
 			}
 
 			// check possible analysis-specific criteria
@@ -375,6 +386,7 @@ private:
 	KappaEnumTypes::ValidJetsInput validJetsInput;
 	KappaEnumTypes::JetIDVersion jetIDVersion;
 	KappaEnumTypes::JetID jetID;
+	KappaEnumTypes::PUJetID puJetID;
 };
 
 
