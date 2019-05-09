@@ -195,7 +195,6 @@ public:
 		LOG(DEBUG) << this->GetProducerId() << " -----START-----"; 
 		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent; 
 		assert((event.*m_basicJetsMember));
-
 		// select input source
 		std::vector<TJet*> jets;
 		if ((validJetsInput == KappaEnumTypes::ValidJetsInput::AUTO && ((product.*m_correctedJetsMember).size() > 0)) || (validJetsInput == KappaEnumTypes::ValidJetsInput::CORRECTED))
@@ -363,6 +362,52 @@ public:
 						&& (jet->neutralHadronFraction > 0.02f)
 					   && (jet->nConstituents - jet->nCharged > 10);
 		}
+		// 2018 Version of JetID https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2018
+		if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018) && (jetID == KappaEnumTypes::JetID::TIGHT))
+		{
+			LOG(DEBUG)<< "-- JetID Quantities --";
+			LOG(DEBUG)<< "Jet Eta: " << jet->p4.eta();
+			LOG(DEBUG)<< "Neutral Hadron Fraction: " << jet->neutralHadronFraction ;
+			LOG(DEBUG)<< "Neutral EM Fraction: " << jet->photonFraction + jet->hfEMFraction;
+			LOG(DEBUG)<< "Charged Hadron Fractions: " << jet->chargedHadronFraction;
+			LOG(DEBUG)<< "Number of Particles: " << jet->nConstituents;
+			LOG(DEBUG)<< "Number of charged particles: " << jet->nCharged;
+			LOG(DEBUG)<< "Number of neutral particles: " << jet->nConstituents - jet->nCharged; // Number of neutral particles
+			
+			if (std::abs(jet->p4.eta()) <= 2.6f)
+			{
+				validJet = (jet->neutralHadronFraction < 0.90f)
+				&& (jet->photonFraction + jet->hfEMFraction < 0.90f) // Neutral EM Fraction
+				&& (jet->nConstituents > 1)
+				&& (jet->chargedHadronFraction > 0.0)
+				&& (jet->nCharged > 0);
+				LOG(DEBUG) << "eta < 2.6 id = " << validJet;
+			}
+			if (std::abs(jet->p4.eta()) > 2.6f && std::abs(jet->p4.eta()) <= 2.7f)
+			{
+				validJet = (jet->neutralHadronFraction < 0.90f)
+				&& (jet->photonFraction + jet->hfEMFraction < 0.99f) // Neutral EM Fraction
+				&& (jet->nCharged > 0);
+				LOG(DEBUG) << "2.6 < eta < 2.7 id = " << validJet;
+			}
+			if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f)
+			{
+				validJet = (jet->photonFraction + jet->hfEMFraction > 0.02f)
+				&& (jet->photonFraction + jet->hfEMFraction < 0.99f) // Neutral EM Fraction
+				&& (jet->nConstituents - jet->nCharged > 2);
+				LOG(DEBUG) << "2.7 < eta < 3.0 id = " << validJet;
+			}
+			if (std::abs(jet->p4.eta()) > 3.0f)
+			{
+				validJet = (jet->neutralHadronFraction > 0.20f)
+				&& (jet->photonFraction + jet->hfEMFraction < 0.90f) // Neutral EM Fraction
+				&& (jet->nConstituents - jet->nCharged > 10); // Number of neutral particles
+				LOG(DEBUG) << "3.0 < eta < 10.0 id = " << validJet;
+			}
+		}
+
+
+
 		// ability to apply no jet ID
 		validJet = validJet || (jetID == KappaEnumTypes::JetID::NONE);
 
