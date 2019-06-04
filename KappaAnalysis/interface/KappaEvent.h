@@ -50,6 +50,18 @@ public:
 	/// pointer to Puppi MET collection
 	KMET* m_puppiMet = nullptr;
 
+	/// pointer to Track MET collection
+	KMET* m_trackMet = nullptr;
+
+	/// pointer to PU MET collection
+	KMET* m_puMet = nullptr;
+
+	/// pointer to No PU MET collection
+	KMET* m_noPuMet = nullptr;
+
+	/// pointer to PU Corrected MET collection
+	KMET* m_puCorMet = nullptr;
+
 	/// pointer to GenMET collection
 	KMET* m_genMet = nullptr;
 

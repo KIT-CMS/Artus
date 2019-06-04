@@ -50,6 +50,18 @@ public:
 	/// name of PUPPI MET collection in kappa tuple
 	IMPL_SETTING_DEFAULT(std::string, PuppiMet, "");
 
+	/// name of Track MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, TrackMet, "");
+
+	/// name of PU MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, PuMet, "");
+
+	/// name of No PU MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, NoPuMet, "");
+
+	/// name of PU Corrected MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, PuCorMet, "");
+
 	/// name of GenMET collection in kappa tuple
 	IMPL_SETTING_DEFAULT(std::string, GenMet, "");
 
