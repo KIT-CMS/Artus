@@ -192,8 +192,8 @@ public:
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override
 	{
-		LOG(DEBUG) << this->GetProducerId() << " -----START-----"; 
-		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent; 
+		LOG(DEBUG) << this->GetProducerId() << " -----START-----";
+		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent;
 		assert((event.*m_basicJetsMember));
 		// select input source
 		std::vector<TJet*> jets;
@@ -236,7 +236,7 @@ public:
 			{
 				validJet = validJet && ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4) > settings.GetJetLeptonLowerDeltaRCut();
 			}
-                        LOG(DEBUG) << "\tPassing lepton overlap check? " << validJet; 
+                        LOG(DEBUG) << "\tPassing lepton overlap check? " << validJet;
 
 			// kinematic cuts
 			validJet = validJet && this->PassKinematicCuts(*jet, event, product);
@@ -244,6 +244,7 @@ public:
 			if(settings.GetJetApplyEENoiseVeto()){
                             // EE noise jets
                             bool eenoise_area = ((*jet)->uncorrectedP4.Pt() < 50 && std::abs((*jet)->uncorrectedP4.Eta()) < 3.139 && std::abs((*jet)->uncorrectedP4.Eta()) > 2.65);
+                            LOG(DEBUG) << "\tJet has uncorrected P4: " << (*jet)->uncorrectedP4 << ". Is the jet in ee noise area? " << eenoise_area;
                             bool eenoise = eenoise_area;
                             // Allow further check of pile-up ID to reject EE noise jets
                             if(settings.GetJetApplyPUIDForEENoise() && eenoise_area)
