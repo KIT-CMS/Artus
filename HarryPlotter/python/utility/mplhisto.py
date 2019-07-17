@@ -163,8 +163,8 @@ class MplHisto(object):
 
 	@property
 	def bincontentsl(self):
-		return self.bincontents - self.binerrorsl
+		return self.bincontents - self.binerrl
 
 	@property
 	def bincontentsu(self):
-		return self.bincontents + self.binerrorsu
+		return self.bincontents + self.binerru
