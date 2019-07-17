@@ -294,7 +294,7 @@ class PlotMpl(plotbase.PlotBase):
 				self.mplhist = MplHisto(root_object)
 				self.plot_dimension = max([self.plot_dimension, self.mplhist.dimension])
 
-				if marker in ["bar", "fill"]:
+				if marker in ["bar", "fill", "errorband"]:
 					self.plot_hist1d(self.mplhist, style=marker, ax=ax, show_yerr=y_error, label=label, color=color, edgecolor=edgecolor, alpha=alpha, zorder=zorder)
 				else:
 					self.plot_errorbar(self.mplhist, ax=ax,
@@ -671,6 +671,9 @@ class PlotMpl(plotbase.PlotBase):
 			# draw the legend proxy
 			artist = plt.Rectangle((0, 0), 0, 0, label=label, facecolor=color, edgecolor=edgecolor, alpha=alpha)
 			ax.add_patch(artist)
+		elif style == 'errorband':
+			ax.fill_between(self.steppify_bin(hist.xbinedges, isx=True), self.steppify_bin(hist.bincontentsl), self.steppify_bin(hist.bincontentsu),
+			                color=color, edgecolor=edgecolor, alpha=alpha, zorder=1, label=label)
 		elif style == 'bar':
 			ax.bar(hist.xl, hist.bincontents, hist.xbinwidth, bottom=bottom,
 			                label=label, fill=True, facecolor=color, edgecolor=edgecolor, ecolor=color, alpha=alpha)
