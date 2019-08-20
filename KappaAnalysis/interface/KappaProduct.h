@@ -111,7 +111,7 @@ public:
 	/// added by ValidJetsProducer
 	std::vector<KBasicJet*> m_validJets;
 	std::vector<KBasicJet*> m_invalidJets;
-	
+
 	/// added by ValidGenJetsProducer
 	std::vector<KGenJet*> m_validGenJets;
 	std::vector<KLV*> m_simpleGenJets;
@@ -135,7 +135,7 @@ public:
 	std::map<std::string,std::vector<KJet*>> m_nonBTaggedJetsByWp;
 	std::vector<KJet*> m_bTaggedJets;
 	std::vector<KJet*> m_nonBTaggedJets;
-	
+
 	// selected means fired (and unprescaled if requested)
 	std::vector<std::string> m_selectedHltNames;
 	std::vector<int> m_selectedHltPositions;

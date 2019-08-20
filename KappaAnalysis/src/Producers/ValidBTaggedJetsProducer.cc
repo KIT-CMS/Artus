@@ -42,6 +42,138 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30", [this](KappaEvent const& event, KappaProduct const& product) {
 		return KappaProduct::GetNJetsAbovePtThreshold(product.m_bTaggedJets, 30.0);
 	});
+
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30TruePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 30 ) continue;
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30FalsePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 30 ) continue;
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30TrueFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 30 ) continue;
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30FalseFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 30 ) continue;
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20TruePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 20 ) continue;
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20FalsePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 20 ) continue;
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20TrueFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 20 ) continue;
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20FalseFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->p4.pt() < 20 ) continue;
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsTruePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsFalsePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsTrueFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsFalseFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+
 	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetPt", [](KappaEvent const& event, KappaProduct const& product) {
 		return product.m_bTaggedJets.size() >= 1 ? product.m_bTaggedJets.at(0)->p4.Pt() : DefaultValues::UndefinedFloat;
 	});
@@ -87,8 +219,7 @@ void ValidBTaggedJetsProducer::Produce(KappaEvent const& event, KappaProduct& pr
 	for (std::vector<std::string>::const_iterator workingPoint = settings.GetBTagWPs().begin();
 	     workingPoint != settings.GetBTagWPs().end(); ++workingPoint)
 	{
-		for (std::vector<KBasicJet*>::iterator jet = product.m_validJets.begin();
-			jet != product.m_validJets.end(); ++jet)
+		for (std::vector<KBasicJet*>::iterator jet = product.m_validJets.begin(); jet != product.m_validJets.end(); ++jet)
 		{
 			bool validBJet = true;
 			KJet* tjet = static_cast<KJet*>(*jet);
