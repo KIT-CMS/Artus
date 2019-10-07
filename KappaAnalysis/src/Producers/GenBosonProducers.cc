@@ -12,7 +12,7 @@ std::string GenBosonFromGenParticlesProducer::GetProducerId() const {
 void GenBosonFromGenParticlesProducer::Init(KappaSettings const& settings)
 {
 	ProducerBase<KappaTypes>::Init(settings);
-
+	if (!settings.GetMatchNMSSMBosons()) {
 	// add possible quantities for the lambda ntuples consumers
 	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("genBosonParticleFound", [](KappaEvent const & event, KappaProduct const & product)
 	{
@@ -44,6 +44,104 @@ void GenBosonFromGenParticlesProducer::Init(KappaSettings const& settings)
 	{
 		return product.m_genBosonLVFound;
 	});
+	}
+	else {
+	// add possible quantities for the lambda ntuples consumers
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("genBosonParticleFound_h1", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return (product.m_genBosonParticle_h1 != nullptr);
+	});
+	
+	LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("genBosonLV_h1", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h1;
+	});
+	
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonPt_h1", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h1.Pt();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonEta_h1", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h1.Eta();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonPhi_h1", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h1.Phi();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonMass_h1", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h1.M();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("genBosonLVFound_h1", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLVFound_h1;
+	});
+	// add possible quantities for the lambda ntuples consumers
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("genBosonParticleFound_h2", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return (product.m_genBosonParticle_h2 != nullptr);
+	});
+	
+	LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("genBosonLV_h2", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h2;
+	});
+	
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonPt_h2", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h2.Pt();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonEta_h2", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h2.Eta();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonPhi_h2", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h2.Phi();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonMass_h2", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h2.M();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("genBosonLVFound_h2", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLVFound_h2;
+	});
+	// add possible quantities for the lambda ntuples consumers
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("genBosonParticleFound_h3", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return (product.m_genBosonParticle_h3 != nullptr);
+	});
+	
+	LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("genBosonLV_h3", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h3;
+	});
+	
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonPt_h3", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h3.Pt();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonEta_h3", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h3.Eta();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonPhi_h3", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h3.Phi();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genBosonMass_h3", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLV_h3.M();
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("genBosonLVFound_h3", [](KappaEvent const & event, KappaProduct const & product)
+	{
+		return product.m_genBosonLVFound_h3;
+	});
+
+
+	}
 }
 
 void GenBosonFromGenParticlesProducer::Produce(KappaEvent const& event, KappaProduct& product,
@@ -56,21 +154,63 @@ void GenBosonFromGenParticlesProducer::Produce(KappaEvent const& event, KappaPro
 void GenBosonFromGenParticlesProducer::FindGenBoson(KappaEvent const& event, KappaProduct& product,
                                                     KappaSettings const& settings, unsigned int startIndex) const
 {
-	product.m_genBosonParticle = nullptr;
-	product.m_genBosonLV = RMFLV();
-	product.m_genBosonLVFound = false;
-	
-	for (unsigned int genParticleIndex = startIndex; genParticleIndex < event.m_genParticles->size(); ++genParticleIndex)
-	{
-		KGenParticle* genParticle = &(event.m_genParticles->at(genParticleIndex));
-		if (Utility::Contains(settings.GetBosonPdgIds(), std::abs(genParticle->pdgId)) && Utility::Contains(settings.GetBosonStatuses(), genParticle->status()) && genParticle->isLastCopy())
+	if (!settings.GetMatchNMSSMBosons()) {
+
+		product.m_genBosonParticle = nullptr;
+		product.m_genBosonLV = RMFLV();
+		product.m_genBosonLVFound = false;
+		
+		for (unsigned int genParticleIndex = startIndex; genParticleIndex < event.m_genParticles->size(); ++genParticleIndex)
 		{
-			//if (!genParticle->isLastCopy()) std::cout << genParticle->isLastCopy() << std::endl;
-			product.m_genBosonParticle = genParticle;
-			product.m_genBosonLV = genParticle->p4;
-			product.m_genBosonLVFound = true;
-			break;
-		}
+			KGenParticle* genParticle = &(event.m_genParticles->at(genParticleIndex));
+				if (Utility::Contains(settings.GetBosonPdgIds(), std::abs(genParticle->pdgId)) && Utility::Contains(settings.GetBosonStatuses(), genParticle->status()) && genParticle->isLastCopy())
+				{
+					//if (!genParticle->isLastCopy()) std::cout << genParticle->isLastCopy() << std::endl;
+					product.m_genBosonParticle = genParticle;
+					product.m_genBosonLV = genParticle->p4;
+					product.m_genBosonLVFound = true;
+					break;
+				}
+			}
+	}
+	else {
+		product.m_genBosonParticle_h1 = nullptr;
+		product.m_genBosonLV_h1 = RMFLV();
+		product.m_genBosonLVFound_h1 = false;
+		product.m_genBosonParticle_h2 = nullptr;
+		product.m_genBosonLV_h2 = RMFLV();
+		product.m_genBosonLVFound_h2 = false;
+		product.m_genBosonParticle_h3 = nullptr;
+		product.m_genBosonLV_h3 = RMFLV();
+		product.m_genBosonLVFound_h3 = false;
+		for (unsigned int genParticleIndex = startIndex; genParticleIndex < event.m_genParticles->size(); ++genParticleIndex)
+		{
+			KGenParticle* genParticle = &(event.m_genParticles->at(genParticleIndex));
+				if ((std::abs(genParticle->pdgId) == 25) && Utility::Contains(settings.GetBosonStatuses(), genParticle->status()) && genParticle->isLastCopy())
+				{
+					//if (!genParticle->isLastCopy()) std::cout << genParticle->isLastCopy() << std::endl;
+					product.m_genBosonParticle_h1 = genParticle;
+					product.m_genBosonLV_h1 = genParticle->p4;
+					product.m_genBosonLVFound_h1 = true;
+					// std::cout << "Found GenBoson with status " << genParticle->status() << " and pdgId " << genParticle->pdgId << std::endl;
+				}
+				else if ((std::abs(genParticle->pdgId) == 35) && Utility::Contains(settings.GetBosonStatuses(), genParticle->status()) && genParticle->isLastCopy())
+				{
+					//if (!genParticle->isLastCopy()) std::cout << genParticle->isLastCopy() << std::endl;
+					product.m_genBosonParticle_h2 = genParticle;
+					product.m_genBosonLV_h2 = genParticle->p4;
+					product.m_genBosonLVFound_h2 = true;
+					// std::cout << "Found GenBoson with status " << genParticle->status() << " and pdgId " << genParticle->pdgId << std::endl;
+				}
+				else if ((std::abs(genParticle->pdgId) == 45) && Utility::Contains(settings.GetBosonStatuses(), genParticle->status()) && genParticle->isLastCopy())
+				{
+					//if (!genParticle->isLastCopy()) std::cout << genParticle->isLastCopy() << std::endl;
+					product.m_genBosonParticle_h3 = genParticle;
+					product.m_genBosonLV_h3 = genParticle->p4;
+					product.m_genBosonLVFound_h3 = true;
+					// std::cout << "Found GenBoson with status " << genParticle->status() << " and pdgId " << genParticle->pdgId << std::endl;
+				}
+			}
 	}
 }
 

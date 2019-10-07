@@ -333,6 +333,7 @@ public:
 
 	// Needed by the GenBosonProducers
 	IMPL_SETTING_INTLIST_DEFAULT(BosonPdgIds, {23});
+	IMPL_SETTING_DEFAULT(bool, MatchNMSSMBosons, false);
 	IMPL_SETTING_INTLIST_DEFAULT(BosonStatuses, {3});  //keep pythia6 status as default for back-compatibility
 
 	// Needed by the ValidGenParticleProducers
