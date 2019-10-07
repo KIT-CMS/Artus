@@ -321,6 +321,12 @@ private:
 		for (std::vector<std::string>::const_iterator discriminator = discriminators.begin();
 		     validTau && (discriminator != discriminators.end()); ++discriminator)
 		{
+			//workaround for deepTauID VVVLoose WP
+			if (*discriminator=="byVVVLooseDeepTau2017v2p1VSjet"){
+				validTau = validTau && (tau->getDiscriminator("byDeepTau2017v2p1VSjetraw", event.m_tauMetadata) > 0.2599605);
+				//std::cout << "WARNING: Used VVVLoose Tau ID workaround!" << std::endl;
+			}else
+			//end workaround
 			validTau = validTau && bool(tau->getDiscriminator(*discriminator, event.m_tauMetadata));
 		}
 
