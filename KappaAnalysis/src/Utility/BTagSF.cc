@@ -135,7 +135,7 @@ bool BTagSF::isbtagged(double pt, float eta, float phi, float csv, Int_t jetflav
 	double randval = randm.Uniform();
 
 	float csv_WP = 0.679;
-	if (year == 2015 || year == 2016 || year == 2017 || year == 2018)
+	if (year > 2014)
 		csv_WP = btagWP;
 
 	bool btagged = false;
@@ -160,7 +160,7 @@ bool BTagSF::isbtagged(double pt, float eta, float phi, float csv, Int_t jetflav
 	}
 	else
 	{
-		if (year == 2015 || year == 2016 || year == 2017)
+		if (year > 2014)
 		{
 			eff = getEfficiencyFromFile(jetflavor, pt, eta);
 		}
@@ -205,7 +205,7 @@ bool BTagSF::isbtagged(double pt, float eta, float phi, float csv, Int_t jetflav
 
 double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) const
 {
-	if (year == 2015 || year == 2016 || year == 2017)
+	if (year > 2014)
 	{
 		float MaxBJetPt = 1000.;
 		float MinBJetPt = 20.;
@@ -315,7 +315,8 @@ double BTagSF::getSFb(double pt, float eta, unsigned int btagsys, int year) cons
 
 double BTagSF::getSFc(double pt, float eta, unsigned int btagsys, int year) const
 {
-	if(year == 2015 || year == 2016 || year == 2017){
+	if (year > 2014)
+	{
 
 	float MaxBJetPt = 1000.;
 	float MinBJetPt = 20.;
@@ -426,7 +427,8 @@ double BTagSF::getSFc(double pt, float eta, unsigned int btagsys, int year) cons
 
 double BTagSF::getSFl(double pt, float eta, unsigned int mistagsys, int year) const
 {
-	if(year == 2015 || year == 2016 || year == 2017){
+	if(year > 2014)
+	{
 
 	float MaxLJetPt = 1000.;
 	bool DoubleUncertainty = false;
