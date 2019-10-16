@@ -7,18 +7,24 @@ BTagSF::BTagSF()
 
 BTagSF::BTagSF(std::string csvfile, std::string efficiencyfile) :
 	randm(TRandom3(0)),
-	calib(BTagCalibration("csvv2", csvfile)),
-	effFile(new TFile(efficiencyfile.c_str()))
+	calib(BTagCalibration("csvv2", csvfile))
 {
 	TDirectory *savedir(gDirectory);
 	TFile *savefile(gFile);
 
-	if (effFile->IsZombie())
+	TFile effFile(efficiencyfile.c_str());
+
+	if (effFile.IsZombie())
 	{
 		std::cout << "BTagSF: file " << efficiencyfile << " is not found...   quitting " << std::endl;
 		exit(-1);
 	}
 
+	btag_eff_b = *((TH2D*) effFile.Get("btag_eff_b"));
+	btag_eff_c = *((TH2D*) effFile.Get("btag_eff_c"));
+	btag_eff_oth = *((TH2D*) effFile.Get("btag_eff_oth"));
+
+	effFile.Close();
 	gDirectory = savedir;
 	gFile = savefile;
 }
@@ -530,20 +536,20 @@ double BTagSF::getMistag(double pt, float eta) const
 
 double BTagSF::getEfficiencyFromFile(int flavour, double pt, float eta) const
 {
-	TH2D * effHisto;
+	TH2D const * effHisto;
 	double eff = 0.0;
 
 	if (flavour == 5)
 	{
-		effHisto = (TH2D*) effFile->Get("btag_eff_b");
+		effHisto = &btag_eff_b;
 	}
 	else if (flavour == 4)
 	{
-		effHisto = (TH2D*) effFile->Get("btag_eff_c");
+		effHisto = &btag_eff_c;
 	}
 	else
 	{
-		effHisto = (TH2D*) effFile->Get("btag_eff_oth");
+		effHisto = &btag_eff_oth;
 	}
 
 	if (pt > effHisto->GetXaxis()->GetBinLowEdge(effHisto->GetNbinsX() + 1))
