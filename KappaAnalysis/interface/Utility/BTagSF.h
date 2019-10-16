@@ -33,7 +33,9 @@ public:
 private:
 	mutable TRandom3 randm;
 	BTagCalibration calib;
-	TFile* effFile = nullptr;
+	TH2D btag_eff_b;
+	TH2D btag_eff_c;
+	TH2D btag_eff_oth;
 	BTagCalibrationReader reader_mujets;
 	BTagCalibrationReader reader_mujets_up;
 	BTagCalibrationReader reader_mujets_do;
