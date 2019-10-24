@@ -183,6 +183,18 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetPhi", [](KappaEvent const& event, KappaProduct const& product) {
 		return product.m_bTaggedJets.size() >= 1 ? product.m_bTaggedJets.at(0)->p4.Phi() : DefaultValues::UndefinedFloat;
 	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("bJetIsTrueBJet", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return DefaultValues::UndefinedInt;
+		if (product.m_bTaggedJets.size() >= 1) {
+			if (product.m_bTaggedJets.at(0)->hadronFlavour == 5) {
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		} 
+		else return DefaultValues::UndefinedInt;
+	});
 	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Pt", [](KappaEvent const& event, KappaProduct const& product) {
 		return product.m_bTaggedJets.size() >= 2 ? product.m_bTaggedJets.at(1)->p4.Pt() : DefaultValues::UndefinedFloat;
 	});
@@ -191,6 +203,18 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 	});
 	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Phi", [](KappaEvent const& event, KappaProduct const& product) {
 		return product.m_bTaggedJets.size() >= 2 ? product.m_bTaggedJets.at(1)->p4.Phi() : DefaultValues::UndefinedFloat;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("bJet2IsTrueBJet", [settings](KappaEvent const& event, KappaProduct const& product) {
+		if (settings.GetInputIsData()) return DefaultValues::UndefinedInt;
+		if (product.m_bTaggedJets.size() >= 2) {
+			if (product.m_bTaggedJets.at(1)->hadronFlavour == 5) {
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		} 
+		else return DefaultValues::UndefinedInt;
 	});
 
 	std::string bTaggedJetCSVName = settings.GetBTaggedJetCombinedSecondaryVertexName();
