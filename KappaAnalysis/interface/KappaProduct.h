@@ -51,8 +51,19 @@ public:
 
 	// filled by the GenBosonProducers
 	KGenParticle* m_genBosonParticle = nullptr;
+	KGenParticle* m_genBosonParticle_h1 = nullptr;
+	KGenParticle* m_genBosonParticle_h2 = nullptr;
+	KGenParticle* m_genBosonParticle_h3 = nullptr;
+
 	RMFLV m_genBosonLV;
+	RMFLV m_genBosonLV_h1;
+	RMFLV m_genBosonLV_h2;
+	RMFLV m_genBosonLV_h3;
+
 	bool m_genBosonLVFound = false;
+	bool m_genBosonLVFound_h1 = false;
+	bool m_genBosonLVFound_h2 = false;
+	bool m_genBosonLVFound_h3 = false;
 
 	std::vector<KGenParticle*> m_genParticlesProducingBoson;
 	std::vector<KGenParticle*> m_genLeptonsFromBosonDecay;
