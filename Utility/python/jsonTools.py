@@ -353,10 +353,10 @@ class JsonDict(dict):
 	def deepreplaceremotefiles(jsonDict, tmp_directory, remote_identifiers=None):
 		""" download remote files in dictionary values first and point to this copies in the dictionary """
 		remote_identifiers = ["dcap", "root", "srm"]
-		
+
 		if not os.path.exists(tmp_directory):
 			os.makedirs(tmp_directory)
-		
+
 		result = None
 		if isinstance(jsonDict, dict):
 			result = JsonDict()
@@ -371,7 +371,9 @@ class JsonDict(dict):
 				#prefix, suffix = os.path.splitext(jsonDict.strip().rstrip())
 				#result = tempfile.mktemp(prefix=prefix+"_", suffix=suffix, dir=tmp_directory)
 				result = os.path.join(tmp_directory, jsonDict.strip().rstrip().replace(":", "_").replace("/", "__")[-200:])
+				result2 = copy.deepcopy(result)
 				copy_command = "gfal-copy --timeout 1800 --force {remote} file://{local}".format(remote=dcachetools.xrd2srm(jsonDict), local=result)
+				log.info(copy_command)
 				log.debug(copy_command)
 				success = True
 				try:
@@ -380,12 +382,32 @@ class JsonDict(dict):
 						result = jsonDict
 						success = False
 						log.critical("Could not download \""+jsonDict+"\"!")
+						print " exitCode:", exitCode
 						sys.exit(1)
 				except:
 					result = jsonDict
 					success = False
+
 				if not success:
-					log.critical("Could not download \""+jsonDict+"\"!")
+					copy_command = "xrdcp --silent --force {remote} {local}".format(remote=dcachetools.xrd2srm(jsonDict), local=result2)
+					log.info(copy_command)
+
+					import subprocess
+					stdout_data, stderr_data = subprocess.Popen(copy_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+					if stderr_data is None or stderr_data == '':
+						files_checked = True
+						if os.path.isfile(result2):
+							result = result2
+							success = True
+					else:
+						log.critical("Could not download \"" + jsonDict + "\"!")
+						print " stderr_data:", stderr_data
+						print "[xrdcp] ls % s :" % tmp_directory
+
+				if success:
+					print "Locally downloaded files:\n", os.listdir(tmp_directory)
+				else:
+					log.critical("Could not download \"" + jsonDict + "\"!")
 					#sys.exit(1)
 			else:
 				result = jsonDict
