@@ -386,7 +386,7 @@ public:
 			}
 			if (std::abs(jet->p4.eta()) > 3.0f)
 			{
-				validJet = (jet->neutralHadronFraction < 0.9f)// Neutral EM Fraction
+				validJet = (jet->photonFraction + jet->hfEMFraction < 0.9f)// Neutral EM Fraction
 				&& (jet->nConstituents - jet->nCharged > 10); // Number of neutral particles
 				LOG(DEBUG) << "2016 loose ID - 3.0 < eta < 10.0 id = " << validJet;
 			}
