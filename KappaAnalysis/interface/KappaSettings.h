@@ -345,6 +345,11 @@ public:
 	IMPL_SETTING_STRINGLIST_DEFAULT(GenMuonUpperAbsEtaCuts, {});
 	IMPL_SETTING_STRINGLIST_DEFAULT(GenTauUpperAbsEtaCuts, {});
 
+	// Early DM requirement
+	IMPL_SETTING_DEFAULT(bool, TauCheckAllowedDM, false);
+	std::vector<int> TauAllowedDecayModes = {0, 1, 2, 10, 11};
+	IMPL_SETTING_INTLIST_DEFAULT(TauAllowedDecayModes, TauAllowedDecayModes);
+
 	/// Needed by the GenPartonCounterProducer
 	IMPL_SETTING_DEFAULT(int, PartonStatus, 3);  //keep pythia6 status as default for back-compatibility
 

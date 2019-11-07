@@ -65,8 +65,8 @@ public:
 	ValidTausProducer() :
 		KappaProducerBase(),
 		ValidPhysicsObjectTools<KappaTypes, KTau>(&KappaSettings::GetTauLowerPtCuts,
-		                                    &KappaSettings::GetTauUpperAbsEtaCuts,
-		                                    &KappaProduct::m_validTaus),
+											&KappaSettings::GetTauUpperAbsEtaCuts,
+											&KappaProduct::m_validTaus),
 		tauID(TauID::NONE)
 	{
 	}
@@ -80,7 +80,7 @@ public:
 
 		// parse additional config tags
 		discriminatorsByIndex = Utility::ParseMapTypes<size_t, std::string>(Utility::ParseVectorToMap(settings.GetTauDiscriminators()),
-		                                                                    discriminatorsByHltName);
+																			discriminatorsByHltName);
 		tauID = ToTauID(settings.GetTauID());
 		oldTauDMs = settings.GetTauUseOldDMs();
 
@@ -204,7 +204,7 @@ public:
 	}
 
 	void Produce(KappaEvent const& event, KappaProduct& product,
-	                     KappaSettings const& settings) const override
+						 KappaSettings const& settings) const override
 	{
 		LOG(DEBUG) << this->GetProducerId() << " -----START-----";
 		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent;
@@ -215,11 +215,11 @@ public:
 		std::vector<KTau*> taus;
 		if ((validTausInput == ValidTausInput::AUTO && (product.m_correctedTaus.size() > 0)) || (validTausInput == ValidTausInput::CORRECTED))
 		{
-                        LOG(DEBUG) << "Choosing corrected taus as input source";
+						LOG(DEBUG) << "Choosing corrected taus as input source";
 			taus.resize(product.m_correctedTaus.size());
 			size_t tauIndex = 0;
 			for (std::vector<std::shared_ptr<KTau> >::iterator tau = product.m_correctedTaus.begin();
-			     tau != product.m_correctedTaus.end(); ++tau)
+				 tau != product.m_correctedTaus.end(); ++tau)
 			{
 				taus[tauIndex] = tau->get();
 				++tauIndex;
@@ -227,7 +227,7 @@ public:
 		}
 		else
 		{
-                        LOG(DEBUG) << "Choosing original taus as input source";
+						LOG(DEBUG) << "Choosing original taus as input source";
 			taus.resize(event.m_taus->size());
 			size_t tauIndex = 0;
 			for (KTaus::iterator tau = event.m_taus->begin(); tau != event.m_taus->end(); ++tau)
@@ -236,12 +236,12 @@ public:
 				++tauIndex;
 			}
 		}
-                LOG(DEBUG) << "Initial size of taus: " << taus.size();
+				LOG(DEBUG) << "Initial size of taus: " << taus.size();
 		for (std::vector<KTau*>::iterator tau = taus.begin(); tau != taus.end(); ++tau)
 		{
 			bool validTau = true;
 
-                        LOG(DEBUG) << "Checking tau with p4 " << (*tau)->p4;
+						LOG(DEBUG) << "Checking tau with p4 " << (*tau)->p4;
 			// check discriminators
 			for (std::map<size_t, std::vector<std::string> >::const_iterator discriminatorByIndex = discriminatorsByIndex.begin();
 				 validTau && (discriminatorByIndex != discriminatorsByIndex.end()); ++discriminatorByIndex)
@@ -267,21 +267,41 @@ public:
 					validTau = validTau && ApplyDiscriminators(*tau, discriminatorByHltName->second, event);
 				}
 			}
-                        LOG(DEBUG) << "\tPassing discriminators? " << validTau;
+			LOG(DEBUG) << "\tPassing discriminators? " << validTau;
 
 			if(tauID == TauID::RECOMMENDATION13TEV)
-					validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs);
+				validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs);
 			if(tauID == TauID::RECOMMENDATION13TEVAOD)
-					validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs, true);
+				validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs, true);
+			LOG(DEBUG) << "\tPassing DM finding & dZ cut? " << validTau;
 
-                        LOG(DEBUG) << "\tPassing DM finding & dZ cut? " << validTau;
+
+			if (settings.GetTauCheckAllowedDM())
+			{
+				bool allowed_wp = false;
+				for (auto wp: settings.GetTauAllowedDecayModes())
+				{
+					if (int(wp) == (*tau)->decayMode)
+					{
+						allowed_wp = true;
+						LOG(DEBUG) << "\tPassing allowed DM cuts: " << (*tau)->decayMode;
+						break;
+					}
+				}
+				if (! allowed_wp)
+				{
+					LOG(DEBUG) << "\tNot Passing allowed DM cuts: " << (*tau)->decayMode;
+					validTau = false;
+				}
+			}
+
 			// kinematic cuts
 			validTau = validTau && this->PassKinematicCuts(*tau, event, product);
-                        LOG(DEBUG) << "\tPassing kinematic cuts? " << validTau;
+			LOG(DEBUG) << "\tPassing kinematic cuts? " << validTau;
 
 			// check possible analysis-specific criteria
 			validTau = validTau && AdditionalCriteria(*tau, event, product, settings);
-                        LOG(DEBUG) << "\tPassing additional analysis criteria? " << validTau;
+			LOG(DEBUG) << "\tPassing additional analysis criteria? " << validTau;
 
 			if (validTau)
 			{
@@ -300,7 +320,7 @@ protected:
 
 	// Can be overwritten for analysis-specific use cases
 	virtual bool AdditionalCriteria(KTau* tau, KappaEvent const& event,
-	                                KappaProduct& product, KappaSettings const& settings) const
+									KappaProduct& product, KappaSettings const& settings) const
 	{
 		bool validTau = true;
 		return validTau;
@@ -314,12 +334,12 @@ private:
 	std::map<std::string, std::vector<std::string> > discriminatorsByHltName;
 
 	bool ApplyDiscriminators(KTau* tau, std::vector<std::string> const& discriminators,
-	                         KappaEvent const& event) const
+							 KappaEvent const& event) const
 	{
 		bool validTau = true;
 
 		for (std::vector<std::string>::const_iterator discriminator = discriminators.begin();
-		     validTau && (discriminator != discriminators.end()); ++discriminator)
+			 validTau && (discriminator != discriminators.end()); ++discriminator)
 		{
 			//workaround for deepTauID VVVLoose WP
 			if (*discriminator=="byVVVLooseDeepTau2017v2p1VSjet"){

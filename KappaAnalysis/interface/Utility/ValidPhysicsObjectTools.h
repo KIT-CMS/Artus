@@ -23,7 +23,7 @@ public:
 	typedef typename TTypes::event_type event_type;
 	typedef typename TTypes::product_type product_type;
 	typedef typename TTypes::setting_type setting_type;
-	
+
 	ValidPhysicsObjectTools(std::vector<std::string>& (setting_type::*GetLowerPtCuts)(void) const,
 	                        std::vector<std::string>& (setting_type::*GetUpperAbsEtaCuts)(void) const,
 	                        std::vector<TPhysicsObject*> product_type::*validPhysicsObjects) :
@@ -42,11 +42,11 @@ public:
 
 
 protected:
-	
+
 	bool PassKinematicCuts(TPhysicsObject* physicsObject, event_type const& event, product_type& product) const
 	{
 		bool validObject = true;
-		
+
 		for (std::map<size_t, std::vector<float> >::const_iterator lowerPtCutByIndex = lowerPtCutsByIndex.begin();
 		     lowerPtCutByIndex != lowerPtCutsByIndex.end() && validObject; ++lowerPtCutByIndex)
 		{
@@ -56,7 +56,7 @@ protected:
 				validObject = false;
 			}
 		}
-		
+
 		for (std::map<size_t, std::vector<float> >::const_iterator upperAbsEtaCutByIndex = upperAbsEtaCutsByIndex.begin();
 		     upperAbsEtaCutByIndex != upperAbsEtaCutsByIndex.end() && validObject; ++upperAbsEtaCutByIndex)
 		{
