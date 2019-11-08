@@ -370,45 +370,21 @@ class JsonDict(dict):
 			if any([jsonDict.strip().rstrip().startswith(remote_identifier) for remote_identifier in remote_identifiers]):
 				#prefix, suffix = os.path.splitext(jsonDict.strip().rstrip())
 				#result = tempfile.mktemp(prefix=prefix+"_", suffix=suffix, dir=tmp_directory)
+				import subprocess
+
 				result = os.path.join(tmp_directory, jsonDict.strip().rstrip().replace(":", "_").replace("/", "__")[-200:])
-				result2 = copy.deepcopy(result)
-				copy_command = "gfal-copy --timeout 1800 --force {remote} file://{local}".format(remote=dcachetools.xrd2srm(jsonDict), local=result)
+				copy_command = "xrdcp --silent --force {remote} {local}".format(remote=dcachetools.xrd2srm(jsonDict), local=result)
 				log.info(copy_command)
-				log.debug(copy_command)
-				success = True
-				try:
-					exitCode = logger.subprocessCall(copy_command.split())
-					if exitCode != 0:
-						result = jsonDict
-						success = False
-						log.critical("Could not download \""+jsonDict+"\"!")
-						print " exitCode:", exitCode
-						sys.exit(1)
-				except:
-					result = jsonDict
-					success = False
+				stdout_data, stderr_data = subprocess.Popen(copy_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
-				if not success:
-					copy_command = "xrdcp --silent --force {remote} {local}".format(remote=dcachetools.xrd2srm(jsonDict), local=result2)
-					log.info(copy_command)
-
-					import subprocess
-					stdout_data, stderr_data = subprocess.Popen(copy_command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-					if stderr_data is None or stderr_data == '':
-						files_checked = True
-						if os.path.isfile(result2):
-							result = result2
-							success = True
-					else:
-						log.critical("Could not download \"" + jsonDict + "\"!")
-						print " stderr_data:", stderr_data
-						print "[xrdcp] ls % s :" % tmp_directory
-
-				if success:
+				if (stderr_data is None or stderr_data == '') and os.path.isfile(result):
 					print "Locally downloaded files:\n", os.listdir(tmp_directory)
 				else:
 					log.critical("Could not download \"" + jsonDict + "\"!")
-					#sys.exit(1)
+					result = jsonDict
+					log.critical(" stderr_data: %s" % stderr_data)
+					log.info("[xrdcp] ls %s :" % tmp_directory)
+					log.critical("Could not download \"" + jsonDict + "\"!")
 			else:
 				result = jsonDict
 		else:
