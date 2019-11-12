@@ -385,6 +385,7 @@ class JsonDict(dict):
 					log.critical(" stderr_data: %s" % stderr_data)
 					log.info("[xrdcp] ls %s :" % tmp_directory)
 					log.critical("Could not download \"" + jsonDict + "\"!")
+					raise
 			else:
 				result = jsonDict
 		else:
