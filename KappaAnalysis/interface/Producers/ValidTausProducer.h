@@ -83,6 +83,7 @@ public:
 																			discriminatorsByHltName);
 		tauID = ToTauID(settings.GetTauID());
 		oldTauDMs = settings.GetTauUseOldDMs();
+                veto2prongs = settings.GetTauVeto2ProngDMs();
 
 		// add possible quantities for the lambda ntuples consumers
 		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nTaus", [](KappaEvent const& event, KappaProduct const& product) {
@@ -270,30 +271,9 @@ public:
 			LOG(DEBUG) << "\tPassing discriminators? " << validTau;
 
 			if(tauID == TauID::RECOMMENDATION13TEV)
-				validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs);
+					validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs, veto2prongs);
 			if(tauID == TauID::RECOMMENDATION13TEVAOD)
-				validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs, true);
-			LOG(DEBUG) << "\tPassing DM finding & dZ cut? " << validTau;
-
-
-			if (settings.GetTauCheckAllowedDM())
-			{
-				bool allowed_wp = false;
-				for (auto wp: settings.GetTauAllowedDecayModes())
-				{
-					if (int(wp) == (*tau)->decayMode)
-					{
-						allowed_wp = true;
-						LOG(DEBUG) << "\tPassing allowed DM cuts: " << (*tau)->decayMode;
-						break;
-					}
-				}
-				if (! allowed_wp)
-				{
-					LOG(DEBUG) << "\tNot Passing allowed DM cuts: " << (*tau)->decayMode;
-					validTau = false;
-				}
-			}
+					validTau = validTau && IsTauIDRecommendation13TeV(*tau, event, oldTauDMs, veto2prongs, true);
 
 			// kinematic cuts
 			validTau = validTau && this->PassKinematicCuts(*tau, event, product);
@@ -355,12 +335,21 @@ private:
 
 	TauID tauID;
 	bool oldTauDMs;
+        bool veto2prongs;
 
-	bool IsTauIDRecommendation13TeV(KTau* tau, KappaEvent const& event, bool const& oldTauDMs, bool const& isAOD=false) const
+	bool IsTauIDRecommendation13TeV(KTau* tau, KappaEvent const& event, bool const& oldTauDMs, bool const& veto2prongs, bool const& isAOD=false) const
 	{
 		const KVertex vertex = KVertex(event.m_vertexSummary->pv);
 		float decayModeDiscriminator = (oldTauDMs ? tau->getDiscriminator("decayModeFinding", event.m_tauMetadata)
 							  : tau->getDiscriminator("decayModeFindingNewDMs", event.m_tauMetadata));
+                if (veto2prongs)
+                {
+                        if (tau->decayMode >= 5 and tau->decayMode < 10)
+                        {
+                                decayModeDiscriminator = 0.0;
+                        }
+                }
+
 		if(isAOD)
 		{
 			return ( decayModeDiscriminator > 0.5
