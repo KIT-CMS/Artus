@@ -19,6 +19,10 @@
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 #include "Artus/Utility/interface/Utility.h"
 
+#include "JetMETCorrections/Modules/interface/JetResolution.h"
+
+#include "TRandom3.h"
+
 /**
    \brief Producer for jet corrections (mainly JEC)
 
@@ -125,7 +129,15 @@ public:
                                 JetCorrectionUncertainty * jecUnc(new JetCorrectionUncertainty(*JetCorParMap[individualUncertainty]));
                                 JetUncMap[individualUncertainty] = jecUnc;
                         }
-	}
+                }
+                assert(settings.GetJetEnergyResolutionSource() != "");
+                assert(settings.GetJetEnergyResolutionSFSource() != "");
+                m_jetResolution.reset(new JME::JetResolution(settings.GetJetEnergyResolutionSource()));
+                m_jetResolutionScaleFactor.reset(new JME::JetResolutionScaleFactor(settings.GetJetEnergyResolutionSFSource()));
+                if(settings.GetJetEnergyResolutionUncertaintyShift()==0.0) JER_shift = Variation::NOMINAL;
+                else if(settings.GetJetEnergyResolutionUncertaintyShift()==1.0) JER_shift = Variation::UP;
+                else if(settings.GetJetEnergyResolutionUncertaintyShift()==-1.0) JER_shift = Variation::DOWN;
+                else LOG(FATAL) << "Invalid definition of JetEnergyResolutionUncertaintyShift: " << settings.GetJetEnergyResolutionUncertaintyShift();
 	}
 
 	void Produce(KappaEvent const& event, KappaProduct& product,
@@ -197,6 +209,24 @@ public:
 		            event.m_pileupDensity->rho, event.m_vertexSummary->nVertices, -1,
 		            shift);
                 }
+                // apply JER smearing
+                for (typename std::vector<TJet>::iterator jet = correctJetsForJecTools.begin();
+                                 jet != correctJetsForJecTools.end(); ++jet)
+                {
+                        randm.SetSeed(static_cast<int>((jet->p4.Eta() + 5) * 1000) * 1000 + static_cast<int>((jet->p4.Phi() + 4) * 1000) + 10000);
+                        double jetResolution = m_jetResolution->getResolution({
+                            {JME::Binning::JetPt, jet->p4.Pt()},
+                            {JME::Binning::JetEta, jet->p4.Eta()},
+                            {JME::Binning::Rho, event.m_pileupDensity->rho}
+                        });
+                        double jetResolutionScaleFactor = m_jetResolutionScaleFactor->getScaleFactor({
+                            {JME::Binning::JetEta, jet->p4.Eta()}
+                        }, JER_shift);
+                        double shift = randm.Gaus(0, jetResolution) * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
+                        if (shift < -1.0) shift = -1.0;
+                        product.m_MET_shift.p4 -= jet->p4*shift;
+                        jet->p4 *= 1.0 + shift;
+                }
 		// create the shared pointers to store in the product
 		(product.*m_correctedJetsMember).clear();
 		(product.*m_correctedJetsMember).resize(correctJetsForJecTools.size());
@@ -245,6 +275,11 @@ private:
 
 	FactorizedJetCorrector* factorizedJetCorrector = nullptr;
 	JetCorrectionUncertainty* jetCorrectionUncertainty = nullptr;
+
+        mutable TRandom3 randm = TRandom3(0);
+        std::unique_ptr<JME::JetResolution> m_jetResolution;
+        std::unique_ptr<JME::JetResolutionScaleFactor> m_jetResolutionScaleFactor;
+        Variation JER_shift;
 };
 
 
