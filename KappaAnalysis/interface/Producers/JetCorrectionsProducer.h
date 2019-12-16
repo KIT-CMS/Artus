@@ -165,8 +165,6 @@ public:
                                  jet != correctJetsForJecTools.end(); ++jet)
                         {
                                 LOG(DEBUG) << "\tConsidering jet with p4 = " << jet->p4;
-                                // add jet momentum to met shift and later subtract shifted momentum in order to get MET shift
-                                product.m_MET_shift.p4 += jet->p4;
                                 // shift corrected jets
                                 double grouped_unc = 0.0;
 				if(individualUncertaintyEnums.size() == 1)
@@ -196,8 +194,13 @@ public:
 					}
 					grouped_unc = sqrt(grouped_unc);
 				}
-                                jet->p4 = jet->p4 * (1 + grouped_unc * settings.GetJetEnergyCorrectionUncertaintyShift());
-                                product.m_MET_shift.p4 -= jet->p4;
+                                if (jet->p4.Pt() * (1 + grouped_unc * settings.GetJetEnergyCorrectionUncertaintyShift())>15.0){ // requirement for type I corrections
+                                        product.m_MET_shift.p4 += jet->p4;
+                                        jet->p4 = jet->p4 * (1 + grouped_unc * settings.GetJetEnergyCorrectionUncertaintyShift());
+                                        product.m_MET_shift.p4 -= jet->p4;
+                                } else {
+                                        jet->p4 = jet->p4 * (1 + grouped_unc * settings.GetJetEnergyCorrectionUncertaintyShift());
+                                }
                                 LOG(DEBUG) << "\tGrouped uncertainty applied: " << grouped_unc << " shifted p4: " << jet->p4;
                         }
                 }
@@ -220,11 +223,12 @@ public:
                             {JME::Binning::Rho, event.m_pileupDensity->rho}
                         });
                         double jetResolutionScaleFactor = m_jetResolutionScaleFactor->getScaleFactor({
+                            {JME::Binning::JetPt, jet->p4.Pt()},
                             {JME::Binning::JetEta, jet->p4.Eta()}
                         }, JER_shift);
                         double shift = randm.Gaus(0, jetResolution) * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
                         if (shift < -1.0) shift = -1.0;
-                        product.m_MET_shift.p4 -= jet->p4*shift;
+                        if ((jet->p4*(1.0+shift)).Pt()>15.0) product.m_MET_shift.p4 -= jet->p4*shift; // requirement for type I corrections
                         jet->p4 *= 1.0 + shift;
                 }
 		// create the shared pointers to store in the product
