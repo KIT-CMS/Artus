@@ -83,11 +83,11 @@ public:
 			return KappaProduct::GetNJetsAbovePtThreshold(product.m_validJets, 80.0);
 		});
 		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nJets20Eta2p4",[this](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
-            std::vector<std::shared_ptr<TValidJet>> filteredJets;
+            std::vector<std::unique_ptr<TValidJet>> filteredJets;
 			for (typename std::vector<TValidJet*>::const_iterator jet = (product.m_validJets).begin();
 				 jet != (product.m_validJets).end(); ++jet)
 			{
-				if ((*jet)->p4.Eta() < 2.4) filteredJets.push_back(new TValidJet(*(*jet)));
+				if ((*jet)->p4.Eta() < 2.4) filteredJets.push_back(std::make_unique<TValidJet>(*(*jet)));
 			}
 			return KappaProduct::GetNJetsAbovePtThreshold(filteredJets, 20.0);
 		});
