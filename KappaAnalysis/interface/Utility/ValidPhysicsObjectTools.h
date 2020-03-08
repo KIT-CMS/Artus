@@ -40,6 +40,14 @@ public:
 		                                                               upperAbsEtaCutsByHltName);
 	}
 
+	virtual ~ValidPhysicsObjectTools() {
+		lowerPtCutsByIndex.clear();
+		lowerPtCutsByHltName.clear();
+		upperAbsEtaCutsByIndex.clear();
+		upperAbsEtaCutsByHltName.clear();
+
+		// m_validPhysicsObjectsMember
+	}
 
 protected:
 
