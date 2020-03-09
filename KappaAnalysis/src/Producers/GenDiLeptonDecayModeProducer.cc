@@ -16,55 +16,55 @@ void GenDiLeptonDecayModeProducer::Init(KappaSettings const& settings)
 	ProducerBase<KappaTypes>::Init(settings);
 
 	// add possible quantities for the lambda ntuples consumers
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZEE", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZEE", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genDiLeptonDecayMode == KappaEnumTypes::DiLeptonDecayMode::EE);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZMM", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZMM", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genDiLeptonDecayMode == KappaEnumTypes::DiLeptonDecayMode::MM);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZTT", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZTT", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genDiLeptonDecayMode == KappaEnumTypes::DiLeptonDecayMode::TT);
 	});
-	
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZLL", [](KappaEvent const& event, KappaProduct const& product)
+
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZLL", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return ((product.m_genDiLeptonDecayMode == KappaEnumTypes::DiLeptonDecayMode::MM) || (product.m_genDiLeptonDecayMode == KappaEnumTypes::DiLeptonDecayMode::EE));
 	});
-	
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("genDiLeptonDecayMode", [](KappaEvent const& event, KappaProduct const& product)
+
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("genDiLeptonDecayMode", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return Utility::ToUnderlyingValue(product.m_genDiLeptonDecayMode);
 	});
-	
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZtt", [](KappaEvent const& event, KappaProduct const& product)
+
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZtt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genTauTauDecayMode == KappaEnumTypes::TauTauDecayMode::TT);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZmt", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZmt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genTauTauDecayMode == KappaEnumTypes::TauTauDecayMode::MT);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZet", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZet", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genTauTauDecayMode == KappaEnumTypes::TauTauDecayMode::ET);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZee", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZee", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genTauTauDecayMode == KappaEnumTypes::TauTauDecayMode::EE);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZmm", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZmm", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genTauTauDecayMode == KappaEnumTypes::TauTauDecayMode::MM);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZem", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isZem", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return (product.m_genTauTauDecayMode == KappaEnumTypes::TauTauDecayMode::EM);
 	});
-	
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("genTauTauDecayMode", [](KappaEvent const& event, KappaProduct const& product)
+
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("genTauTauDecayMode", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return Utility::ToUnderlyingValue(product.m_genTauTauDecayMode);
 	});
@@ -85,7 +85,7 @@ void GenDiLeptonDecayModeProducer::Produce(KappaEvent const& event, KappaProduct
 		nDecayProductsPerType[pdgId] = SafeMap::GetWithDefault(nDecayProductsPerType, pdgId, 0) + 1;
 		++iDaughter;
 	}
-	
+
 	if (SafeMap::GetWithDefault(nDecayProductsPerType, DefaultValues::pdgIdElectron, 0) >= 2)
 	{
 		product.m_genDiLeptonDecayMode = KappaEnumTypes::DiLeptonDecayMode::EE;
@@ -97,7 +97,7 @@ void GenDiLeptonDecayModeProducer::Produce(KappaEvent const& event, KappaProduct
 	else if (SafeMap::GetWithDefault(nDecayProductsPerType, DefaultValues::pdgIdTau, 0) >= 2)
 	{
 		product.m_genDiLeptonDecayMode = KappaEnumTypes::DiLeptonDecayMode::TT;
-		
+
 		// check tautau decay modes
 		size_t nElectronicDecays = 0;
 		size_t nMuonicDecays = 0;
@@ -124,7 +124,7 @@ void GenDiLeptonDecayModeProducer::Produce(KappaEvent const& event, KappaProduct
 			}
 			++iDaughter;
 		}
-		
+
 		if (nElectronicDecays == 0)
 		{
 			if ((nMuonicDecays == 0) && (nHadronicDecays == 2))

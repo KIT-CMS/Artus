@@ -165,9 +165,9 @@ public:
 	void Init(setting_type const& settings) override {
 		ProducerBase<TTypes>::Init(settings);
 		ValidPhysicsObjectTools<TTypes, KElectron>::Init(settings);
-		
+
 		validElectronsInput = ToValidElectronsInput(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetValidElectronsInput())));
-		
+
 		electronID = ToElectronID(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy((settings.*GetElectronID)())));
 		electronIsoType = ToElectronIsoType(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy((settings.*GetElectronIsoType)())));
 		electronIso = ToElectronIso(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy((settings.*GetElectronIso)())));
@@ -179,13 +179,13 @@ public:
 		}
 
 		// add possible quantities for the lambda ntuples consumers
-		LambdaNtupleConsumer<TTypes>::AddIntQuantity("nElectrons", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddIntQuantity("nElectrons", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validElectrons.size();
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingElePt", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingElePt", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validElectrons.size() >= 1 ? product.m_validElectrons[0]->p4.Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingEleEta", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingEleEta", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validElectrons.size() >= 1 ? product.m_validElectrons[0]->p4.Eta() : DefaultValues::UndefinedFloat;
 		});
 	}
@@ -193,8 +193,8 @@ public:
 	void Produce(event_type const& event, product_type& product,
 	                     setting_type const& settings) const override
 	{
-		LOG(DEBUG) << this->GetProducerId() << " -----START-----"; 
-		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent; 
+		LOG(DEBUG) << this->GetProducerId() << " -----START-----";
+		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent;
 		assert(event.m_electrons);
 		assert(event.m_vertexSummary);
 		assert(event.m_electronMetadata);
@@ -202,7 +202,7 @@ public:
 		std::vector<KElectron*> electrons;
 		if ((validElectronsInput == ValidElectronsInput::AUTO && (product.m_correctedElectrons.size() > 0)) || (validElectronsInput == ValidElectronsInput::CORRECTED))
 		{
-                        LOG(DEBUG) << "Choosing corrected electrons as input source"; 
+                        LOG(DEBUG) << "Choosing corrected electrons as input source";
 			electrons.resize(product.m_correctedElectrons.size());
 			size_t electronIndex = 0;
 			for (std::vector<std::shared_ptr<KElectron> >::iterator electron = product.m_correctedElectrons.begin();
@@ -214,7 +214,7 @@ public:
 		}
 		else
 		{
-                        LOG(DEBUG) << "Choosing original electrons as input source"; 
+                        LOG(DEBUG) << "Choosing original electrons as input source";
 			electrons.resize(event.m_electrons->size());
 			size_t electronIndex = 0;
 			for (KElectrons::iterator electron = event.m_electrons->begin(); electron != event.m_electrons->end(); ++electron)
@@ -224,11 +224,11 @@ public:
 			}
 		}
 
-                LOG(DEBUG) << "Initial size of electrons: " << electrons.size(); 
+                LOG(DEBUG) << "Initial size of electrons: " << electrons.size();
 		for (std::vector<KElectron*>::iterator electron = electrons.begin(); electron != electrons.end(); ++electron)
 		{
 			bool valid = true;
-                        LOG(DEBUG) << "Checking electron with p4 " << (*electron)->p4; 
+                        LOG(DEBUG) << "Checking electron with p4 " << (*electron)->p4;
 
 			// POG recommondations
 			// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentification#Non_triggering_MVA
@@ -257,12 +257,12 @@ public:
 				valid = valid && (*electron)->idLoose();
 			else if (electronID == ElectronID::MEDIUM)
 				valid = valid && (*electron)->idMedium();
-			else if (electronID == ElectronID::TIGHT)		
+			else if (electronID == ElectronID::TIGHT)
 				valid = valid && (*electron)->idTight();
 			else if (electronID != ElectronID::USER && electronID != ElectronID::NONE)
 				LOG(FATAL) << "Electron ID of type " << Utility::ToUnderlyingValue(electronID) << " not yet implemented!";
 
-                        LOG(DEBUG) << "\tPassing ID's? " << valid; 
+                        LOG(DEBUG) << "\tPassing ID's? " << valid;
 
 			// Electron Isolation
 			if (electronIsoType == ElectronIsoType::PF) {
@@ -279,7 +279,7 @@ public:
 			{
 				LOG(FATAL) << "Electron isolation type of type " << Utility::ToUnderlyingValue(electronIsoType) << " not yet implemented!";
 			}
-                        LOG(DEBUG) << "\tPassing isolation? " << valid; 
+                        LOG(DEBUG) << "\tPassing isolation? " << valid;
 
 			// Electron reconstruction
 			if (electronReco == ElectronReco::MVANONTRIG)
@@ -310,7 +310,7 @@ public:
 			else
 				(product.*m_invalidElectronsMember).push_back(*electron);
 		}
-		LOG(DEBUG) << this->GetProducerId() << " -----END-----"; 
+		LOG(DEBUG) << this->GetProducerId() << " -----END-----";
 	}
 
 	static bool IsMVANonTrigElectron(const KElectron* electron, const KElectronMetadata* electronMeta)

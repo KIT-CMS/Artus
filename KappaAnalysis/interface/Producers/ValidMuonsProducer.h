@@ -151,22 +151,22 @@ public:
 		muonIso = ToMuonIso(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy((settings.*GetMuonIso)())));
 
 		// add possible quantities for the lambda ntuples consumers
-		LambdaNtupleConsumer<TTypes>::AddIntQuantity("nMuons", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddIntQuantity("nMuons", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validMuons.size();
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuonPt", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuonPt", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validMuons.size() >= 1 ? product.m_validMuons[0]->p4.Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuonEta", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuonEta", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validMuons.size() >= 1 ? product.m_validMuons[0]->p4.Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("trailingMuonPt", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("trailingMuonPt", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validMuons.size() >= 2 ? product.m_validMuons[1]->p4.Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("trailingMuonEta", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("trailingMuonEta", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			return product.m_validMuons.size() >= 2 ? product.m_validMuons[1]->p4.Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuMinusPt", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuMinusPt", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			for (unsigned int i = 0; i < product.m_validMuons.size(); ++i)
 			{
 				if (product.m_validMuons[i]->charge() < 0)
@@ -176,7 +176,7 @@ public:
 			}
 			return DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuPlusPt", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuPlusPt", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			for (unsigned int i = 0; i < product.m_validMuons.size(); ++i)
 			{
 				if (product.m_validMuons[i]->charge() > 0)
@@ -186,7 +186,7 @@ public:
 			}
 			return DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuMinusEta", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuMinusEta", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			for (unsigned int i = 0; i < product.m_validMuons.size(); ++i)
 			{
 				if (product.m_validMuons[i]->charge() < 0)
@@ -196,7 +196,7 @@ public:
 			}
 			return DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuPlusEta", [](event_type const& event, product_type const& product) {
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("leadingMuPlusEta", [](event_type const& event, product_type const& product, setting_type const& settings) {
 			for (unsigned int i = 0; i < product.m_validMuons.size(); ++i)
 			{
 				if (product.m_validMuons[i]->charge() > 0)
@@ -211,15 +211,15 @@ public:
 	void Produce(event_type const& event, product_type& product,
 	                     setting_type const& settings) const override
 	{
-		LOG(DEBUG) << this->GetProducerId() << " -----START-----"; 
-		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent; 
+		LOG(DEBUG) << this->GetProducerId() << " -----START-----";
+		LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent;
 		assert(event.m_muons);
 
 		// select input source
 		std::vector<KMuon*> muons;
 		if ((validMuonsInput == ValidMuonsInput::AUTO && (product.m_correctedMuons.size() > 0)) || (validMuonsInput == ValidMuonsInput::CORRECTED))
 		{
-                        LOG(DEBUG) << "Choosing corrected muons as input source"; 
+                        LOG(DEBUG) << "Choosing corrected muons as input source";
 			muons.resize(product.m_correctedMuons.size());
 			size_t muonIndex = 0;
 			for (std::vector<std::shared_ptr<KMuon> >::iterator muon = product.m_correctedMuons.begin();
@@ -231,7 +231,7 @@ public:
 		}
 		else
 		{
-                        LOG(DEBUG) << "Choosing original muons as input source"; 
+                        LOG(DEBUG) << "Choosing original muons as input source";
 			muons.resize(event.m_muons->size());
 			size_t muonIndex = 0;
 			for (KMuons::iterator muon = event.m_muons->begin(); muon != event.m_muons->end(); ++muon)
@@ -241,12 +241,12 @@ public:
 			}
 		}
 
-                LOG(DEBUG) << "Initial size of muons: " << muons.size(); 
+                LOG(DEBUG) << "Initial size of muons: " << muons.size();
 		// Apply muon isolation and MuonID
 		for (std::vector<KMuon*>::iterator muon = muons.begin(); muon != muons.end(); ++muon)
 		{
 			bool validMuon = true;
-                        LOG(DEBUG) << "Checking muon with p4 " << (*muon)->p4; 
+                        LOG(DEBUG) << "Checking muon with p4 " << (*muon)->p4;
 
 			// Muon ID according to Muon POG definitions
 			if (muonID == MuonID::TIGHT) {
@@ -295,7 +295,7 @@ public:
 			{
 				LOG(FATAL) << "Muon ID of type " << Utility::ToUnderlyingValue(muonID) << " not yet implemented!";
 			}
-                        LOG(DEBUG) << "\tPassing ID's? " << validMuon; 
+                        LOG(DEBUG) << "\tPassing ID's? " << validMuon;
 
 			// Muon Isolation according to Muon POG definitions (independent of year)
 			// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
@@ -330,15 +330,15 @@ public:
 			}
 			else if (muonIsoType != MuonIsoType::USER && muonIsoType != MuonIsoType::NONE)
 				LOG(FATAL) << "Muon isolation type of type " << Utility::ToUnderlyingValue(muonIsoType) << " not yet implemented!";
-                        LOG(DEBUG) << "\tPassing isolation? " << validMuon; 
+                        LOG(DEBUG) << "\tPassing isolation? " << validMuon;
 
 			// kinematic cuts
 			validMuon = validMuon && this->PassKinematicCuts(*muon, event, product);
-                        LOG(DEBUG) << "\tPassing kinematic cuts? " << validMuon; 
+                        LOG(DEBUG) << "\tPassing kinematic cuts? " << validMuon;
 
 			// check possible analysis-specific criteria
 			validMuon = validMuon && AdditionalCriteria(*muon, event, product, settings);
-                        LOG(DEBUG) << "\tPassing additional analysis criteria? " << validMuon; 
+                        LOG(DEBUG) << "\tPassing additional analysis criteria? " << validMuon;
 
 			if (validMuon)
 			{
@@ -349,7 +349,7 @@ public:
 				(product.*m_invalidMuonsMember).push_back(*muon);
 			}
 		}
-                LOG(DEBUG) << this->GetProducerId() << " -----END-----"; 
+                LOG(DEBUG) << this->GetProducerId() << " -----END-----";
 	}
 
 	static bool IsEmbeddingMuon(const KMuon* muon, event_type const& event, product_type& product)

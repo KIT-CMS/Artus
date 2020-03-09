@@ -13,7 +13,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validElectrons.size();
 				},
 				CutRange::UpperThresholdCut(double(settings.GetMaxNElectrons()))
@@ -33,7 +33,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validMuons.size();
 				},
 				CutRange::UpperThresholdCut(double(settings.GetMaxNMuons()))
@@ -53,7 +53,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validTaus.size();
 				},
 				CutRange::UpperThresholdCut(double(settings.GetMaxNTaus()))
@@ -73,7 +73,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validJets.size();
 				},
 				CutRange::UpperThresholdCut(double(settings.GetMaxNJets()))
@@ -90,7 +90,7 @@
 
 	void MaxBTaggedJetsCountFilter::Init(KappaSettings const& settings) {
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_bTaggedJets.size();
 				},
 				CutRange::UpperThresholdCut(double(settings.GetMaxNBTaggedJets()))
@@ -108,7 +108,7 @@
 
 	void MaxNonBTaggedJetsCountFilter::Init(KappaSettings const& settings) {
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_nonBTaggedJets.size();
 				},
 				CutRange::UpperThresholdCut(double(settings.GetMaxNNonBTaggedJets()))

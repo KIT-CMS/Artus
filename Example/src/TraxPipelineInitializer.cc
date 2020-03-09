@@ -11,21 +11,21 @@ void TraxPipelineInitializer::InitPipeline(TraxPipeline * pLine, TraxSettings co
 
 	// define how to extract Pt and the range
 	auto extractPtSim =
-			[]( TraxEvent const& ev, TraxProduct const & prod )
+			[]( TraxEvent const& ev, TraxProduct const & prod, TraxSettings const& pset )
 			-> std::vector<float> {return {ev.m_floatPtSim};};
 	auto PtSimValue = std::make_pair(extractPtSim,
 			DefaultModifiers::getPtModifier(0.7, 1.3f));
 
 	// extracts the value which has been corrected by a globalProducer
 	auto extractPtSimCorrected =
-			[]( TraxEvent const& ev, TraxProduct const & prod )
+			[]( TraxEvent const& ev, TraxProduct const & prod, TraxSettings const& pset )
 			-> std::vector<float> {return {prod.m_floatPtSim_corrected};};
 	auto PtSimCorrectedValue = std::make_pair(extractPtSimCorrected,
 			DefaultModifiers::getPtModifier(0.7, 1.3f));
 
 	// define how to extract Theta and the range
 	auto extractThetaSim =
-			[]( TraxEvent const& ev, TraxProduct const & prod )
+			[]( TraxEvent const& ev, TraxProduct const & prod, TraxSettings const& pset )
 			-> std::vector<float> {return {ev.m_floatTheSim};};
 
 	auto ThetaSimValue = std::make_pair(extractThetaSim,

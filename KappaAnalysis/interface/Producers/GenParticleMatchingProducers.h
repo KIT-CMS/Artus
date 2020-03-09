@@ -15,8 +15,8 @@
 /** Producer for gen matched jets
  *  Required config tags:
  *  - DeltaRMatchingRecoJetGenParticle (default provided)
- *  - InvalidateNonGenParticleMatchingRecoJets (default provided) 
- *  - InvalidateGenParticleMatchingRecoJets (default provided) 
+ *  - InvalidateNonGenParticleMatchingRecoJets (default provided)
+ *  - InvalidateGenParticleMatchingRecoJets (default provided)
  *  - JetMatchingAlgorithm (default provided)
  */
 class RecoJetGenParticleMatchingProducer: public KappaProducerBase
@@ -35,7 +35,7 @@ public:
 		PHYSICS = 2,
 	};
 	static JetMatchingAlgorithm ToJetMatchingAlgorithm(std::string const& jetMatchingAlgorithm);
-	
+
 	std::string GetProducerId() const override;
 
 	void Init(setting_type const& settings) override;
@@ -68,7 +68,7 @@ public:
 	typedef typename KappaTypes::event_type event_type;
 	typedef typename KappaTypes::product_type product_type;
 	typedef typename KappaTypes::setting_type setting_type;
-	
+
 	RecoLeptonGenParticleMatchingProducerBase(std::map<TLepton*, KGenParticle*> product_type::*genParticleMatchedLeptons,
 	                                          std::vector<TLepton>* event_type::*leptons,
 	                                          std::vector<TLepton*> product_type::*validLeptons,
@@ -95,11 +95,11 @@ public:
 	void Init(setting_type const& settings) override
 	{
 		KappaProducerBase::Init(settings);
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("ratioGenParticleMatched", [](event_type const & event, product_type const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("ratioGenParticleMatched", [](event_type const& event, product_type const& product, setting_type const& settings)
 		{
 			return product.m_ratioGenParticleMatched;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genParticleMatchDeltaR", [](event_type const & event, product_type const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genParticleMatchDeltaR", [](event_type const& event, product_type const& product, setting_type const& settings)
 		{
 			return product.m_genParticleMatchDeltaR;
 		});
@@ -199,7 +199,7 @@ public:
 		{
 			product.m_genParticleMatchDeltaR = DefaultValues::UndefinedFloat;
 		}
-		
+
 		product.m_ratioGenParticleMatched = ratioGenParticleMatched;
 	}
 
@@ -215,7 +215,7 @@ private:
 	bool (setting_type::*GetInvalidateNonGenParticleMatchingLeptons)(void) const;
 	bool (setting_type::*GetInvalidateGenParticleMatchingLeptons)(void) const;
 	bool (setting_type::*GetRecoLeptonMatchingGenParticleMatchAllLeptons)(void) const;
-	
+
 	std::map<size_t, std::vector<std::string> > m_leptonTriggerFiltersByIndex;
 	std::map<std::string, std::vector<std::string> > m_leptonTriggerFiltersByHltName;
 
@@ -234,7 +234,7 @@ class RecoElectronGenParticleMatchingProducer: public RecoLeptonGenParticleMatch
 {
 
 public:
-	
+
 	std::string GetProducerId() const override;
 
 	RecoElectronGenParticleMatchingProducer();
@@ -254,9 +254,9 @@ class RecoMuonGenParticleMatchingProducer: public RecoLeptonGenParticleMatchingP
 {
 
 public:
-	
+
 	std::string GetProducerId() const override;
-	
+
 	RecoMuonGenParticleMatchingProducer();
 
 };
@@ -274,9 +274,9 @@ class RecoTauGenParticleMatchingProducer: public RecoLeptonGenParticleMatchingPr
 {
 
 public:
-	
+
 	std::string GetProducerId() const override;
-	
+
 	RecoTauGenParticleMatchingProducer();
 
 };

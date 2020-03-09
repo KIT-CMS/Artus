@@ -12,7 +12,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validElectrons.size();
 				},
 				CutRange::EqualsCut(double(settings.GetNElectrons()))
@@ -32,7 +32,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validMuons.size();
 				},
 				CutRange::EqualsCut(double(settings.GetNMuons()))
@@ -52,7 +52,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validTaus.size();
 				},
 				CutRange::EqualsCut(double(settings.GetNTaus()))
@@ -72,7 +72,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validJets.size();
 				},
 				CutRange::EqualsCut(double(settings.GetNJets()))
@@ -89,7 +89,7 @@
 
 	void BTaggedJetsCountFilter::Init(KappaSettings const& settings) {
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_bTaggedJets.size();
 				},
 				CutRange::EqualsCut(double(settings.GetNBTaggedJets()))
@@ -106,7 +106,7 @@
 
 	void NonBTaggedJetsCountFilter::Init(KappaSettings const& settings) {
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_nonBTaggedJets.size();
 				},
 				CutRange::EqualsCut(double(settings.GetNNonBTaggedJets()))

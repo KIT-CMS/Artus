@@ -86,120 +86,120 @@ public:
                 veto2prongs = settings.GetTauVeto2ProngDMs();
 
 		// add possible quantities for the lambda ntuples consumers
-		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nTaus", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nTaus", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size();
 		} );
 
-		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("leadingTauLV", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("leadingTauLV", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->p4 : DefaultValues::UndefinedRMFLV;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauPt", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->p4.Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauEta", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->p4.Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauPhi", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->p4.Phi() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauMass", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauMass", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->p4.mass() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("leadingTauDecayMode", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("leadingTauDecayMode", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->decayMode : DefaultValues::UndefinedInt;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauCharge", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauCharge", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->charge() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("leadingTauSumChargedHadronsLV", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("leadingTauSumChargedHadronsLV", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->sumChargedHadronCandidates() : DefaultValues::UndefinedRMFLV;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsPt", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->sumChargedHadronCandidates().Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsEta", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->sumChargedHadronCandidates().Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsPhi", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->sumChargedHadronCandidates().Phi() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsMass", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumChargedHadronsMass", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->sumChargedHadronCandidates().mass() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("leadingTauSumNeutralHadronsLV", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("leadingTauSumNeutralHadronsLV", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->piZeroMomentum() : DefaultValues::UndefinedRMFLV;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsPt", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->piZeroMomentum().Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsEta", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->piZeroMomentum().Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsPhi", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->piZeroMomentum().Phi() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsMass", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingTauSumNeutralHadronsMass", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 1 ? product.m_validTaus[0]->piZeroMomentum().mass() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("trailingTauLV", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("trailingTauLV", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->p4 : DefaultValues::UndefinedRMFLV;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauPt", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->p4.Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauEta", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->p4.Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauPhi", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->p4.Phi() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("trailingTauDecayMode", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("trailingTauDecayMode", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->decayMode : DefaultValues::UndefinedInt;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauCharge", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauCharge", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->charge() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("trailingTauSumChargedHadronsLV", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("trailingTauSumChargedHadronsLV", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->sumChargedHadronCandidates() : DefaultValues::UndefinedRMFLV;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsPt", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->sumChargedHadronCandidates().Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsEta", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->sumChargedHadronCandidates().Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsPhi", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->sumChargedHadronCandidates().Phi() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsMass", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumChargedHadronsMass", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->sumChargedHadronCandidates().mass() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("trailingTauSumNeutralHadronsLV", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("trailingTauSumNeutralHadronsLV", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->piZeroMomentum() : DefaultValues::UndefinedRMFLV;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsPt", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->piZeroMomentum().Pt() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsEta", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->piZeroMomentum().Eta() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsPhi", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->piZeroMomentum().Phi() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsMass", [](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingTauSumNeutralHadronsMass", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			return product.m_validTaus.size() >= 2 ? product.m_validTaus[1]->piZeroMomentum().mass() : DefaultValues::UndefinedFloat;
 		});
 	}

@@ -14,9 +14,7 @@ public:
 	typedef typename TTypes::product_type product_type;
 	typedef typename TTypes::setting_type setting_type;
 
-	typedef std::function<
-			std::vector<float>(event_type const&, product_type const& )>
-					            ValueExtractLambda;
+	typedef std::function<std::vector<float>(event_type const&, product_type const&, setting_type const&)> ValueExtractLambda;
 	typedef std::pair<ValueExtractLambda, ValueModifiers> ValueDesc;
 
 	typedef Pipeline<TTypes> PipelineTypeForThis;
@@ -64,8 +62,8 @@ public:
 	{
 		ConsumerBase<TTypes>::ProcessFilteredEvent(event, product, setting);
 
-		auto resX = m_xsource.first(event, product);
-		auto resY = m_ysource.first(event, product);
+		auto resX = m_xsource.first(event, product, setting);
+		auto resY = m_ysource.first(event, product, setting);
 
 		if ((resX.size() == 0) || (resY.size() == 0))
 			return;

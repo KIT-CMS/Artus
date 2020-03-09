@@ -9,13 +9,13 @@ std::string HltProducer::GetProducerId() const {
 void HltProducer::Init(KappaSettings const& settings)
 {
 	KappaProducerBase::Init(settings);
-	
+
 	// add possible quantities for the lambda ntuples consumers
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nSelectedHltPaths", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nSelectedHltPaths", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return static_cast<int>(product.m_selectedHltNames.size());
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddVStringQuantity("selectedHltPaths", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddVStringQuantity("selectedHltPaths", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_selectedHltNames;
 	});
@@ -26,7 +26,7 @@ void HltProducer::Produce(KappaEvent const& event, KappaProduct& product,
 {
 	assert(event.m_lumiInfo);
 	assert(event.m_eventInfo);
-	
+
 	if (product.m_settingsHltPaths.empty())
 	{
 		product.m_settingsHltPaths.insert(product.m_settingsHltPaths.begin(),
@@ -39,14 +39,14 @@ void HltProducer::Produce(KappaEvent const& event, KappaProduct& product,
 
 	// set LumiMetadat, needs to be done here for the case running over multiple files
 	m_hltInfo.setLumiInfo(event.m_lumiInfo);
-	
+
 	// search (independently) for trigger with lowest prescale and for fired triggers
 	std::string lowestPrescaleHltName;
 	int lowestPrescale = std::numeric_limits<int>::max();
-	
+
 	std::string lowestSelectedPrescaleHltName;
 	int lowestSelectedPrescale = std::numeric_limits<int>::max();
-	
+
 	product.m_selectedHltNames.clear();
 	product.m_selectedHltPositions.clear();
 	product.m_selectedHltPrescales.clear();
@@ -63,15 +63,15 @@ void HltProducer::Produce(KappaEvent const& event, KappaProduct& product,
 				lowestPrescale = prescale;
 				lowestPrescaleHltName = hltName;
 			}
-			
+
 			// look for (unprescaled if requested) fired trigger
 			if (event.m_eventInfo->hltFired(hltName, event.m_lumiInfo) && (settings.GetAllowPrescaledTrigger() || (prescale <= 1)))
 			{
 				product.m_selectedHltNames.push_back(hltName);
-				
+
 				// do not use hltName here as a parameter because *hltPath is already cached.
 				product.m_selectedHltPositions.push_back(static_cast<int>(m_hltInfo.getHLTPosition(*hltPath)));
-				
+
 				product.m_selectedHltPrescales.push_back(prescale);
 				if ((prescale < lowestSelectedPrescale) && (prescale > 0))
 				{
@@ -81,13 +81,13 @@ void HltProducer::Produce(KappaEvent const& event, KappaProduct& product,
 			}
 		}
 	}
-	
+
 	if ((! settings.GetAllowPrescaledTrigger()) && (lowestPrescale > 1))
 	{
 		LOG(WARNING) << "No unprescaled trigger found for event " << event.m_eventInfo->nEvent
 		             << "! Lowest prescale: " << lowestPrescale << " (\"" << lowestPrescaleHltName << "\").";
 	}
-	
+
 	if (! (lowestPrescale > 0))
 	{
 		lowestPrescale = 1;

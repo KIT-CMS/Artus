@@ -26,24 +26,24 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		}
 		// define lambda expression for nbtag per working point
 		std::string btagQuantity = std::string("n")+bTagWorkingPoint.first+std::string("btag");
-		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity(btagQuantity, [bTagWorkingPoint](KappaEvent const& event, KappaProduct const& product) {
+		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity(btagQuantity, [bTagWorkingPoint](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 			auto it = product.m_bTaggedJetsByWp.find(bTagWorkingPoint.first);
 			return it != product.m_bTaggedJetsByWp.end() ? product.m_bTaggedJetsByWp.at(bTagWorkingPoint.first).size() : 0;
 		});
 	}
 
 	// add possible quantities for the lambda ntuples consumers
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets", [](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size();
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20", [this](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20", [this](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return KappaProduct::GetNJetsAbovePtThreshold(product.m_bTaggedJets, 20.0);
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30", [this](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30", [this](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return KappaProduct::GetNJetsAbovePtThreshold(product.m_bTaggedJets, 30.0);
 	});
 
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30TruePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30TruePassed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
@@ -54,7 +54,7 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		}
 		return n;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30FalsePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30FalsePassed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
@@ -65,7 +65,7 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		}
 		return n;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30TrueFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30TrueFailed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
@@ -76,7 +76,7 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		}
 		return n;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30FalseFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30FalseFailed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
@@ -88,7 +88,7 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		return n;
 	});
 
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20TruePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20TruePassed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
@@ -99,7 +99,7 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		}
 		return n;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20FalsePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20FalsePassed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
@@ -110,7 +110,7 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		}
 		return n;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20TrueFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20TrueFailed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
@@ -121,69 +121,69 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 		}
 		return n;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20FalseFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20FalseFailed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return -1;
 		int n(0);
 		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
 		{
 			KJet* tjet = static_cast<KJet*>(*jet);
 			if (tjet->p4.pt() < 20 ) continue;
-			if (tjet->hadronFlavour != 5) n++;
-		}
-		return n;
-	});
-
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsTruePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
-		if (settings.GetInputIsData()) return -1;
-		int n(0);
-		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
-		{
-			KJet* tjet = static_cast<KJet*>(*jet);
-			if (tjet->hadronFlavour == 5) n++;
-		}
-		return n;
-	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsFalsePassed", [settings](KappaEvent const& event, KappaProduct const& product) {
-		if (settings.GetInputIsData()) return -1;
-		int n(0);
-		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
-		{
-			KJet* tjet = static_cast<KJet*>(*jet);
-			if (tjet->hadronFlavour != 5) n++;
-		}
-		return n;
-	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsTrueFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
-		if (settings.GetInputIsData()) return -1;
-		int n(0);
-		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
-		{
-			KJet* tjet = static_cast<KJet*>(*jet);
-			if (tjet->hadronFlavour == 5) n++;
-		}
-		return n;
-	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsFalseFailed", [settings](KappaEvent const& event, KappaProduct const& product) {
-		if (settings.GetInputIsData()) return -1;
-		int n(0);
-		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
-		{
-			KJet* tjet = static_cast<KJet*>(*jet);
 			if (tjet->hadronFlavour != 5) n++;
 		}
 		return n;
 	});
 
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetPt", [](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsTruePassed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsFalsePassed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_bTaggedJets.begin(); jet != product.m_bTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsTrueFailed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour == 5) n++;
+		}
+		return n;
+	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJetsFalseFailed", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+		if (settings.GetInputIsData()) return -1;
+		int n(0);
+		for (auto jet = product.m_nonBTaggedJets.begin(); jet != product.m_nonBTaggedJets.end(); ++jet)
+		{
+			KJet* tjet = static_cast<KJet*>(*jet);
+			if (tjet->hadronFlavour != 5) n++;
+		}
+		return n;
+	});
+
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 1 ? product.m_bTaggedJets.at(0)->p4.Pt() : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetEta", [](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 1 ? product.m_bTaggedJets.at(0)->p4.Eta() : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetPhi", [](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJetPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 1 ? product.m_bTaggedJets.at(0)->p4.Phi() : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("bJetIsTrueBJet", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("bJetIsTrueBJet", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return DefaultValues::UndefinedInt;
 		if (product.m_bTaggedJets.size() >= 1) {
 			if (product.m_bTaggedJets.at(0)->hadronFlavour == 5) {
@@ -192,19 +192,19 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 			else {
 				return 0;
 			}
-		} 
+		}
 		else return DefaultValues::UndefinedInt;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Pt", [](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Pt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 2 ? product.m_bTaggedJets.at(1)->p4.Pt() : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Eta", [](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Eta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 2 ? product.m_bTaggedJets.at(1)->p4.Eta() : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Phi", [](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("bJet2Phi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 2 ? product.m_bTaggedJets.at(1)->p4.Phi() : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("bJet2IsTrueBJet", [settings](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("bJet2IsTrueBJet", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return DefaultValues::UndefinedInt;
 		if (product.m_bTaggedJets.size() >= 2) {
 			if (product.m_bTaggedJets.at(1)->hadronFlavour == 5) {
@@ -213,23 +213,23 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 			else {
 				return 0;
 			}
-		} 
+		}
 		else return DefaultValues::UndefinedInt;
 	});
 
 	std::string bTaggedJetCSVName = settings.GetBTaggedJetCombinedSecondaryVertexName();
 	std::string jetPuJetIDName = settings.GetPuJetIDFullDiscrName();
 
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingBJetCSV",[bTaggedJetCSVName](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingBJetCSV",[bTaggedJetCSVName](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 1 ? static_cast<KJet*>(product.m_bTaggedJets.at(0))->getTag(bTaggedJetCSVName, event.m_jetMetadata) : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingBJetPuID",[jetPuJetIDName](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingBJetPuID",[jetPuJetIDName](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 1 ? static_cast<KJet*>(product.m_bTaggedJets.at(0))->getTag(jetPuJetIDName, event.m_jetMetadata) : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingBJetCSV",[bTaggedJetCSVName](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingBJetCSV",[bTaggedJetCSVName](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 2 ? static_cast<KJet*>(product.m_bTaggedJets.at(1))->getTag(bTaggedJetCSVName, event.m_jetMetadata) : DefaultValues::UndefinedFloat;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingBJetPuID",[jetPuJetIDName](KappaEvent const& event, KappaProduct const& product) {
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingBJetPuID",[jetPuJetIDName](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_bTaggedJets.size() >= 2 ? static_cast<KJet*>(product.m_bTaggedJets.at(1))->getTag(jetPuJetIDName, event.m_jetMetadata) : DefaultValues::UndefinedFloat;
 	});
 }

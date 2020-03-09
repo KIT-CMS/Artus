@@ -3,31 +3,31 @@
 void PFCandidatesProducer::Init(KappaSettings const& settings)
 {
 	KappaProducerBase::Init(settings);
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFChargedHadrons", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFChargedHadrons", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_pfChargedHadrons.size();
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFNeutralHadrons", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFNeutralHadrons", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_pfNeutralHadrons.size();
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFElectrons", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFElectrons", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_pfElectrons.size();
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFMuons", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFMuons", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_pfMuons.size();
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFPhotons", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFPhotons", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_pfPhotons.size();
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFHadronicHF", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFHadronicHF", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_pfHadronicHF.size();
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFElectromagneticHF", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NPFElectromagneticHF", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_pfElectromagneticHF.size();
 	});
