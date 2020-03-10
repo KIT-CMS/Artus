@@ -60,7 +60,7 @@ void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("leadingJetGenMatch", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_validJets.size() >= 1 ? static_cast<KJet*>(product.m_validJets.at(0))->genMatch : false;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("leadingJetHadronFlavour", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("leadingJetHadronFlavour", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return 0;
 		return product.m_validJets.size() >= 1 ? static_cast<KJet*>(product.m_validJets.at(0))->hadronFlavour : false;
 	});
@@ -76,7 +76,7 @@ void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("trailingJetGenMatch", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_validJets.size() >= 2 ? static_cast<KJet*>(product.m_validJets.at(1))->genMatch : false;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("trailingJetHadronFlavour", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("trailingJetHadronFlavour", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return 0;
 		return product.m_validJets.size() >= 2 ? static_cast<KJet*>(product.m_validJets.at(1))->hadronFlavour : false;
 	});
@@ -86,7 +86,7 @@ void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("thirdJetGenMatch", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_validJets.size() >= 3 ? static_cast<KJet*>(product.m_validJets.at(2))->genMatch : false;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("thirdJetHadronFlavour", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("thirdJetHadronFlavour", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return 0;
 		return product.m_validJets.size() >= 3 ? static_cast<KJet*>(product.m_validJets.at(2))->hadronFlavour : false;
 	});
@@ -96,7 +96,7 @@ void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("forthJetGenMatch", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		return product.m_validJets.size() >= 4? static_cast<KJet*>(product.m_validJets.at(3))->genMatch : false;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("fourthJetHadronFlavour", [settings](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("fourthJetHadronFlavour", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 		if (settings.GetInputIsData()) return 0;
 		return product.m_validJets.size() >= 4 ? static_cast<KJet*>(product.m_validJets.at(3))->hadronFlavour : false;
 	});
