@@ -61,7 +61,6 @@ class JetCorrectionsProducerBase: public KappaProducerBase
         {
             delete factorizedJetCorrector;
             delete jetCorrectionUncertainty;
-            JetCorParMap.clear();
             JetUncMap.clear();
         }
 
@@ -127,8 +126,8 @@ class JetCorrectionsProducerBase: public KappaProducerBase
                     && settings.GetJetEnergyCorrectionUncertaintyShift() != 0.0
                     && individualUncertainty != KappaEnumTypes::JetEnergyUncertaintyShiftName::Closure)
                 {
-                    JetCorParMap[individualUncertainty] = std::make_unique<const JetCorrectorParameters>(uncertaintyFile, uncertainty);
-                    JetUncMap[individualUncertainty] = std::make_unique<JetCorrectionUncertainty>(*JetCorParMap[individualUncertainty]);
+                    JetCorrectorParameters jetCorPar(uncertaintyFile, uncertainty);
+                    JetUncMap[individualUncertainty] = std::make_unique<JetCorrectionUncertainty>(jetCorPar);
                 }
             }
             assert(settings.GetJetEnergyResolutionSource() != "");
@@ -148,6 +147,7 @@ class JetCorrectionsProducerBase: public KappaProducerBase
             assert((event.*m_basicJetsMember));
             assert(event.m_pileupDensity);
             assert(event.m_vertexSummary);
+
             // create a copy of all jets in the event (first temporarily for the JEC)
             (product.*m_correctedJetsMember).clear();
             std::vector<TJet> correctJetsForJecTools((event.*m_basicJetsMember)->size());
@@ -212,6 +212,7 @@ class JetCorrectionsProducerBase: public KappaProducerBase
                             event.m_pileupDensity->rho, event.m_vertexSummary->nVertices, -1,
                             shift);
             }
+
             // apply JER smearing
             for (typename std::vector<TJet>::iterator jet = correctJetsForJecTools.begin();
                                              jet != correctJetsForJecTools.end(); ++jet)
@@ -231,6 +232,7 @@ class JetCorrectionsProducerBase: public KappaProducerBase
                 if ((jet->p4*(1.0+shift)).Pt()>15.0) product.m_MET_shift.p4 -= jet->p4*shift; // requirement for type I corrections
                 jet->p4 *= 1.0 + shift;
             }
+
             // create the shared pointers to store in the product
             (product.*m_correctedJetsMember).clear();
             (product.*m_correctedJetsMember).resize(correctJetsForJecTools.size());
@@ -274,7 +276,6 @@ class JetCorrectionsProducerBase: public KappaProducerBase
         std::vector<std::string> individualUncertainties;
         std::vector<KappaEnumTypes::JetEnergyUncertaintyShiftName> individualUncertaintyEnums;
 
-        std::map<KappaEnumTypes::JetEnergyUncertaintyShiftName, std::unique_ptr<const JetCorrectorParameters> > JetCorParMap;
         std::map<KappaEnumTypes::JetEnergyUncertaintyShiftName, std::unique_ptr<JetCorrectionUncertainty> > JetUncMap;
 
         FactorizedJetCorrector* factorizedJetCorrector = nullptr;
