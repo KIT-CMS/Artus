@@ -1,6 +1,0 @@
-<bin   name="TestArtusCore" file="Artus_t.cc">
-  <use   name="boost"/>
-  <use   name="root"/>
-  <use   name="Artus/Core"/>
-  <use   name="Artus/Configuration"/>
-</bin>
