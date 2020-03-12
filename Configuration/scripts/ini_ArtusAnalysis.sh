@@ -27,7 +27,7 @@ fi
 source $ARTUSPATH/../KappaTools/Toolbox/scripts/ini_KappaTools.sh
 
 # voms proxy path
-export X509_USER_PROXY=$HOME/.globus/x509up
+# export X509_USER_PROXY=$HOME/.globus/x509up
 
 # useful to redirect messages
 export USERPC=`who am i | sed 's/.*(\([^]]*\)).*/\1/g'`
