@@ -5,7 +5,7 @@
 #include "Artus/KappaAnalysis/interface/KappaTypes.h"
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
-#include "Artus/Utility/interface/RoccoR.h"
+#include "Artus/Utility/interface/RoccoR2015.h"
 #include "Artus/Utility/interface/rochcor2015.h"
 #include "Artus/Utility/interface/RoccoR2016.h"
 #include "TRandom3.h"
