@@ -4,8 +4,7 @@
 #include "DrawConsumerBase.h"
 #include "Hist1D.h"
 /*
- typedef std::function<
- std::vector<float>(MassRecoEvent const&, MassRecoProduct const&)> ValueExtractLambda;
+ typedef std::function<std::vector<float>(MassRecoEvent const&, MassRecoProduct const&)> ValueExtractLambda;
  typedef std::pair<ValueExtractLambda, ValueModifiers> ValueDesc;
  */
 template<class TTypes>
@@ -16,9 +15,7 @@ public:
 	typedef typename TTypes::product_type product_type;
 	typedef typename TTypes::setting_type setting_type;
 
-	typedef std::function<
-			std::vector<float>(event_type const&, product_type const&
-                                )> ValueExtractLambda;
+	typedef std::function<std::vector<float>(event_type const&, product_type const&, setting_type const&)> ValueExtractLambda;
 	typedef std::pair<ValueExtractLambda, ValueModifiers> ValueDesc;
 
 	DrawHist1dConsumerBase(std::string const& histName, ValueDesc desc) :
@@ -57,7 +54,7 @@ public:
 
 		DrawConsumerBase<TTypes>::ProcessFilteredEvent(event, product, setting );
 
-		auto res = m_desc.first(event, product);
+		auto res = m_desc.first(event, product, setting);
 
 		for (auto const& v : res) {
 			getHist()->Fill(v, 1.0f);

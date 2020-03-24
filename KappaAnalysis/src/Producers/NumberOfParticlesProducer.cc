@@ -6,15 +6,15 @@
 void NumberOfParticlesProducer::Init(KappaSettings const& settings)
 {
 	KappaProducerBase::Init(settings);
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NLooseElectrons", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NLooseElectrons", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_NLooseElectrons;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NLooseElectronsRelaxedVtxCriteria", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NLooseElectronsRelaxedVtxCriteria", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_NLooseElectronsRelaxedVtxCriteria;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NEmbeddingMuons", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("NEmbeddingMuons", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_NEmbeddingMuons;
 	});

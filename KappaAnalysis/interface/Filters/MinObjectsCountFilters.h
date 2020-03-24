@@ -10,9 +10,9 @@
  */
 class MinElectronsCountFilter: public CutRangeFilterBase<KappaTypes> {
 public:
-	
-	typedef typename std::function<double(KappaEvent const&, KappaProduct const&)> double_extractor_lambda;
-	
+
+	typedef typename std::function<double(KappaEvent const&, KappaProduct const&, KappaSettings const&)> double_extractor_lambda;
+
 	std::string GetFilterId() const override;
 	void Init(KappaSettings const& settings) override;
 };
@@ -23,9 +23,9 @@ public:
  */
 class MinMuonsCountFilter: public CutRangeFilterBase<KappaTypes> {
 public:
-	
-	typedef typename std::function<double(KappaEvent const&, KappaProduct const&)> double_extractor_lambda;
-	
+
+	typedef typename std::function<double(KappaEvent const&, KappaProduct const&, KappaSettings const&)> double_extractor_lambda;
+
 	std::string GetFilterId() const override;
 	void Init(KappaSettings const& settings) override;
 };
@@ -36,9 +36,9 @@ public:
  */
 class MinTausCountFilter: public CutRangeFilterBase<KappaTypes> {
 public:
-	
-	typedef typename std::function<double(KappaEvent const&, KappaProduct const&)> double_extractor_lambda;
-	
+
+	typedef typename std::function<double(KappaEvent const&, KappaProduct const&, KappaSettings const&)> double_extractor_lambda;
+
 	std::string GetFilterId() const override;
 	void Init(KappaSettings const& settings) override;
 };
@@ -49,9 +49,9 @@ public:
  */
 class MinJetsCountFilter: public CutRangeFilterBase<KappaTypes> {
 public:
-	
-	typedef typename std::function<double(KappaEvent const&, KappaProduct const&)> double_extractor_lambda;
-	
+
+	typedef typename std::function<double(KappaEvent const&, KappaProduct const&, KappaSettings const&)> double_extractor_lambda;
+
 	std::string GetFilterId() const override;
 	void Init(KappaSettings const& settings) override;
 };
@@ -62,9 +62,9 @@ public:
  */
 class MinBTaggedJetsCountFilter: public CutRangeFilterBase<KappaTypes> {
 public:
-	
-	typedef typename std::function<double(KappaEvent const&, KappaProduct const&)> double_extractor_lambda;
-	
+
+	typedef typename std::function<double(KappaEvent const&, KappaProduct const&, KappaSettings const&)> double_extractor_lambda;
+
 	std::string GetFilterId() const override;
 	void Init(KappaSettings const& settings) override;
 };
@@ -75,9 +75,9 @@ public:
  */
 class MinNonBTaggedJetsCountFilter: public CutRangeFilterBase<KappaTypes> {
 public:
-	
-	typedef typename std::function<double(KappaEvent const&, KappaProduct const&)> double_extractor_lambda;
-	
+
+	typedef typename std::function<double(KappaEvent const&, KappaProduct const&, KappaSettings const&)> double_extractor_lambda;
+
 	std::string GetFilterId() const override;
 	void Init(KappaSettings const& settings) override;
 };

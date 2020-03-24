@@ -17,7 +17,7 @@ template<class TTypes>
 class Pipeline;
 
 /**
-   \brief Base class for your custom PipelineInitializer. 
+   \brief Base class for your custom PipelineInitializer.
 
    Your custom code can add Filters and Consumers to newly created pipelines.
  */
@@ -33,41 +33,41 @@ public:
 	typedef Pipeline<TTypes> pipeline_type;
 
 	virtual void InitPipeline(pipeline_type * pLine, setting_type const& pset) const {};
-
+	virtual ~PipelineInitilizerBase() {};
 };
 
 /**
    \brief Base implementation of the Pipeline paradigm.
 
-   The Pipline contains settings, producer, filter and consumer which, when combined, produce the 
-   desired output of a pipeline as soon as Events are send to the pipeline. An incoming event must 
-   not be changed by the pipeline but the pipeline can create additional data for an event using 
-   Producers. Most of the time, the Pipeline will not be used stand-alone but by an PipelineRunner 
-   class. 
+   The Pipline contains settings, producer, filter and consumer which, when combined, produce the
+   desired output of a pipeline as soon as Events are send to the pipeline. An incoming event must
+   not be changed by the pipeline but the pipeline can create additional data for an event using
+   Producers. Most of the time, the Pipeline will not be used stand-alone but by an PipelineRunner
+   class.
 
    The intention of the different components is outlined in the following:
-   
-   
+
+
    - Settings
-   Contain all specifics for the behaviour of this pipeline. The Settings object of type TSettings 
+   Contain all specifics for the behaviour of this pipeline. The Settings object of type TSettings
    must be used to steer the behaviour of the Producers, Filters and Consumers.
-   
+
    - Producers
-   Create additional, pipeline-specific, data for an event and stores this information in a TProduct 
+   Create additional, pipeline-specific, data for an event and stores this information in a TProduct
    object.
-   
+
    - Filters
-   Decide whether an input event is suitable to be processed by this pipeline. An event might not be 
-   in the desired PtRange and is therefore not useful for this pipeline. The FilterResult is stored 
+   Decide whether an input event is suitable to be processed by this pipeline. An event might not be
+   in the desired PtRange and is therefore not useful for this pipeline. The FilterResult is stored
    and Consumers can access the outcome of the Filter process.
-   
+
    - Consumers
-   Can access the input event, the created products, the settings and the filter result and produce 
+   Can access the input event, the created products, the settings and the filter result and produce
    the output they desire, like Histograms -> PLOTS PLOTS PLOTS
-   
-   Execution order is: Producers -> Filters -> Consumers. Each pipeline can have several Producers, 
+
+   Execution order is: Producers -> Filters -> Consumers. Each pipeline can have several Producers,
    Filters or Consumers.
-   
+
 */
 
 template<class TTypes>
@@ -92,7 +92,7 @@ public:
 	virtual ~Pipeline() {
 	}
 
-	/// Initialize the pipeline using a custom PipelineInitilizer. This PipelineInitilizerBase 
+	/// Initialize the pipeline using a custom PipelineInitilizer. This PipelineInitilizerBase
 	/// can create specific Filters and Consumers
 	virtual void InitPipeline(setting_type pset,
 			PipelineInitilizerBase<TTypes> const& initializer) {
@@ -150,7 +150,7 @@ public:
 		}
 	}
 
-	/// Run the pipeline without specific event input. This is most useful for Pipelines which 
+	/// Run the pipeline without specific event input. This is most useful for Pipelines which
 	/// process output from Pipelines already run.
 	virtual void Run() {
 		for (auto & it : m_consumer) {
@@ -158,7 +158,7 @@ public:
 		}
 	}
 
-	/// Run the pipeline with one specific event as input. GlobalProduct are products which are 
+	/// Run the pipeline with one specific event as input. GlobalProduct are products which are
 	/// common for all pipelines and have therefore been created only once.
 	virtual bool RunEvent(event_type const& evt,
 			product_type const& globalProduct,

@@ -43,49 +43,49 @@ class ZProducerBase : public KappaProducerBase
 	{
 		KappaProducerBase::Init(settings);
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("ZMass", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("ZMass", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_z.p4.M();
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingLeptonFromZPt", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingLeptonFromZPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_zValid ? product.m_zLeptons.first->p4.Pt() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingLeptonFromZEta", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingLeptonFromZEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_zValid ? product.m_zLeptons.first->p4.Eta() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingLeptonFromZPhi", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingLeptonFromZPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_zValid ? product.m_zLeptons.first->p4.Phi() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingLeptonFromZPt", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingLeptonFromZPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_zValid ? product.m_zLeptons.second->p4.Pt() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingLeptonFromZEta", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingLeptonFromZEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_zValid ? product.m_zLeptons.second->p4.Eta() : DefaultValues::UndefinedFloat;
 		});
 
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingLeptonFromZPhi", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("trailingLeptonFromZPhi", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_zValid ? product.m_zLeptons.second->p4.Phi() : DefaultValues::UndefinedFloat;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("thetaZLepMinus", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("thetaZLepMinus", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_theta_Z_LepMinus;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("validZ", [](KappaEvent const & event, KappaProduct const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("validZ", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_zValid;
 		});
-	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nZCandidates", [](KappaEvent const & event, KappaProduct const & product)
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nZCandidates", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 		{
 			return product.m_found_zs;
 		});

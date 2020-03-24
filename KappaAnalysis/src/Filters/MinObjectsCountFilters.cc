@@ -13,7 +13,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validElectrons.size();
 				},
 				CutRange::LowerThresholdCut(double(settings.GetMinNElectrons()))
@@ -33,7 +33,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validMuons.size();
 				},
 				CutRange::LowerThresholdCut(double(settings.GetMinNMuons()))
@@ -53,7 +53,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validTaus.size();
 				},
 				CutRange::LowerThresholdCut(double(settings.GetMinNTaus()))
@@ -73,7 +73,7 @@
 		FilterBase<KappaTypes>::Init(settings);
 
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_validJets.size();
 				},
 				CutRange::LowerThresholdCut(double(settings.GetMinNJets()))
@@ -90,7 +90,7 @@
 
 	void MinBTaggedJetsCountFilter::Init(KappaSettings const& settings) {
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_bTaggedJets.size();
 				},
 				CutRange::LowerThresholdCut(double(settings.GetMinNBTaggedJets()))
@@ -107,7 +107,7 @@
 
 	void MinNonBTaggedJetsCountFilter::Init(KappaSettings const& settings) {
 		this->m_cuts.push_back(std::pair<double_extractor_lambda, CutRange>(
-				[](KappaEvent const& event, KappaProduct const& product) {
+				[](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings) {
 					return product.m_nonBTaggedJets.size();
 				},
 				CutRange::LowerThresholdCut(double(settings.GetMinNNonBTaggedJets()))

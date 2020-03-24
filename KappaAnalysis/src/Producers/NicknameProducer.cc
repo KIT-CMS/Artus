@@ -12,39 +12,39 @@ void NicknameProducer::Init(KappaSettings const& settings)
 	KappaProducerBase::Init(settings);
 
 	// add possible quantities for the lambda ntuples consumers
-	LambdaNtupleConsumer<KappaTypes>::AddStringQuantity("nickname", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddStringQuantity("nickname", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_nickname;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isMC", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isMC", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isMC;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isEmbedded", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isEmbedded", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isEmbedded;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isSingleMuon", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isSingleMuon", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isSingleMuon;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isSingleElectron", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isSingleElectron", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isSingleElectron;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isMuonEG", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isMuonEG", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isMuonEG;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isTau", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isTau", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isTau;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isDoubleEG", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isDoubleEG", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isDoubleEG;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isDoubleMuon", [](KappaEvent const& event, KappaProduct const& product)
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isDoubleMuon", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		return product.m_isDoubleMuon;
 	});

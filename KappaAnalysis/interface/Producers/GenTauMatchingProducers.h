@@ -18,7 +18,7 @@ class GenTauMatchingProducerBase: public ProducerBase<KappaTypes>
 {
 
 public:
-	
+
 	enum class TauDecayMode : int
 	{
 		NONE = -1,
@@ -30,7 +30,7 @@ public:
 	typedef typename KappaTypes::event_type event_type;
 	typedef typename KappaTypes::product_type product_type;
 	typedef typename KappaTypes::setting_type setting_type;
-	
+
 	GenTauMatchingProducerBase(std::map<TValidObject*, KGenTau*> product_type::*genTauMatchedObjects, //changed to KGenParticle from const KDataLV
 	                           std::vector<TValidObject>* event_type::*objects,
 	                           std::vector<TValidObject*> product_type::*validObjects,
@@ -54,14 +54,14 @@ public:
 	{
 	}
 
-	void Init(setting_type const& settings) override 
+	void Init(setting_type const& settings) override
 	{
 		ProducerBase<KappaTypes>::Init(settings);
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("ratioGenTauMatched", [](event_type const & event, product_type const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("ratioGenTauMatched", [](event_type const& event, product_type const& product, setting_type const& settings)
 		{
 			return product.m_ratioGenTauMatched;
 		});
-		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genTauMatchTauDeltaR", [](event_type const & event, product_type const & product)
+		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("genTauMatchTauDeltaR", [](event_type const& event, product_type const& product, setting_type const& settings)
 		{
 			return product.m_genTauMatchDeltaR;
 		});
@@ -71,9 +71,9 @@ public:
 	             setting_type const& settings) const override
 	{
 		double ratioGenTauMatched = 0;
-		
+
 		assert(event.m_genTaus);
-		
+
 		if ((settings.*GetDeltaRMatchingRecoObjectGenTau)() > 0.0f)
 		{
 			// choose valid objects or all objects for matching
@@ -107,10 +107,10 @@ public:
 				bool objectMatched = false;
 				float deltaR = 0;
 				float deltaRmin = std::numeric_limits<float>::max();
-				
+
 				// loop over all genTaus
-				for (typename std::vector<KGenTau>::iterator genTau = event.m_genTaus->begin(); 
-					genTau != event.m_genTaus->end(); ++genTau) 
+				for (typename std::vector<KGenTau>::iterator genTau = event.m_genTaus->begin();
+					genTau != event.m_genTaus->end(); ++genTau)
 				{
 					// if configured: only use genTaus that will decay into comparable particles
 					if (!(settings.*GetMatchGenTauDecayMode)() || ((settings.*GetMatchGenTauDecayMode)() && MatchDecayMode(*genTau, tauDecayMode)))
@@ -157,7 +157,7 @@ public:
 		}
 		product.m_ratioGenTauMatched = ratioGenTauMatched;
 	}
-	
+
 	virtual bool MatchDecayMode(KGenTau const &genTau, TauDecayMode tauDecayMode) const
 	{
 		bool decayModeMatched = (((tauDecayMode == TauDecayMode::E) && genTau.isElectronicDecay()) ||
@@ -165,7 +165,7 @@ public:
 		                         ((tauDecayMode == TauDecayMode::T) && genTau.isHadronicDecay()));
 		return decayModeMatched;
 	}
-	
+
 private:
 	std::map<TValidObject*, KGenTau*> product_type::*m_genTauMatchedObjects; //changed to KGenParticle from const KDataLV
 	std::vector<TValidObject>* event_type::*m_objects;
@@ -190,7 +190,7 @@ class RecoElectronGenTauMatchingProducer: public GenTauMatchingProducerBase<KEle
 {
 
 public:
-	
+
 	std::string GetProducerId() const override;
 
 	RecoElectronGenTauMatchingProducer();
@@ -208,9 +208,9 @@ class RecoMuonGenTauMatchingProducer: public GenTauMatchingProducerBase<KMuon>
 {
 
 public:
-	
+
 	std::string GetProducerId() const override;
-	
+
 	RecoMuonGenTauMatchingProducer();
 
 };
@@ -226,9 +226,9 @@ class RecoTauGenTauMatchingProducer: public GenTauMatchingProducerBase<KTau>
 {
 
 public:
-	
+
 	std::string GetProducerId() const override;
-	
+
 	RecoTauGenTauMatchingProducer();
 
 };

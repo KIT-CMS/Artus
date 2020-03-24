@@ -8,8 +8,8 @@ std::string GenTauJetProducer::GetProducerId() const{
 void GenTauJetProducer::Init(KappaSettings const& settings)
 {
 	KappaProducerBase::Init(settings);
-	
-	LambdaNtupleConsumer<KappaTypes>::AddVFloatQuantity("genTauJetVisPt", [](KappaEvent const & event, KappaProduct const & product)
+
+	LambdaNtupleConsumer<KappaTypes>::AddVFloatQuantity("genTauJetVisPt", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		std::vector<float> genTauJetPt;
 		for (typename std::vector<KGenJet*>::const_iterator genJet = (product.m_genTauJets).begin();
@@ -19,7 +19,7 @@ void GenTauJetProducer::Init(KappaSettings const& settings)
 		}
 		return genTauJetPt;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddVFloatQuantity("genTauJetEta", [](KappaEvent const & event, KappaProduct const & product)
+	LambdaNtupleConsumer<KappaTypes>::AddVFloatQuantity("genTauJetEta", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		std::vector<float> genTauJetEta;
 		for (typename std::vector<KGenJet*>::const_iterator genJet = (product.m_genTauJets).begin();
@@ -29,7 +29,7 @@ void GenTauJetProducer::Init(KappaSettings const& settings)
 		}
 		return genTauJetEta;
 	});
-	LambdaNtupleConsumer<KappaTypes>::AddVIntQuantity("genTauJetDM", [](KappaEvent const & event, KappaProduct const & product)
+	LambdaNtupleConsumer<KappaTypes>::AddVIntQuantity("genTauJetDM", [](KappaEvent const& event, KappaProduct const& product, KappaSettings const& settings)
 	{
 		std::vector<int> genTauJetDM;
 		for (typename std::vector<KGenJet*>::const_iterator genJet = (product.m_genTauJets).begin();
@@ -45,11 +45,11 @@ void GenTauJetProducer::Produce(KappaEvent const& event, KappaProduct& product,
                      KappaSettings const& settings) const
 {
 	assert(event.m_genTauJets);
-	
+
 	for (KGenJets::iterator part = event.m_genTauJets->begin(); part != event.m_genTauJets->end(); ++part)
 	{
 		int decayMode = part->genTauDecayMode;
-		
+
 		// select only 1-prong and 3-prong decay modes
 		if (((decayMode >= 0) && (decayMode <= 4)) || (decayMode == 7) || (decayMode == 8))
 		{
