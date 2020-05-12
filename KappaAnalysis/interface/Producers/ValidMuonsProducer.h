@@ -250,6 +250,8 @@ public:
 					validMuon = validMuon && IsTightMuon2012(*muon, event, product);
 				else if (settings.GetYear() == 2011)
 					validMuon = validMuon && IsTightMuon2011(*muon, event, product);
+                else if (settings.GetYear() == 2018)
+                    validMuon = validMuon && IsTightMuon2018(*muon, event, product);
 				else
 					LOG(FATAL) << "Tight muon ID for year " << settings.GetYear() << " not yet implemented!";
 			}
@@ -433,6 +435,14 @@ private:
 						&& muon->segmentCompatibility > (goodGlob ? 0.303 : 0.451);
 		return isMedium;
 	}
+
+
+	// https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2#Tight_Muon
+	bool IsTightMuon2018(KMuon* muon, event_type const& event, product_type& product) const
+	{
+		return muon->idTight();
+	}
+
 
 	// https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorkingSummer2013#Muon_Tau_Final_state
 	// should be move to Higgs code
