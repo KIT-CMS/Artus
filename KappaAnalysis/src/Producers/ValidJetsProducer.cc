@@ -51,6 +51,9 @@ void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingJetCSV",[bTaggedJetCSVName](KappaEvent const& event, KappaProduct const& product) {
 		return product.m_validJets.size() >= 1 ? static_cast<KJet*>(product.m_validJets.at(0))->getTag(bTaggedJetCSVName, event.m_jetMetadata) : DefaultValues::UndefinedFloat;
 	} );
+	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingJetbTagReg",[bTaggedJetCSVName](KappaEvent const& event, KappaProduct const& product) {
+		return product.m_validJets.size() >= 1 ? static_cast<KJet*>(product.m_validJets.at(0))->bjetRegCorr : DefaultValues::UndefinedFloat;
+	} );
 	LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("leadingJetTCHE",[bTaggedJetTCHEName](KappaEvent const& event, KappaProduct const& product) {
 		return product.m_validJets.size() >= 1 ? static_cast<KJet*>(product.m_validJets.at(0))->getTag(bTaggedJetTCHEName, event.m_jetMetadata) : DefaultValues::UndefinedFloat;
 	} );
