@@ -58,25 +58,32 @@ def merge_local(args):
 
 def merge_batch(args):
 
-	from gcSettings import Settings
-	cfg = Settings()
-	cfg.workflow.task = 'UserTask'
-	cfg.workflow.backend = 'local'
-	cfg.workflow.duration = '-1'
+	# from gcSettings import Settings
+	# cfg = Settings()
+	cfg = {}
+	cfg["global"] = {}
+	cfg["global"]["task"] = 'UserTask'
+	cfg["global"]["backend"] = "condor"
 
-	cfg.jobs.wall_time = '3:00:00'
-	cfg.jobs.memory = "6000"
-	cfg.jobs.max_retry = 1
+	cfg["jobs"] = {}
+	cfg["jobs"]["wall time"] = '3:00:00'
+	cfg["jobs"]["memory"] = '2000'
+	cfg["jobs"]["cpus"] = "1"
 
-	cfg.usertask.executable = 'Artus/Utility/scripts/artus_userjob_epilog.sh'
+	cfg["constants"] = {}
+	cfg["constants"]["GC_GLITE_LOCATION"] = "/cvmfs/grid.cern.ch/emi3ui-latest/etc/profile.d/setup-ui-example.sh"
+	cfg["UserTask"] = {}
 	cmssw_base = os.getenv("CMSSW_BASE") + "/src/"
+	cfg["UserTask"]["executable"] = cmssw_base + 'Artus/Utility/scripts/artus_userjob_epilog.sh'
 	executable = 'artusMergeOutputs.py '
-	cfg.usertask.input_files= [cmssw_base + "Artus/Configuration/scripts/artusMergeOutputs.py"]
+	cfg["UserTask"]["input files"] = cmssw_base + "Artus/Configuration/scripts/artusMergeOutputs.py"
 
 	project_dirs = "-i " + " ".join(args.project_dir)
 	outputs_per_nick = folders_to_merge(args)
+
 	# extract nicks that should be ran on
-	cfg.parameters.parameters = ["NICK"]
+	cfg["parameters"] = {}
+	cfg["parameters"]["parameters"] = "NICK"
 	nicks_to_process = outputs_per_nick.keys() if(args.project_subdir == None) else [args.project_subdir] # keep only single path
 	input_dirs  = []
 	for project_dir in args.project_dir:
@@ -89,9 +96,9 @@ def merge_batch(args):
 				input_dirs.append(input_dir)
 
 	required_scratch_space = max(map(get_folder_size, input_dirs)) * 2 + 100 * 1024 * 1024
-	cfg.backend.submit_options = "-l h_fsize=" + str(required_scratch_space / 1024 / 1024 / 1024)+"G"
-	cfg.parameters.NICK = nicks_to_process
-	cfg.jobs.jobs = len(nicks_to_process)
+	# cfg.backend.submit_options = "-l h_fsize=" + str(required_scratch_space / 1024 / 1024 / 1024)+"G"
+	cfg["parameters"]["NICK"] = " ".join(nicks_to_process)
+	cfg["jobs"]["jobs"] = len(nicks_to_process)
 
 	arguments = cmssw_base
 	arguments = arguments + " " + executable
@@ -99,23 +106,40 @@ def merge_batch(args):
 	arguments = arguments + " --project-subdir @NICK@ "
 	if(args.output_dir != None):
 		arguments = arguments + " --output-dir " + args.output_dir
+	cfg["UserTask"]["arguments"] = "%s"%arguments
 
-	cfg.usertask.arguments = "%s"%arguments
 	merged_directory = os.path.join(args.project_dir[0] if(args.output_dir == None) else args.output_dir, "merged")
-	cfg.storage.se_path = merged_directory
-	cfg.storage.scratch_space_used = required_scratch_space / 1024 / 1024
-	cfg.storage.se_output_files = "merged.root"
-	cfg.storage.se_output_pattern = "@NICK@/@NICK@.root"
-	cfg.GLOBAL.workdir = os.path.join(args.project_dir[0] if(args.output_dir == None) else args.output_dir, "workdir_merge")
-	from grid_control.utils.activity import Activity
-	Activity.root = Activity('Running grid-control', name = 'root')
-	from gcTool import gc_create_workflow, gc_create_config
-	config = gc_create_config( configDict = Settings.getConfigDict())
+	cfg["storage"] = {}
+	cfg["storage"]["se path"] = merged_directory
+	cfg["storage"]["scratch space used"] = "2000"
+	cfg["storage"]["se output files"] = "merged.root"
+	cfg["storage"]["se output pattern"] = "@NICK@/@NICK@.root"
+	cfg["global"]["workdir"] = os.path.join(args.project_dir[0] if(args.output_dir == None) else args.output_dir, "workdir_merge")
 
-	workflow = gc_create_workflow(config)
-	#activate for large verbosity
-	#logging.getLogger('process').setLevel(logging.DEBUG1)
-	workflow.run()
+	cfg["condor"] = {}
+	cfg["condor"]["JDLData"] = 'Requirements=(OpSysAndVer=="CentOS7")'
+	cfg["condor"]["proxy"] = "VomsProxy"
+
+	out_file_name = os.path.join(args.project_dir[0] if(args.output_dir == None) else args.output_dir, "merging_config.conf")
+	out_file = open(out_file_name, 'w')
+	gc_workdir = os.path.join(args.project_dir[0] if(args.output_dir == None) else args.output_dir, "workdir_merge")
+	for akt_key in ['global', 'jobs', 'UserTask', 'storage']:
+		out_file.write('['+akt_key+']\n')
+		for akt_item in cfg[akt_key]:
+			out_file.write(akt_item+' = '+str(cfg[akt_key][akt_item])+'\n')
+	for akt_key in (set(cfg.keys()) - set(['global', 'jobs', 'UserTask', 'storage'])):
+		out_file.write('['+akt_key+']\n')
+		for akt_item in cfg[akt_key]:
+			out_file.write(akt_item+' = '+str(cfg[akt_key][akt_item])+'\n')
+	out_file.close()
+	print "\nExecute go.py "+out_file_name+" -Gc"
+	# from grid_control.utils.activity import Activity
+	# Activity.root = Activity('Running grid-control', name = 'root')
+	# from gcTool import gc_create_workflow, gc_create_config
+	# config = gc_create_config( configDict = Settings.getConfigDict())
+
+	# workflow = gc_create_workflow(config)
+	# workflow.run()
 
 def main():
 
