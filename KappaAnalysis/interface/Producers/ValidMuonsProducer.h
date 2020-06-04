@@ -250,6 +250,8 @@ public:
 					validMuon = validMuon && IsTightMuon2012(*muon, event, product);
 				else if (settings.GetYear() == 2011)
 					validMuon = validMuon && IsTightMuon2011(*muon, event, product);
+                else if (settings.GetYear() == 2018)
+                    validMuon = validMuon && IsTightMuon2018(*muon, event, product);
 				else
 					LOG(FATAL) << "Tight muon ID for year " << settings.GetYear() << " not yet implemented!";
 			}
@@ -291,27 +293,45 @@ public:
 			}
 
 			// Muon Isolation according to Muon POG definitions (independent of year)
-			// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
-			// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation_AN1
 			if (muonIsoType == MuonIsoType::PF) {
-				if (muonIso == MuonIso::TIGHT)
-					validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.12f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::LOOSE)
-					validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::TIGHT_2015)
-					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::LOOSE_2015)
-					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.30f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::TIGHT_2016)
-					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::MEDIUM_2016)
-					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::LOOSE_2016)
-					validMuon = validMuon && ((((*muon)->pfIso(0.5) / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::FAKEABLE)
-					validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
-				else if (muonIso != MuonIso::NONE)
-					LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
+                // Run I
+                // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
+                // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation_AN1
+                if (settings.GetYear() < 2015){
+                    if (muonIso == MuonIso::TIGHT)
+                        validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.12f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::LOOSE)
+                        validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::FAKEABLE)
+                        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
+                    else if (muonIso != MuonIso::NONE)
+                        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
+                }
+                // Run II
+                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2
+                else if (settings.GetYear() >= 2015 && settings.GetYear() <=2018){
+                    if (muonIso == MuonIso::TIGHT)
+                        validMuon = validMuon && ((((*muon)->pfIsoR04() / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::LOOSE)
+                        validMuon = validMuon && ((((*muon)->pfIsoR04() / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::TIGHT_2015)
+                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::LOOSE_2015)
+                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.30f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::TIGHT_2016)
+                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::MEDIUM_2016)
+                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::LOOSE_2016)
+                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+                    else if (muonIso == MuonIso::FAKEABLE)
+                        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
+                    else if (muonIso != MuonIso::NONE)
+                        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
+                }
+                else
+                    LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented for year "<< settings.GetYear() << "!";
+
 			}
 			else if (muonIsoType == MuonIsoType::DETECTOR) {
 				if (muonIso == MuonIso::TIGHT)
@@ -433,6 +453,14 @@ private:
 						&& muon->segmentCompatibility > (goodGlob ? 0.303 : 0.451);
 		return isMedium;
 	}
+
+
+	// https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2#Tight_Muon
+	bool IsTightMuon2018(KMuon* muon, event_type const& event, product_type& product) const
+	{
+		return muon->idTight();
+	}
+
 
 	// https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorkingSummer2013#Muon_Tau_Final_state
 	// should be move to Higgs code

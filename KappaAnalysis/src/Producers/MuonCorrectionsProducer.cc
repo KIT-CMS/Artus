@@ -13,6 +13,8 @@ MuonCorrectionsProducer::MuonEnergyCorrection MuonCorrectionsProducer::ToMuonEne
 	if (muonEnergyCorrection == "fall2015") return MuonCorrectionsProducer::MuonEnergyCorrection::FALL2015;
 	else if (muonEnergyCorrection == "rochcorr2015") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2015;
 	else if (muonEnergyCorrection == "rochcorr2016") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2016;
+	else if (muonEnergyCorrection == "rochcorr2017") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2017;
+	else if (muonEnergyCorrection == "rochcorr2017") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2017;
 	else return MuonCorrectionsProducer::MuonEnergyCorrection::NONE;
 }
 
@@ -32,6 +34,10 @@ void MuonCorrectionsProducer::Init(KappaSettings const& settings)
 	if (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016)
 	{
 		rmcor2016 = new RoccoR2016(settings.GetMuonRochesterCorrectionsFile());
+	}
+	if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018))
+	{
+		rmcor = new RoccoR(settings.GetMuonRochesterCorrectionsFile());
 	}
 	random = new TRandom3();
 }
@@ -137,6 +143,47 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 					double u1 = random->Rndm();
 					double u2 = random->Rndm();
 					scaleFactor = rmcor2016->kScaleAndSmearMC(q, pt, eta, phi, ntrk, u1, u2);
+				}
+			}
+
+			// scale only three dimensional momentum
+			// -> need to manually calculate energy
+			float muonMass = 0.105658;
+			float scaledPx = muon->get()->p4.Px() * scaleFactor;
+			float scaledPy = muon->get()->p4.Py() * scaleFactor;
+			float scaledPz = muon->get()->p4.Pz() * scaleFactor;
+			float scaledE = TMath::Sqrt(TMath::Power(scaledPx,2) + TMath::Power(scaledPy,2) + TMath::Power(scaledPz,2) + TMath::Power(muonMass,2));
+
+			muon->get()->p4.SetPxPyPzE(scaledPx, scaledPy, scaledPz, scaledE);
+		}
+        else if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018))
+		{
+			int q = muon->get()->charge();
+			float pt = muon->get()->p4.Pt();
+			float eta = muon->get()->p4.Eta();
+			float phi = muon->get()->p4.Phi();
+
+			float scaleFactor = 1.0;
+
+			if (settings.GetInputIsData())
+			{
+				scaleFactor = rmcor->kScaleDT(q, pt, eta, phi);
+			}
+			else
+			{
+				int ntrk = muon->get()->track.nPixelLayers + muon->get()->track.nStripLayers; // TODO: this corresponds to reco::HitPattern::trackerLayersWithMeasurementOld(). update to "new" implementation also in Kappa
+				if (settings.GetRecoMuonMatchingGenParticleMatchAllMuons() &&
+					&(*product.m_genParticleMatchedMuons[static_cast<KMuon*>(const_cast<KLepton*>(product.m_originalLeptons[muon->get()]))]) != nullptr
+					)
+				{
+					KGenParticle* genMuon = &(*product.m_genParticleMatchedMuons[static_cast<KMuon*>(const_cast<KLepton*>(product.m_originalLeptons[muon->get()]))]);
+					float genPt = genMuon->p4.Pt();
+					scaleFactor = rmcor->kSpreadMC(q, pt, eta, phi, genPt);
+				}
+				else
+				{
+					double u1 = random->Rndm();
+					scaleFactor = rmcor->kSmearMC(q, pt, eta, phi, ntrk, u1);
 				}
 			}
 

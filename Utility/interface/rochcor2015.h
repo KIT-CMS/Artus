@@ -13,7 +13,7 @@
 #include "TLorentzVector.h"
 #include "TRandom3.h"
 
-#include "Artus/Utility/interface/RoccoR.h"
+#include "Artus/Utility/interface/RoccoR2015.h"
 
 class rochcor2015 {
  public:

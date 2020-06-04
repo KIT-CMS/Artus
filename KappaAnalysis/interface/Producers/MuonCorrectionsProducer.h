@@ -6,6 +6,7 @@
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
 #include "Artus/Utility/interface/RoccoR.h"
+#include "Artus/Utility/interface/RoccoR2015.h"
 #include "Artus/Utility/interface/rochcor2015.h"
 #include "Artus/Utility/interface/RoccoR2016.h"
 #include "TRandom3.h"
@@ -31,7 +32,10 @@ public:
 		NONE  = -1,
 		FALL2015 = 0,
 		ROCHCORR2015 = 1,
-		ROCHCORR2016 = 2
+		ROCHCORR2016 = 2,
+		ROCHCORR2017 = 3,
+		ROCHCORR2018 = 4
+
 	};
 	static MuonEnergyCorrection ToMuonEnergyCorrection(std::string const& muonEnergyCorrection);
 
@@ -44,5 +48,6 @@ private:
 	MuonEnergyCorrection muonEnergyCorrection;
 	rochcor2015 *rmcor2015;
 	RoccoR2016 *rmcor2016;
+	RoccoR *rmcor;
 	TRandom3 *random;
 };
