@@ -72,6 +72,7 @@ public:
 		ID2016 = 7,  // new jet ID for 2016 updated on 2017-03-24
 		ID2017 = 8,  // new jet ID for 2017 updated on 2018-02-14
 		ID2018 = 9,  // new jet ID for 2018 updated on 2019-02-02
+		IDUL2017 = 10, // new jet ID for 2017 UL campaign
 	};
 	static JetIDVersion ToJetIDVersion(std::string const& jetIDVersion);
 
