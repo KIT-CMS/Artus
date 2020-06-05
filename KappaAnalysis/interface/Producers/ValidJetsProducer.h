@@ -301,7 +301,7 @@ public:
 			if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018)
 			{
 				// |eta| < 2.6
-				if (std::abs(jet->p4.eta()) > 2.6f)
+				if (std::abs(jet->p4.eta()) < 2.6f)
 				{
 					validJet = validJet &&
 					           (jet->neutralHadronFraction < maxFraction) &&
