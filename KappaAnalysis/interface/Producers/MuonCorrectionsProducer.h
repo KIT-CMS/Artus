@@ -5,7 +5,8 @@
 #include "Artus/KappaAnalysis/interface/KappaTypes.h"
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
-#include "Artus/Utility/interface/RoccoR.h"
+#include "Artus/Utility/interface/RoccoRRun2v4.h"
+//#include "Artus/Utility/interface/RoccoRRun2v3.h"
 #include "Artus/Utility/interface/RoccoR2015.h"
 #include "Artus/Utility/interface/rochcor2015.h"
 #include "Artus/Utility/interface/RoccoR2016.h"
@@ -34,7 +35,11 @@ public:
 		ROCHCORR2015 = 1,
 		ROCHCORR2016 = 2,
 		ROCHCORR2017 = 3,
-		ROCHCORR2018 = 4
+		ROCHCORR2018 = 4,
+		ROCHCORR2016UL = 5,
+		ROCHCORR2017UL = 6,
+		ROCHCORR2018UL = 7
+
 
 	};
 	static MuonEnergyCorrection ToMuonEnergyCorrection(std::string const& muonEnergyCorrection);
