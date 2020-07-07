@@ -5,11 +5,9 @@
 #include "Artus/KappaAnalysis/interface/KappaTypes.h"
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
-#include "Artus/Utility/interface/RoccoRRun2v4.h"
-//#include "Artus/Utility/interface/RoccoRRun2v3.h"
+#include "Artus/Utility/interface/RoccoR.h"
 #include "Artus/Utility/interface/RoccoR2015.h"
 #include "Artus/Utility/interface/rochcor2015.h"
-#include "Artus/Utility/interface/RoccoR2016.h"
 #include "TRandom3.h"
 
 /**
@@ -52,7 +50,6 @@ protected:
 private:
 	MuonEnergyCorrection muonEnergyCorrection;
 	rochcor2015 *rmcor2015;
-	RoccoR2016 *rmcor2016;
 	RoccoR *rmcor;
 	TRandom3 *random;
 };
