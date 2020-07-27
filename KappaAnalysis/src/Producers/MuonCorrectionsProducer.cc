@@ -14,7 +14,8 @@ MuonCorrectionsProducer::MuonEnergyCorrection MuonCorrectionsProducer::ToMuonEne
 	else if (muonEnergyCorrection == "rochcorr2015") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2015;
 	else if (muonEnergyCorrection == "rochcorr2016") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2016;
 	else if (muonEnergyCorrection == "rochcorr2017") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2017;
-	else if (muonEnergyCorrection == "rochcorr2017") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2017;
+	else if (muonEnergyCorrection == "rochcorr2017ul") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2017UL;
+	else if (muonEnergyCorrection == "rochcorr2018") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2018;
 	else return MuonCorrectionsProducer::MuonEnergyCorrection::NONE;
 }
 
