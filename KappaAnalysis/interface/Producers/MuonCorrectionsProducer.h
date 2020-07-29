@@ -25,7 +25,7 @@ public:
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override;
 
-	public:
+public:
 	enum class MuonEnergyCorrection : int
 	{
 		NONE  = -1,
