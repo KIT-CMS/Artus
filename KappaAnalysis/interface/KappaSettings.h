@@ -380,6 +380,10 @@ public:
 	IMPL_SETTING_DEFAULT(std::string, MuonEnergyCorrection, "none");
 	IMPL_SETTING(std::string, MuonRochesterCorrectionsFile);
 
+	// Needed for electron residual scale and smearing corrections in ElectronCorrectionsProducer
+	IMPL_SETTING_DEFAULT(bool, ApplyElectronEnergyCorrections, false);
+	IMPL_SETTING_STRINGLIST_DEFAULT(ElectronEnergyCorrectionTags, {})
+
 	// Needed by SampleStitchingWeightProducer
 	IMPL_SETTING_STRINGLIST(StitchingWeights);
 	IMPL_SETTING_STRINGLIST_DEFAULT(StitchingWeightsHighMass, {});
