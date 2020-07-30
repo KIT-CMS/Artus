@@ -277,18 +277,18 @@ public:
 		}
 		else if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHT) ||
 		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018 && jetID == KappaEnumTypes::JetID::TIGHT) ||
-		         (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2016 && jetID == KappaEnumTypes::JetID::TIGHT) ||
-		         (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2017 && jetID == KappaEnumTypes::JetID::TIGHT) ||
-		         (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2018 && jetID == KappaEnumTypes::JetID::TIGHT))
+		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016UL && jetID == KappaEnumTypes::JetID::TIGHT) ||
+		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL && jetID == KappaEnumTypes::JetID::TIGHT) ||
+		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL && jetID == KappaEnumTypes::JetID::TIGHT))
 		{
 			maxMuFraction = -1.0f;
 			maxCEMFraction = -1.0f;
 		}
 		else if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) ||
 		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) ||
-		         (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2016 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) ||
-		         (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2017 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) ||
-		         (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2018 && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO))
+		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016UL && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) ||
+		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) ||
+		         (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL && jetID == KappaEnumTypes::JetID::TIGHTLEPVETO))
 		{
 			maxMuFraction = 0.8f,
 			maxCEMFraction = 0.8f;
@@ -303,11 +303,11 @@ public:
 		// |eta| < 2.7
 		if (std::abs(jet->p4.eta()) <= 2.7f)
 		{
-			// 2018 and UL2016-18 ID only: modified criteria for 2.6 < |eta| <= 2.7
+			// 2018 and 2016UL-18UL ID only: modified criteria for 2.6 < |eta| <= 2.7
 			if ((jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018) ||
-			    (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2016) ||
-			    (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2017) ||
-			    (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2018))
+			    (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016UL) ||
+			    (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL) ||
+			    (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL))
 			{
 				// |eta| < 2.6
 				if (std::abs(jet->p4.eta()) < 2.6f)
@@ -379,9 +379,9 @@ public:
 				           (jet->photonFraction + jet->hfEMFraction > 0.02f) &&
 				           (jet->nConstituents - jet->nCharged > 2);
 			}
-			else if (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2016 ||
-			         jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2017 ||
-			         jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2018)
+			else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016UL ||
+			         jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL ||
+			         jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL)
 			{
 				validJet = (jet->photonFraction + jet->hfEMFraction < 0.99f) &&
 				           (jet->photonFraction + jet->hfEMFraction > 0.01f) &&
@@ -409,9 +409,9 @@ public:
 				           (jet->neutralHadronFraction > 0.2f) &&
 				           (jet->nConstituents - jet->nCharged > 10);
 			}
-			else if (jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2016 ||
-			         jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2017 ||
-			         jetIDVersion == KappaEnumTypes::JetIDVersion::IDUL2018)
+			else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2016UL ||
+			         jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL ||
+			         jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL)
 			{
 				validJet = (jet->photonFraction + jet->hfEMFraction < 0.90f) &&
 				           (jet->neutralHadronFraction > 0.2f) &&
