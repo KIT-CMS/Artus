@@ -39,6 +39,12 @@ void ValidBTaggedJetsProducer::Init(KappaSettings const& settings)
 	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets20", [this](KappaEvent const& event, KappaProduct const& product) {
 		return KappaProduct::GetNJetsAbovePtThreshold(product.m_bTaggedJets, 20.0);
 	});
+	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets25", [this](KappaEvent const& event, KappaProduct const& product) {
+                return KappaProduct::GetNJetsAbovePtThreshold(product.m_bTaggedJets, 25.0);
+        });
+        LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nlooseBJets25", [this](KappaEvent const& event, KappaProduct const& product) {
+                return KappaProduct::GetNJetsAbovePtThreshold(product.m_loosebTaggedJets, 25.0);
+        });
 	LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nBJets30", [this](KappaEvent const& event, KappaProduct const& product) {
 		return KappaProduct::GetNJetsAbovePtThreshold(product.m_bTaggedJets, 30.0);
 	});
@@ -282,8 +288,10 @@ void ValidBTaggedJetsProducer::Produce(KappaEvent const& event, KappaProduct& pr
 	assert(event.m_jetMetadata);
 	assert(settings.GetBTagWPs().size() > 0);
 
-	for (std::vector<std::string>::const_iterator workingPoint = settings.GetBTagWPs().begin();
-	     workingPoint != settings.GetBTagWPs().end(); ++workingPoint)
+        auto btagwps = settings.GetBTagWPs();
+        btagwps.push_back("loose");
+	for (std::vector<std::string>::const_iterator workingPoint = btagwps.begin();
+	     workingPoint != btagwps.end(); ++workingPoint)
 	{
 		for (std::vector<KBasicJet*>::iterator jet = product.m_validJets.begin(); jet != product.m_validJets.end(); ++jet)
 		{
@@ -350,6 +358,7 @@ void ValidBTaggedJetsProducer::Produce(KappaEvent const& event, KappaProduct& pr
 		}
 	}
 	product.m_bTaggedJets = product.m_bTaggedJetsByWp[settings.GetBTagWPs().at(0)];
+        product.m_loosebTaggedJets = product.m_bTaggedJetsByWp[btagwps.at(1)];
 	product.m_nonBTaggedJets = product.m_nonBTaggedJetsByWp[settings.GetBTagWPs().at(0)];
 }
 
