@@ -1,23 +1,3 @@
-/*
-	Up to date with Rochester Correction Run2 v4 (see https://twiki.cern.ch/twiki/bin/viewauth/CMS/RochcorMuon)
-	Supports Muon corrections for 2016, 2017, 2018 end-of-year and 2017 ultra-legacy samples
-
-    RoccoR2016.txt:
-    Data: Run2016{B..H}-17Jul2018
-    MC:   RunIISummer16MiniAODv3 
-
-    RoccoR2017.txt:
-    Data: Run2017{B..F}-31Mar2018
-    MC:   RunIIFall17MiniAODv2
-
-    RoccoR2018.txt:
-    Data: Run2018{A..C}-17Sep2018 + Run2018DPromptReco
-    MC:   RunIIAutumn18MiniAOD
-
-    RoccoR2017UL.txt:
-    Data: Run2017{B..F}-09Aug2019_UL2017
-    MC:   RunIISummer19UL17MiniAOD
-*/
 #ifndef ElectroWeakAnalysis_RoccoR
 #define ElectroWeakAnalysis_RoccoR
 
