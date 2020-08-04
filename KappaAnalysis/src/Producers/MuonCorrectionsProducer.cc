@@ -34,7 +34,7 @@ void MuonCorrectionsProducer::Init(KappaSettings const& settings)
 		rmcor2015 = new rochcor2015(settings.GetMuonRochesterCorrectionsFile());
 		
 	}
-	if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018))
+	if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018UL))
 	{
 		rmcor = new RoccoR(settings.GetMuonRochesterCorrectionsFile());
 	}
