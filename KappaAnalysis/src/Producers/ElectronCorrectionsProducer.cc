@@ -80,7 +80,7 @@ void ElectronCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct&
 		// No general correction available
 	
 		// perform possible analysis-specific corrections
-		if ((!settings.GetCorrectOnlyRealElectrons() || (settings.GetCorrectOnlyRealElectrons() && isRealElectron) && settings.GetApplyElectronEnergyCorrections()))
+		if ((!settings.GetCorrectOnlyRealElectrons() || (settings.GetCorrectOnlyRealElectrons() && isRealElectron)) && settings.GetApplyElectronEnergyCorrections())
 			AdditionalCorrections(electron->get(), event, product, settings);
 
 		// make sure to also save the corrected lepton and the matched genParticle in the map
@@ -106,7 +106,7 @@ void ElectronCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct&
 void ElectronCorrectionsProducer::AdditionalCorrections(KElectron* electron, KappaEvent const& event,
                                                         KappaProduct& product, KappaSettings const& settings) const
 {
-	size_t iter = 0;
+	//size_t iter = 0;
 	for(const auto& electronCorrectionNamePair: m_electronCorrectionNamesMap)
 	{
 		float correctionFactor = electron->getId(electronCorrectionNamePair.second) / electron->p4.E();
