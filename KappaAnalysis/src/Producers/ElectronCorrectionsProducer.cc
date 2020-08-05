@@ -106,7 +106,6 @@ void ElectronCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct&
 void ElectronCorrectionsProducer::AdditionalCorrections(KElectron* electron, KappaEvent const& event,
                                                         KappaProduct& product, KappaSettings const& settings) const
 {
-	//size_t iter = 0;
 	for(const auto& electronCorrectionNamePair: m_electronCorrectionNamesMap)
 	{
 		float correctionFactor = electron->getId(electronCorrectionNamePair.second) / electron->p4.E();
