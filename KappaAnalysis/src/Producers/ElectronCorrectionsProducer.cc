@@ -9,6 +9,28 @@ std::string ElectronCorrectionsProducer::GetProducerId() const {
 void ElectronCorrectionsProducer::Init(setting_type const& settings)
 {
 	KappaProducerBase::Init(settings);
+
+	m_requestedNames = settings.GetElectronEnergyCorrectionTags();
+}
+
+void ElectronCorrectionsProducer::OnLumi(KappaEvent const& event, KappaSettings const& settings)
+{
+	assert(event.m_electronMetadata);
+
+	// On first event, fill the electronCorrectionNamesMap
+	if(m_electronCorrectionNamesMap.empty())
+	{
+		auto tmp_electronCorrectionNamesMap = event.m_electronMetadata->getIdNamesMap(m_requestedNames);
+		for(const auto& electronCorrectionNamePair: tmp_electronCorrectionNamesMap)
+		{
+			m_electronCorrectionNamesMap[electronCorrectionNamePair.first] = electronCorrectionNamePair.second;
+		}
+	}
+
+	if(m_electronCorrectionNamesMap.size() > 1)
+	{
+		LOG(FATAL) << "[ElectronCorrectionsProducer] The current implementation doesn't support the treatment of more than one correction at a time. Please reconfigure!";
+	}
 }
 
 void ElectronCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& product,
@@ -58,7 +80,7 @@ void ElectronCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct&
 		// No general correction available
 	
 		// perform possible analysis-specific corrections
-		if (!settings.GetCorrectOnlyRealElectrons() || (settings.GetCorrectOnlyRealElectrons() && isRealElectron))
+		if ((!settings.GetCorrectOnlyRealElectrons() || (settings.GetCorrectOnlyRealElectrons() && isRealElectron)) && settings.GetApplyElectronEnergyCorrections())
 			AdditionalCorrections(electron->get(), event, product, settings);
 
 		// make sure to also save the corrected lepton and the matched genParticle in the map
@@ -84,5 +106,10 @@ void ElectronCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct&
 void ElectronCorrectionsProducer::AdditionalCorrections(KElectron* electron, KappaEvent const& event,
                                                         KappaProduct& product, KappaSettings const& settings) const
 {
+	for(const auto& electronCorrectionNamePair: m_electronCorrectionNamesMap)
+	{
+		float correctionFactor = electron->getId(electronCorrectionNamePair.second) / electron->p4.E();
+		electron->p4 = electron->p4 * correctionFactor;
+	}
 }
 
