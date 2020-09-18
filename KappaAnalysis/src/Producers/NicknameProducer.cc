@@ -54,6 +54,7 @@ void NicknameProducer::Init(KappaSettings const& settings)
 	if (nickname.find("Embedding") != std::string::npos) isEmbedded = true;
 	else if (nickname.find("SingleMuon") != std::string::npos) isSingleMuon = true;
 	else if (nickname.find("SingleElectron") != std::string::npos) isSingleElectron = true;
+	else if (nickname.find("EGamma") != std::string::npos) isSingleElectron = true;
 	else if (nickname.find("MuonEG") != std::string::npos) isMuonEG = true;
 	else if (nickname.find("Tau") != std::string::npos) isTau = true;
 	else if (nickname.find("DoubleEG") != std::string::npos) isDoubleEG = true;
