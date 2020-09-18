@@ -122,6 +122,7 @@ public:
 	/// added by ValidJetsProducer
 	std::vector<KBasicJet*> m_validJets;
 	std::vector<KBasicJet*> m_invalidJets;
+	std::map<KLepton*, KBasicJet*> m_leptonJetsMap;
 
 	/// added by ValidGenJetsProducer
 	std::vector<KGenJet*> m_validGenJets;
@@ -236,6 +237,8 @@ public:
 
 	// MVA outputs
 	std::vector<double> m_discriminators;
+
+
 
 	// GenPartonCounterProducer
 	int m_genNPartons = -1;

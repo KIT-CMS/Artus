@@ -221,14 +221,36 @@ public:
 			}
 		}
 
-                LOG(DEBUG) << "Initial size of jets: " << jets.size(); 
+                LOG(DEBUG) << "Initial size of jets: " << jets.size();
+
+		// find the clostest jet to each lepton prior to any filtering
+		for (std::vector<KLepton*>::const_iterator lepton = product.m_validLeptons.begin(); lepton != product.m_validLeptons.end(); ++lepton)
+		{
+			LOG(DEBUG) << "New Lepton: " << (*lepton)->p4;
+			float mindeltaR = 10.0;
+			product.m_leptonJetsMap[*lepton] =  static_cast<KBasicJet*>(nullptr) ;
+			for (typename std::vector<TJet*>::iterator jet = jets.begin(); jet != jets.end(); ++jet)
+			{
+				float tempdeltR = ROOT::Math::VectorUtil::DeltaR((*lepton)->p4, (*jet)->p4);
+				LOG(DEBUG) << " Testing New DeltaR: " << tempdeltR ;
+				if (tempdeltR < mindeltaR && tempdeltR < 0.5)
+				{
+					mindeltaR = tempdeltR;
+					product.m_leptonJetsMap[*lepton] = *jet;
+					LOG(DEBUG) << " Updated DeltaR to " << mindeltaR ;
+					LOG(DEBUG) << " New best Jet: " << (*jet)->p4;
+				}
+
+			}
+		}
+		LOG(DEBUG) << "LeptonJet map built";
 		for (typename std::vector<TJet*>::iterator jet = jets.begin(); jet != jets.end(); ++jet)
 		{
 			bool validJet = true;
-                        LOG(DEBUG) << "Checking jet with p4 " << (*jet)->p4; 
+                        LOG(DEBUG) << "Checking jet with p4 " << (*jet)->p4;
 
 			validJet = validJet && passesJetID(*jet, jetIDVersion, jetID);
-                        LOG(DEBUG) << "\tPassing ID's? " << validJet; 
+                        LOG(DEBUG) << "\tPassing ID's? " << validJet;
 
 			// remove leptons from list of jets via simple DeltaR isolation
 			for (std::vector<KLepton*>::const_iterator lepton = product.m_validLeptons.begin();
