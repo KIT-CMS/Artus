@@ -187,6 +187,66 @@ public:
 		LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("sixthJetMass", [settings](KappaEvent const& event, KappaProduct const& product) {
 			return product.m_validJets.size() >= 6 ? (product.m_validJets.at(5)->p4.Pt() >= settings.GetJetOfflineLowerPtCut() ? product.m_validJets.at(5)->p4.mass() : DefaultValues::UndefinedFloat) : DefaultValues::UndefinedFloat;
 		});
+
+        // Lucas' remaining jets custom variable
+        // get the momentum of all jets but the first two
+        
+        LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("remainingJetPt", [settings](KappaEvent const& event, KappaProduct const& product) {
+                ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > remaining_jets_p4 (0, 0, 0, 0);
+                if (product.m_validJets.size() >= 3) {
+                    typename std::vector<TValidJet*>::const_iterator jet = (product.m_validJets).begin();
+                    std::advance(jet, 2); // ignore first two jets
+                    for (; jet != (product.m_validJets).end(); ++jet) {
+                        if ((*jet)->p4.Pt() >= settings.GetJetOfflineLowerPtCut()) {
+                            remaining_jets_p4 += (*jet)->p4 ;
+                        };
+                    };
+                };
+                return remaining_jets_p4.Pt() ;
+            });
+
+        LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("remainingJetEta", [settings](KappaEvent const& event, KappaProduct const& product) {
+                ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > remaining_jets_p4 (0, 0, 0, 0);
+                if (product.m_validJets.size() >= 3) {
+                    typename std::vector<TValidJet*>::const_iterator jet = (product.m_validJets).begin();
+                    std::advance(jet, 2); // ignore first two jets
+                    for (; jet != (product.m_validJets).end(); ++jet) {
+                        if ((*jet)->p4.Pt() >= settings.GetJetOfflineLowerPtCut()) {
+                            remaining_jets_p4 += (*jet)->p4 ;
+                        };
+                    };
+                };
+                return remaining_jets_p4.Eta() ;
+            });
+
+        LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("remainingJetPhi", [settings](KappaEvent const& event, KappaProduct const& product) {
+                ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > remaining_jets_p4 (0, 0, 0, 0);
+                if (product.m_validJets.size() >= 3) {
+                    typename std::vector<TValidJet*>::const_iterator jet = (product.m_validJets).begin();
+                    std::advance(jet, 2); // ignore first two jets
+                    for (; jet != (product.m_validJets).end(); ++jet) {
+                        if ((*jet)->p4.Pt() >= settings.GetJetOfflineLowerPtCut()) {
+                            remaining_jets_p4 += (*jet)->p4 ;
+                        };
+                    };
+                };
+                return remaining_jets_p4.Phi() ;
+            });
+
+        LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("NremainingJet", [settings](KappaEvent const& event, KappaProduct const& product) {
+                int N_remaining_jets = 0;
+                if (product.m_validJets.size() >= 3) {
+                    typename std::vector<TValidJet*>::const_iterator jet = (product.m_validJets).begin();
+                    std::advance(jet, 2); // ignore first two jets
+                    for (; jet != (product.m_validJets).end(); ++jet) {
+                        if ((*jet)->p4.Pt() >= settings.GetJetOfflineLowerPtCut()) {
+                            N_remaining_jets += 1 ;
+                        };
+                    };
+                };
+                return N_remaining_jets ;
+            });
+
 	}
 
 	void Produce(KappaEvent const& event, KappaProduct& product,
