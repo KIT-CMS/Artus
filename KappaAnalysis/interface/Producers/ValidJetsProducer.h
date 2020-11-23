@@ -203,7 +203,7 @@ public:
                     };
                     return remaining_jets_p4.Pt() ;
                 };
-                return -10.0 ; // if less than 3 jets are present, return default value
+                return DefaultValues::UndefinedDouble ; // if less than 3 jets are present, return default value
             });
 
         LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("remainingJetEta", [settings](KappaEvent const& event, KappaProduct const& product) {
@@ -218,7 +218,7 @@ public:
                     };
                     return remaining_jets_p4.Eta() ;
                 };
-                return -10.0 ; // if less than 3 jets are present, return default value
+                return DefaultValues::UndefinedDouble ; // if less than 3 jets are present, return default value
             });
 
         LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("remainingJetPhi", [settings](KappaEvent const& event, KappaProduct const& product) {
@@ -233,7 +233,7 @@ public:
                     };
                     return remaining_jets_p4.Phi() ;
                 };
-                return -10.0 ; // if less than 3 jets are present, return default value
+                return DefaultValues::UndefinedDouble ; // if less than 3 jets are present, return default value
             });
 
         LambdaNtupleConsumer<KappaTypes>::AddFloatQuantity("NremainingJet", [settings](KappaEvent const& event, KappaProduct const& product) {
