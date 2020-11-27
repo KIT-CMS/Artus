@@ -87,7 +87,7 @@ public:
 			for (typename std::vector<TValidJet*>::const_iterator jet = (product.m_validJets).begin();
 				 jet != (product.m_validJets).end(); ++jet)
 			{
-				if ((*jet)->p4.Eta() < 2.4) filteredJets.push_back(new TValidJet(*(*jet)));
+				if (std::abs((*jet)->p4.Eta()) < 2.4) filteredJets.push_back(new TValidJet(*(*jet)));
 			}
 			return KappaProduct::GetNJetsAbovePtThreshold(filteredJets, 20.0);
 		});
