@@ -65,7 +65,6 @@ public:
 	void Init(KappaSettings const& settings) override
 	{
 		KappaProducerBase::Init(settings);
-
 		// load correction parameters
 		LOG(DEBUG) << "\tLoading JetCorrectorParameters from files...";
 		std::vector<JetCorrectorParameters> jecParameters;
@@ -131,8 +130,13 @@ public:
                         }
                 }
                 assert(settings.GetJetEnergyResolutionSource() != "");
+				assert(settings.GetJetEnergyResolutionMethod() != "");
                 assert(settings.GetJetEnergyResolutionSFSource() != "");
-                m_jetResolution.reset(new JME::JetResolution(settings.GetJetEnergyResolutionSource()));
+				if(settings.GetJetEnergyResolutionMethod()=="hybrid") JER_method =  hybrid;
+				else if(settings.GetJetEnergyResolutionMethod()=="stochastic") JER_method = stochastic;
+				else LOG(FATAL) << "Unknown JetEnergyResolutionCorrectionMethod: " << settings.GetJetEnergyResolutionMethod();
+
+				m_jetResolution.reset(new JME::JetResolution(settings.GetJetEnergyResolutionSource()));
                 m_jetResolutionScaleFactor.reset(new JME::JetResolutionScaleFactor(settings.GetJetEnergyResolutionSFSource()));
                 if(settings.GetJetEnergyResolutionUncertaintyShift()==0.0) JER_shift = Variation::NOMINAL;
                 else if(settings.GetJetEnergyResolutionUncertaintyShift()==1.0) JER_shift = Variation::UP;
@@ -147,6 +151,7 @@ public:
 		assert((event.*m_basicJetsMember));
 		assert(event.m_pileupDensity);
 		assert(event.m_vertexSummary);
+		assert(event.m_genJets);
 		// create a copy of all jets in the event (first temporarily for the JEC)
 		(product.*m_correctedJetsMember).clear();
 		std::vector<TJet> correctJetsForJecTools((event.*m_basicJetsMember)->size());
@@ -154,6 +159,7 @@ public:
 		for (typename std::vector<TJet>::const_iterator jet = (event.*m_basicJetsMember)->begin();
 			 jet != (event.*m_basicJetsMember)->end(); ++jet)
 		{
+			LOG(DEBUG) << "\tInitial jet p4: " << jet->p4;
 			correctJetsForJecTools[jetIndex] = *jet;
 			++jetIndex;
 		}
@@ -213,24 +219,76 @@ public:
 		            shift);
                 }
                 // apply JER smearing
-                for (typename std::vector<TJet>::iterator jet = correctJetsForJecTools.begin();
+				// stochastic smearing only
+				LOG(DEBUG) << "\t Applying JER smearing";
+				if (JER_method == stochastic){
+					LOG(DEBUG) << "\t Using stochastic JER smearing";
+					for (typename std::vector<TJet>::iterator jet = correctJetsForJecTools.begin();
                                  jet != correctJetsForJecTools.end(); ++jet)
-                {
-                        randm.SetSeed(static_cast<int>((jet->p4.Eta() + 5) * 1000) * 1000 + static_cast<int>((jet->p4.Phi() + 4) * 1000) + 10000);
-                        double jetResolution = m_jetResolution->getResolution({
-                            {JME::Binning::JetPt, jet->p4.Pt()},
-                            {JME::Binning::JetEta, jet->p4.Eta()},
-                            {JME::Binning::Rho, event.m_pileupDensity->rho}
-                        });
-                        double jetResolutionScaleFactor = m_jetResolutionScaleFactor->getScaleFactor({
-                            {JME::Binning::JetPt, jet->p4.Pt()},
-                            {JME::Binning::JetEta, jet->p4.Eta()}
-                        }, JER_shift);
-                        double shift = randm.Gaus(0, jetResolution) * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
-                        if (shift < -1.0) shift = -1.0;
-                        if ((jet->p4*(1.0+shift)).Pt()>15.0) product.m_MET_shift.p4 -= jet->p4*shift; // requirement for type I corrections
-                        jet->p4 *= 1.0 + shift;
-                }
+					{
+							randm.SetSeed(static_cast<int>((jet->p4.Eta() + 5) * 1000) * 1000 + static_cast<int>((jet->p4.Phi() + 4) * 1000) + 10000);
+							double jetResolution = m_jetResolution->getResolution({
+								{JME::Binning::JetPt, jet->p4.Pt()},
+								{JME::Binning::JetEta, jet->p4.Eta()},
+								{JME::Binning::Rho, event.m_pileupDensity->rho}
+							});
+							double jetResolutionScaleFactor = m_jetResolutionScaleFactor->getScaleFactor({
+								{JME::Binning::JetPt, jet->p4.Pt()},
+								{JME::Binning::JetEta, jet->p4.Eta()}
+							}, JER_shift);
+							double shift = randm.Gaus(0, jetResolution) * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
+							if (shift < -1.0) shift = -1.0;
+							if ((jet->p4*(1.0+shift)).Pt()>15.0) product.m_MET_shift.p4 -= jet->p4*shift; // requirement for type I corrections
+							jet->p4 *= 1.0 + shift;
+					}
+				}
+				// apply JER smearing
+				// hybrid method = stochastic + scaling method
+				// Details: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution#Smearing_procedures
+				// Based on https://github.com/cms-sw/cmssw/blob/CMSSW_10_2_X/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h implementaion
+				else if (JER_method == hybrid){
+					LOG(DEBUG) << "\t Using hybrid JER smearing";
+					// for (auto jet: correctJetsForJecTools)
+					for (typename std::vector<TJet>::iterator jet = correctJetsForJecTools.begin();
+                                 jet != correctJetsForJecTools.end(); ++jet)
+					{
+							randm.SetSeed(static_cast<int>((jet->p4.Eta() + 5) * 1000) * 1000 + static_cast<int>((jet->p4.Phi() + 4) * 1000) + 10000);
+							double jetResolution = m_jetResolution->getResolution({
+								{JME::Binning::JetPt, jet->p4.Pt()},
+								{JME::Binning::JetEta, jet->p4.Eta()},
+								{JME::Binning::Rho, event.m_pileupDensity->rho}
+							});
+							double jetResolutionScaleFactor = m_jetResolutionScaleFactor->getScaleFactor({
+								{JME::Binning::JetPt, jet->p4.Pt()},
+								{JME::Binning::JetEta, jet->p4.Eta()}
+							}, JER_shift);
+							LOG(DEBUG) << "jet:  pt: " << jet->p4.Pt() << "  eta: " << jet->p4.Eta() << "  phi: " << jet->p4.Phi() << "  rho: " << event.m_pileupDensity->rho << "  e: " << jet->p4.energy();
+                   			LOG(DEBUG) << "resolution: " << jetResolution;
+                    		LOG(DEBUG) << "resolution scale factor: " << jetResolutionScaleFactor;
+							double shift = 0.;
+							RMFLV recoJetp4 = jet->p4;
+							// now try to find a matching genjet
+							KGenJet* genJet = match_genJet_deltaR(recoJetp4, event, jet->p4.Pt() * jetResolution);
+							if (genJet != NULL){
+								// we found a matching genJet, now we apply a smearing based on the genJet pt
+								double dPt = jet->p4.pt() - genJet->p4.pt();
+                    			shift = (jetResolutionScaleFactor - 1.) * dPt / jet->p4.pt();
+							}
+							else if(jetResolutionScaleFactor > 1){
+								// no matching genjet, smear based on gaussian variation
+								shift = randm.Gaus(0, jetResolution) * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
+							}
+							else {
+								LOG(DEBUG) << "Jet smearing of this jet is not possible ! - setting shift to zero";
+								shift = 0.;
+							}
+							if (shift < -1.0) shift = -1.0;
+							if ((jet->p4*(1.0+shift)).Pt()>15.0) product.m_MET_shift.p4 -= jet->p4*shift; // requirement for type I corrections
+							jet->p4 *= 1.0 + shift;
+							LOG(DEBUG) << "smeared jet (" << shift << "):  pt: " << jet->p4.pt() << "  eta: " << jet->p4.eta() << "  phi: " << jet->p4.phi() << "  e: " << jet->p4.energy();
+					}
+				}
+
 		// create the shared pointers to store in the product
 		(product.*m_correctedJetsMember).clear();
 		(product.*m_correctedJetsMember).resize(correctJetsForJecTools.size());
@@ -257,6 +315,30 @@ public:
 		          { return jet1->p4.Pt() > jet2->p4.Pt(); });
 	}
 
+	virtual KGenJet* match_genJet_deltaR(RMFLV recoJetp4, const KappaEvent event, double resolution) const{
+		LOG(DEBUG) << "\t Trying to match recoJet " << recoJetp4;
+		double min_dR = std::numeric_limits<double>::infinity();
+		double m_dPt_max_factor = 3.;
+		double max_dR = 0.4;
+		KGenJet* matched_genJet = nullptr;
+		for (std::vector<KGenJet>::iterator genJet = event.m_genJets->begin();
+		 	genJet != event.m_genJets->end(); ++genJet)
+		{
+			double dR = ROOT::Math::VectorUtil::DeltaR(recoJetp4, genJet->p4);
+			if (dR > min_dR)
+				continue;
+			if (dR < max_dR)
+			{
+				double dPt = std::abs(genJet->p4.pt() - recoJetp4.pt());
+				if (dPt > m_dPt_max_factor * resolution)
+					continue;
+				LOG(DEBUG) << "\t matching genJet found. " << genJet->p4 << " dR = " << dR << " dPt = " << dPt;
+				min_dR = dR;
+				matched_genJet = &(*genJet);
+			}
+		}
+		return matched_genJet;
+	}
 
 protected:
 	// Can be overwritten for analysis-specific use cases
@@ -273,19 +355,19 @@ private:
 	std::string uncertaintyFile;
 	std::vector<std::string> individualUncertainties;
 	std::vector<KappaEnumTypes::JetEnergyUncertaintyShiftName> individualUncertaintyEnums;
-
+	enum JER_methods {stochastic, hybrid};
+	JER_methods JER_method;
 	std::map<KappaEnumTypes::JetEnergyUncertaintyShiftName, JetCorrectorParameters const*> JetCorParMap;
 	std::map<KappaEnumTypes::JetEnergyUncertaintyShiftName, JetCorrectionUncertainty *> JetUncMap;
 
 	FactorizedJetCorrector* factorizedJetCorrector = nullptr;
 	JetCorrectionUncertainty* jetCorrectionUncertainty = nullptr;
 
-        mutable TRandom3 randm = TRandom3(0);
-        std::unique_ptr<JME::JetResolution> m_jetResolution;
-        std::unique_ptr<JME::JetResolutionScaleFactor> m_jetResolutionScaleFactor;
-        Variation JER_shift;
+	mutable TRandom3 randm = TRandom3(0);
+	std::unique_ptr<JME::JetResolution> m_jetResolution;
+	std::unique_ptr<JME::JetResolutionScaleFactor> m_jetResolutionScaleFactor;
+	Variation JER_shift;
 };
-
 
 
 /**
@@ -316,5 +398,3 @@ public:
 
 	std::string GetProducerId() const override;
 };
-
-

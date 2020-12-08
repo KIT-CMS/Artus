@@ -253,7 +253,7 @@ public:
 	IMPL_SETTING_STRINGLIST_DEFAULT(TauDiscriminators, {});
 	IMPL_SETTING_DEFAULT(std::string, TauID, "none");
 	IMPL_SETTING_DEFAULT(bool, TauUseOldDMs, false);
-        IMPL_SETTING_DEFAULT(bool, TauVeto2ProngDMs, false);
+	IMPL_SETTING_DEFAULT(bool, TauVeto2ProngDMs, false);
 
 	IMPL_SETTING_STRINGLIST_DEFAULT(JetEnergyCorrectionParameters, {});
 	IMPL_SETTING_DEFAULT(std::string, JetEnergyCorrectionUncertaintyParameters, "");
@@ -263,10 +263,11 @@ public:
 	IMPL_SETTING_STRINGLIST_DEFAULT(JetEnergyCorrectionSplitUncertaintyParameterNames, {});
 	IMPL_SETTING_DEFAULT(std::string, JetEnergyCorrectionSplitUncertaintyParameters, "");
 	IMPL_SETTING_DEFAULT(bool, UseJECShiftsForBJets, false);
-        IMPL_SETTING_DEFAULT(bool, UseGroupedJetEnergyCorrectionUncertainty, false)
-        IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionSource, "");
-        IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionSFSource, "");
-        IMPL_SETTING_DEFAULT(float, JetEnergyResolutionUncertaintyShift, 0.0f);
+	IMPL_SETTING_DEFAULT(bool, UseGroupedJetEnergyCorrectionUncertainty, false)
+	IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionSource, "");
+	IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionSFSource, "");
+	IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionMethod, "hybrid");
+	IMPL_SETTING_DEFAULT(float, JetEnergyResolutionUncertaintyShift, 0.0f);
 
 	IMPL_SETTING_DEFAULT(std::string, ValidJetsInput, "auto");
 	IMPL_SETTING(std::string, JetID);
