@@ -151,7 +151,9 @@ public:
 		assert((event.*m_basicJetsMember));
 		assert(event.m_pileupDensity);
 		assert(event.m_vertexSummary);
-		assert(event.m_genJets);
+                if (JER_method == hybrid) {
+                    assert(event.m_genJets);
+                }
 		// create a copy of all jets in the event (first temporarily for the JEC)
 		(product.*m_correctedJetsMember).clear();
 		std::vector<TJet> correctJetsForJecTools((event.*m_basicJetsMember)->size());
