@@ -92,6 +92,16 @@ public:
 			return KappaProduct::GetNJetsAbovePtThreshold(filteredJets, 20.0);
 		});
 
+		LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nJets20Eta2p5",[this](KappaEvent const& event, KappaProduct const& product) {
+            std::vector<TValidJet*> filteredJets;
+			for (typename std::vector<TValidJet*>::const_iterator jet = (product.m_validJets).begin();
+				 jet != (product.m_validJets).end(); ++jet)
+			{
+				if (std::abs((*jet)->p4.Eta()) < 2.5) filteredJets.push_back(new TValidJet(*(*jet)));
+			}
+			return KappaProduct::GetNJetsAbovePtThreshold(filteredJets, 20.0);
+		});
+
 		LambdaNtupleConsumer<KappaTypes>::AddRMFLVQuantity("leadingJetLV", [settings](KappaEvent const& event, KappaProduct const& product) {
 				return product.m_validJets.size() >= 1 ? (product.m_validJets.at(0)->p4.Pt() >= settings.GetJetOfflineLowerPtCut() ? product.m_validJets.at(0)->p4 : DefaultValues::UndefinedRMFLV) : DefaultValues::UndefinedRMFLV;
 		});
