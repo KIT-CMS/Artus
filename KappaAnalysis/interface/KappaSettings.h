@@ -50,6 +50,18 @@ public:
 	/// name of PUPPI MET collection in kappa tuple
 	IMPL_SETTING_DEFAULT(std::string, PuppiMet, "");
 
+	/// name of Track MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, TrackMet, "");
+
+	/// name of PU MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, PuMet, "");
+
+	/// name of No PU MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, NoPuMet, "");
+
+	/// name of PU Corrected MET collection in kappa tuple
+	IMPL_SETTING_DEFAULT(std::string, PuCorMet, "");
+
 	/// name of GenMET collection in kappa tuple
 	IMPL_SETTING_DEFAULT(std::string, GenMet, "");
 
@@ -241,6 +253,7 @@ public:
 	IMPL_SETTING_STRINGLIST_DEFAULT(TauDiscriminators, {});
 	IMPL_SETTING_DEFAULT(std::string, TauID, "none");
 	IMPL_SETTING_DEFAULT(bool, TauUseOldDMs, false);
+	IMPL_SETTING_DEFAULT(bool, TauVeto2ProngDMs, false);
 
 	IMPL_SETTING_STRINGLIST_DEFAULT(JetEnergyCorrectionParameters, {});
 	IMPL_SETTING_DEFAULT(std::string, JetEnergyCorrectionUncertaintyParameters, "");
@@ -250,10 +263,20 @@ public:
 	IMPL_SETTING_STRINGLIST_DEFAULT(JetEnergyCorrectionSplitUncertaintyParameterNames, {});
 	IMPL_SETTING_DEFAULT(std::string, JetEnergyCorrectionSplitUncertaintyParameters, "");
 	IMPL_SETTING_DEFAULT(bool, UseJECShiftsForBJets, false);
+	IMPL_SETTING_DEFAULT(bool, UseGroupedJetEnergyCorrectionUncertainty, false)
+	IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionSource, "");
+	IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionSFSource, "");
+	IMPL_SETTING_DEFAULT(std::string, JetEnergyResolutionMethod, "hybrid");
+	IMPL_SETTING_DEFAULT(float, JetEnergyResolutionUncertaintyShift, 0.0f);
 
 	IMPL_SETTING_DEFAULT(std::string, ValidJetsInput, "auto");
 	IMPL_SETTING(std::string, JetID);
 	IMPL_SETTING_DEFAULT(float, JetLeptonLowerDeltaRCut, -1.0f);
+	IMPL_SETTING_DEFAULT(float, JetOfflineLowerPtCut, 0.0f);
+	IMPL_SETTING_DEFAULT(bool, JetApplyEENoiseVeto, false);
+	IMPL_SETTING_DEFAULT(bool, JetApplyPUIDForEENoise, false);
+	IMPL_SETTING_DEFAULT(std::string, JetPUIDForEENoiseName, "");
+	IMPL_SETTING_DEFAULT(std::string, JetPUIDForEENoiseWP, "");
 	IMPL_SETTING_DEFAULT(std::string, JetIDVersion, "2010");
 	IMPL_SETTING_DEFAULT(std::string, PuJetIDFullDiscrName, "puJetIDFullDiscriminant");
 	IMPL_SETTING_STRINGLIST_DEFAULT(PuJetIDs, {});
@@ -315,6 +338,7 @@ public:
 
 	// Needed by the GenBosonProducers
 	IMPL_SETTING_INTLIST_DEFAULT(BosonPdgIds, {23});
+	IMPL_SETTING_DEFAULT(bool, MatchNMSSMBosons, false);
 	IMPL_SETTING_INTLIST_DEFAULT(BosonStatuses, {3});  //keep pythia6 status as default for back-compatibility
 
 	// Needed by the ValidGenParticleProducers
@@ -393,4 +417,6 @@ public:
 
 	IMPL_SETTING_DEFAULT(std::string, DatabasePDG, "$ROOTSYS/etc/pdg_table.txt");
 	IMPL_SETTING_DEFAULT(std::string, GenCollectionToPrint, "all");
+
+	IMPL_SETTING_DEFAULT(bool, ValidTaggedJetsProducerDebug, false);
 };

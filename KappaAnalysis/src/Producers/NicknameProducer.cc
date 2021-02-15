@@ -20,6 +20,10 @@ void NicknameProducer::Init(KappaSettings const& settings)
 	{
 		return product.m_isMC;
 	});
+	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isEmbedded", [](KappaEvent const& event, KappaProduct const& product)
+	{
+		return product.m_isEmbedded;
+	});
 	LambdaNtupleConsumer<KappaTypes>::AddBoolQuantity("isSingleMuon", [](KappaEvent const& event, KappaProduct const& product)
 	{
 		return product.m_isSingleMuon;
@@ -47,8 +51,10 @@ void NicknameProducer::Init(KappaSettings const& settings)
 
 	nickname = settings.GetNickname();
 	if (nickname.find("RunII") != std::string::npos) isMC = true;
+	if (nickname.find("Embedding") != std::string::npos) isEmbedded = true;
 	else if (nickname.find("SingleMuon") != std::string::npos) isSingleMuon = true;
 	else if (nickname.find("SingleElectron") != std::string::npos) isSingleElectron = true;
+	else if (nickname.find("EGamma") != std::string::npos) isSingleElectron = true;
 	else if (nickname.find("MuonEG") != std::string::npos) isMuonEG = true;
 	else if (nickname.find("Tau") != std::string::npos) isTau = true;
 	else if (nickname.find("DoubleEG") != std::string::npos) isDoubleEG = true;
@@ -66,5 +72,6 @@ void NicknameProducer::Produce(KappaEvent const& event, KappaProduct& product,
 	product.m_isDoubleEG = isDoubleEG;
 	product.m_isDoubleMuon = isDoubleMuon;
 	product.m_isMC = isMC;
+	product.m_isEmbedded = isEmbedded;
 }
 

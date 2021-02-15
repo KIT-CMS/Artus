@@ -151,10 +151,10 @@ void ArtusConfig::InitConfig( bool configPreLoaded )
 
 void ArtusConfig::SaveConfig(TFile * outputFile) const
 {
-	TObjString jsonConfigContent(
-			Utility::ReadStringFromFile(m_jsonConfigFileName).c_str());
-	outputFile->cd();
-	jsonConfigContent.Write("config");
+	//TObjString jsonConfigContent(
+	//		Utility::ReadStringFromFile(m_jsonConfigFileName).c_str());
+	//outputFile->cd();
+	//jsonConfigContent.Write("config");
 }
 
 std::vector<std::string> const& ArtusConfig::GetInputFiles() const

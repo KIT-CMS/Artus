@@ -16,6 +16,7 @@ import subprocess
 import re
 from string import Template
 from datetime import datetime
+import ROOT
 
 import Artus.Utility.tools as tools
 import Artus.Utility.jsonTools as jsonTools
@@ -177,7 +178,13 @@ class ArtusWrapper(object):
 				else:
 					self._config["InputFiles"].append(entry)
 					if not alreadyInGridControl:
-						self._gridControlInputFiles.setdefault(self.extractNickname(entry), []).append(entry + " = 1")
+                                                fileevents = 1
+                                                if self._args.n_events:
+                                                        f = ROOT.TFile.Open(entry)
+                                                        fileevents = f.Get("Events").GetEntries()
+                                                        print "Checking events for",entry,":",fileevents
+                                                        f.Close()
+						self._gridControlInputFiles.setdefault(self.extractNickname(entry), []).append(entry + " = " + str(fileevents))
 			elif os.path.splitext(entry)[1] == ".dbs":
 				tmpDBS = self.readDbsFile(entry)
 				tmpDBS = self.removeProcessedFiles(tmpDBS, entry)
@@ -303,6 +310,8 @@ class ArtusWrapper(object):
 
 		if not self._args.n_events is None:
 			self._config["ProcessNEvents"] = self._args.n_events
+		if not self._args.skip_events is None:
+			self._config["FirstEvent"] = self._args.skip_events
 
 		# shrink Input Files to requested Number
 		self.removeUnwantedInputFiles()
@@ -437,6 +446,8 @@ class ArtusWrapper(object):
 		                                help="Limit number of input files or grid-control jobs. 3=files[0:3].")
 		configOptionsGroup.add_argument("-e", "--n-events", type=int,
 		                                help="Limit number of events to process.")
+		configOptionsGroup.add_argument("--skip-events", type=int,
+		                                help="Skip number of events to process.")
 		configOptionsGroup.add_argument("--gc-config", default="$CMSSW_BASE/src/Artus/Configuration/data/grid-control_base_config.conf",
 		                                help="Path to grid-control base config that is replace by the wrapper. [Default: %(default)s]")
 		configOptionsGroup.add_argument("--gc-config-includes", nargs="+",
@@ -515,6 +526,8 @@ class ArtusWrapper(object):
 		epilogArguments += r"-c " + os.path.basename(self._configFilename) + " "
 		epilogArguments += "--nick $DATASETNICK "
 		epilogArguments += "-i $FILE_NAMES "
+                if self._args.n_events:
+                        epilogArguments += "-e " + str(self._args.n_events) + " --skip-events $SKIP_EVENTS"
 		if self._args.copy_remote_files:
 			epilogArguments += "--copy-remote-files "
 		if not self._args.ld_library_paths is None:
@@ -531,6 +544,8 @@ class ArtusWrapper(object):
 				jobs = "" if self._args.fast is None else "jobs = " + str(self._args.fast),
 				inputfiles = "input files = \n\t" + self._configFilename + "\n\t" + os.path.expandvars(os.path.join("$CMSSW_BASE/bin/$SCRAM_ARCH", os.path.basename(sys.argv[0]))),
 				filesperjob = "files per job = " + str(self._args.files_per_job),
+                                eventsperjob = "events per job = " + str(self._args.n_events) if self._args.n_events else "",
+                                datasetsplitter = "dataset splitter = EventBoundarySplitter" if self._args.n_events else "dataset splitter = FileBoundarySplitter",
 				areafiles = self._args.area_files if (self._args.area_files != None) else "",
 				walltime = "wall time = " + self._args.wall_time,
 				memory = "memory = " + str(self._args.memory),

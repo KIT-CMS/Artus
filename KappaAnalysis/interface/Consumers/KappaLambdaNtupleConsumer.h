@@ -98,6 +98,42 @@ public:
 		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("PFMet", [](event_type const& event, product_type const& product) {
 			return event.m_met->p4.Pt();
 		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("trackmet", [](event_type const& event, product_type const& product) {
+			return event.m_trackMet->p4.Pt();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("trackmetphi", [](event_type const& event, product_type const& product) {
+			return event.m_trackMet->p4.Phi();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("trackmetsumet", [](event_type const& event, product_type const& product) {
+			return event.m_trackMet->sumEt;
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("pumet", [](event_type const& event, product_type const& product) {
+			return event.m_puMet->p4.Pt();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("pumetphi", [](event_type const& event, product_type const& product) {
+			return event.m_puMet->p4.Phi();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("pumetsumet", [](event_type const& event, product_type const& product) {
+			return event.m_puMet->sumEt;
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("nopumet", [](event_type const& event, product_type const& product) {
+			return event.m_noPuMet->p4.Pt();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("nopumetphi", [](event_type const& event, product_type const& product) {
+			return event.m_noPuMet->p4.Phi();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("nopumetsumet", [](event_type const& event, product_type const& product) {
+			return event.m_noPuMet->sumEt;
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("pucormet", [](event_type const& event, product_type const& product) {
+			return event.m_puCorMet->p4.Pt();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("pucormetphi", [](event_type const& event, product_type const& product) {
+			return event.m_puCorMet->p4.Phi();
+		});
+		LambdaNtupleConsumer<TTypes>::AddFloatQuantity("pucormetsumet", [](event_type const& event, product_type const& product) {
+			return event.m_puCorMet->sumEt;
+		});
 		LambdaNtupleConsumer<TTypes>::AddIntQuantity("genNPartons", [](event_type const& event, product_type const& product) {
 			return product.m_genNPartons;
 		});

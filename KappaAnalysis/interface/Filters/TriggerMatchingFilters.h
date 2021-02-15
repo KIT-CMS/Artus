@@ -18,7 +18,7 @@ class TriggerMatchingFilterBase: public FilterBase<KappaTypes>
 public:
 
 	
-	TriggerMatchingFilterBase(std::map<TValidObject*, KLV*> KappaProduct::*triggerMatchedObjects,
+	TriggerMatchingFilterBase(std::map<TValidObject*, KLV> KappaProduct::*triggerMatchedObjects,
 	                          std::vector<TValidObject*> KappaProduct::*validObjects,
 	                          size_t (KappaSettings::*GetMinNMatchedObjects)(void) const) :
 		m_triggerMatchedObjects(triggerMatchedObjects),
@@ -43,7 +43,7 @@ public:
 
 
 private:
-	std::map<TValidObject*, KLV*> KappaProduct::*m_triggerMatchedObjects;
+	std::map<TValidObject*, KLV> KappaProduct::*m_triggerMatchedObjects;
 	std::vector<TValidObject*> KappaProduct::*m_validObjects;
 	size_t (KappaSettings::*GetMinNMatchedObjects)(void) const;
 

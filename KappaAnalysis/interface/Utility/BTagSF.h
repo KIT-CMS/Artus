@@ -17,10 +17,10 @@ public:
 	BTagSF(std::string csvfile, std::string efficiencyfile);
 	BTagSF(std::string csvfile, std::string efficiencyfile, std::string btagwp);
 	~BTagSF();
-	
+
 	void initBtagwp(std::string btagwp);
 
-	bool isbtagged(double pt, float eta, float csv, Int_t jetflavor,
+	bool isbtagged(double pt, float eta, float phi, float csv, Int_t jetflavor,
 	               unsigned int btagsys, unsigned int mistagsys, int year, float btagWP) const;
 	double getSFb(double pt, float eta, unsigned int btagsys, int year) const;
 	double getSFc(double pt, float eta, unsigned int btagsys, int year) const;
@@ -33,7 +33,9 @@ public:
 private:
 	mutable TRandom3 randm;
 	BTagCalibration calib;
-	TFile* effFile = nullptr;
+	TH2D btag_eff_b;
+	TH2D btag_eff_c;
+	TH2D btag_eff_oth;
 	BTagCalibrationReader reader_mujets;
 	BTagCalibrationReader reader_mujets_up;
 	BTagCalibrationReader reader_mujets_do;

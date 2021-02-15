@@ -50,6 +50,18 @@ public:
 	/// pointer to Puppi MET collection
 	KMET* m_puppiMet = nullptr;
 
+	/// pointer to Track MET collection
+	KMET* m_trackMet = nullptr;
+
+	/// pointer to PU MET collection
+	KMET* m_puMet = nullptr;
+
+	/// pointer to No PU MET collection
+	KMET* m_noPuMet = nullptr;
+
+	/// pointer to PU Corrected MET collection
+	KMET* m_puCorMet = nullptr;
+
 	/// pointer to GenMET collection
 	KMET* m_genMet = nullptr;
 
@@ -80,7 +92,7 @@ public:
 
 	/// pointer to trigger infos and objects
 	KTriggerObjectMetadata* m_triggerObjectMetadata = nullptr;
-	KTriggerObjects* m_triggerObjects = nullptr;
+	KReducedTriggerObjects* m_triggerObjects = nullptr;
 
 	/// pointer to metadata // TODO: move to Artus/Provider
 	KEventInfo* m_eventInfo = nullptr;

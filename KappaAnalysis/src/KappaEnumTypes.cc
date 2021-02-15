@@ -37,6 +37,7 @@ KappaEnumTypes::JetIDVersion KappaEnumTypes::ToJetIDVersion(std::string const& j
 	else if (jetIDVersion == "2015") return KappaEnumTypes::JetIDVersion::ID2015;
 	else if (jetIDVersion == "2016") return KappaEnumTypes::JetIDVersion::ID2016;
 	else if (jetIDVersion == "2017") return KappaEnumTypes::JetIDVersion::ID2017;
+	else if (jetIDVersion == "2018") return KappaEnumTypes::JetIDVersion::ID2018;
 	else LOG(FATAL) << "Jet ID version '" << jetIDVersion << "' is not available";
 	return KappaEnumTypes::JetIDVersion::ID2016;
 }
@@ -51,6 +52,15 @@ KappaEnumTypes::JetID KappaEnumTypes::ToJetID(std::string const& jetID)
 	else if (jetID == "none") return KappaEnumTypes::JetID::NONE;
 	else LOG(FATAL) << "Jet ID of type '" << jetID << "' not implemented!";
 	return KappaEnumTypes::JetID::NONE;
+}
+
+KappaEnumTypes::PUJetID KappaEnumTypes::ToPUJetID(std::string const& puJetID)
+{
+	if (puJetID == "loose") return KappaEnumTypes::PUJetID::LOOSE;
+	else if (puJetID == "medium") return KappaEnumTypes::PUJetID::MEDIUM;
+	else if (puJetID == "tight") return KappaEnumTypes::PUJetID::TIGHT;
+	else LOG(FATAL) << "PU Jet ID of type '" << puJetID << "' not implemented!";
+	return KappaEnumTypes::PUJetID::NONE;
 }
 
 KappaEnumTypes::BTagScaleFactorMethod KappaEnumTypes::ToBTagScaleFactorMethod(std::string const& bTagSFMethod)

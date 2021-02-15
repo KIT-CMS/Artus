@@ -40,6 +40,7 @@ public:
         bool m_isDoubleEG = false;
         bool m_isDoubleMuon = false;
         bool m_isMC = false;
+        bool m_isEmbedded = false;
 
 	// all weights in this map are multiplied into one "eventWeight" by the EventWeightProducer
 	// events in this map can be written out automatically by the KappaLambdaNtupleConsumer
@@ -50,8 +51,19 @@ public:
 
 	// filled by the GenBosonProducers
 	KGenParticle* m_genBosonParticle = nullptr;
+	KGenParticle* m_genBosonParticle_h1 = nullptr;
+	KGenParticle* m_genBosonParticle_h2 = nullptr;
+	KGenParticle* m_genBosonParticle_h3 = nullptr;
+
 	RMFLV m_genBosonLV;
+	RMFLV m_genBosonLV_h1;
+	RMFLV m_genBosonLV_h2;
+	RMFLV m_genBosonLV_h3;
+
 	bool m_genBosonLVFound = false;
+	bool m_genBosonLVFound_h1 = false;
+	bool m_genBosonLVFound_h2 = false;
+	bool m_genBosonLVFound_h3 = false;
 
 	std::vector<KGenParticle*> m_genParticlesProducingBoson;
 	std::vector<KGenParticle*> m_genLeptonsFromBosonDecay;
@@ -105,11 +117,13 @@ public:
 	std::vector<std::shared_ptr<KBasicJet> > m_correctedJets;
 	std::vector<std::shared_ptr<KJet> > m_correctedTaggedJets;
 	std::map<const KBasicJet*, const KBasicJet*> m_originalJets; // key: corrected, value: original
+        KLV m_MET_shift;
 
 	/// added by ValidJetsProducer
 	std::vector<KBasicJet*> m_validJets;
 	std::vector<KBasicJet*> m_invalidJets;
-	
+	std::map<KLepton*, KBasicJet*> m_leptonJetsMap;
+
 	/// added by ValidGenJetsProducer
 	std::vector<KGenJet*> m_validGenJets;
 	std::vector<KLV*> m_simpleGenJets;
@@ -133,20 +147,20 @@ public:
 	std::map<std::string,std::vector<KJet*>> m_nonBTaggedJetsByWp;
 	std::vector<KJet*> m_bTaggedJets;
 	std::vector<KJet*> m_nonBTaggedJets;
-	
+
 	// selected means fired (and unprescaled if requested)
 	std::vector<std::string> m_selectedHltNames;
 	std::vector<int> m_selectedHltPositions;
 	std::vector<int> m_selectedHltPrescales;
 
 	/// added by TriggerMatchingProducer
-	std::map<KElectron*, KLV*> m_triggerMatchedElectrons;
-	std::map<KMuon*, KLV*> m_triggerMatchedMuons;
-	std::map<KTau*, KLV*> m_triggerMatchedTaus;
-	std::map<KBasicJet*, KLV*> m_triggerMatchedJets;
-	std::map<KJet*, KLV*> m_triggerMatchedTaggedJets;
+	std::map<KElectron*, KLV> m_triggerMatchedElectrons;
+	std::map<KMuon*, KLV> m_triggerMatchedMuons;
+	std::map<KTau*, KLV> m_triggerMatchedTaus;
+	std::map<KBasicJet*, KLV> m_triggerMatchedJets;
+	std::map<KJet*, KLV> m_triggerMatchedTaggedJets;
 
-	std::map<KLepton*, KLV*> m_triggerMatchedLeptons;
+	std::map<KLepton*, KLV> m_triggerMatchedLeptons;
 
 	/// added by TriggerMatchingProducer
 	// m_detailedTriggerMatchedElectrons[reco lepton][HLT name][filter name] = {trigger objects}
@@ -158,6 +172,15 @@ public:
 
 	std::map<KLepton*, std::map<std::string, std::map<std::string, std::vector<KLV*> > >* > m_detailedTriggerMatchedLeptons;
 	std::map<KLepton*, std::map<std::string, bool > > m_detailedL1MatchedLeptons;
+
+	/// added by TriggerMatchingProducer
+	// m_detailedTriggerMatchedElectrons[reco lepton][HLT name] = boolean match
+	std::map<KElectron*, std::map<std::string, bool> > m_electronTriggerMatch;
+	std::map<KMuon*, std::map<std::string, bool > > m_muonTriggerMatch;
+	std::map<KTau*, std::map<std::string, bool > > m_tauTriggerMatch;
+	std::map<KBasicJet*, std::map<std::string, bool > > m_jetTriggerMatch;
+	std::map<KJet*, std::map<std::string, bool > > m_taggedJetTriggerMatch;
+	std::map<KLepton*, std::map<std::string, bool >* > m_leptonTriggerMatch;
 
 	/// added by GenMatchingProducer
 	std::map<KElectron*, KGenParticle*> m_genParticleMatchedElectrons;
@@ -214,6 +237,8 @@ public:
 
 	// MVA outputs
 	std::vector<double> m_discriminators;
+
+
 
 	// GenPartonCounterProducer
 	int m_genNPartons = -1;

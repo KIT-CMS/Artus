@@ -6,6 +6,8 @@
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
 #include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
+#include <typeinfo>
 
 
 
@@ -45,8 +47,9 @@ public:
 		return hltNames;
 	}
 	
-	TriggerMatchingProducerBase(std::map<TValidObject*, KLV*> KappaProduct::*triggerMatchedObjects,
+	TriggerMatchingProducerBase(std::map<TValidObject*, KLV> KappaProduct::*triggerMatchedObjects,
 	                            std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > KappaProduct::*detailedTriggerMatchedObjects,
+	                            std::map<TValidObject*, std::map<std::string, bool > > KappaProduct::*objectTriggerMatch,
 	                            std::vector<TValidObject*> KappaProduct::*validObjects,
 	                            std::vector<TValidObject*> KappaProduct::*invalidObjects,
 	                            std::map<size_t, std::vector<std::string> > KappaProduct::*settingsObjectTriggerFiltersByIndex,
@@ -56,6 +59,7 @@ public:
 	                            bool (KappaSettings::*GetInvalidateNonMatchingObjects)(void) const) :
 		m_triggerMatchedObjects(triggerMatchedObjects),
 		m_detailedTriggerMatchedObjects(detailedTriggerMatchedObjects),
+		m_objectTriggerMatch(objectTriggerMatch),
 		m_validObjects(validObjects),
 		m_invalidObjects(invalidObjects),
 		m_settingsObjectTriggerFiltersByIndex(settingsObjectTriggerFiltersByIndex),
@@ -77,7 +81,7 @@ public:
 	{
 		assert(event.m_triggerObjects);
 		assert(event.m_triggerObjectMetadata);
-		
+
 		if ((product.*m_settingsObjectTriggerFiltersByIndex).empty())
 		{
 			(product.*m_settingsObjectTriggerFiltersByIndex).insert(m_objectTriggerFiltersByIndexFromSettings.begin(),
@@ -91,138 +95,105 @@ public:
 		
 		(product.*m_triggerMatchedObjects).clear();
 		(product.*m_detailedTriggerMatchedObjects).clear();
-		if ((! product.m_selectedHltNames.empty()) && ((settings.*GetDeltaRTriggerMatchingObjects)() > 0.0))
+		(product.*m_objectTriggerMatch).clear();
+
+		// loop over all valid objects
+		unsigned int triggerObjectsSize = event.m_triggerObjects->trgObjects.size();
+		for (typename std::vector<TValidObject*>::iterator validObject = (product.*m_validObjects).begin();
+		     validObject != (product.*m_validObjects).end(); ++validObject)
 		{
-			bool hasAllHltMatches = true;
-			bool hasHltAndFilterMatch = false;
-			
-			// loop over the hlt names given in the config file
+                        LOG(DEBUG) << "Processing TO matching for " << (*validObject)->p4;
+                        std::vector<std::pair<KLV,std::vector<std::string>>> deltaRMatchedTOs;
+                        RMFLV vec;
+                        // Take into account, that superCluster position must be taken for deltaR matching in case of electrons
+                        if( typeid((*validObject)) == typeid(KElectron*))
+                        {
+                            KElectron* elCopy = dynamic_cast<KElectron*>((*validObject));
+                            vec.SetCoordinates(elCopy->p4.Pt(), elCopy->superclusterPosition.Eta(), elCopy->superclusterPosition.Phi(), elCopy->p4.M());
+                        }
+                        else
+                        {
+                            vec = (*validObject)->p4;
+                        }
+                        // match the trigger objects to the reco object by deltaR
+                        for (unsigned int i=0; i<triggerObjectsSize; i++)
+                        {
+                                if (ROOT::Math::VectorUtil::DeltaR(event.m_triggerObjects->trgObjects.at(i).p4, vec) < (settings.*GetDeltaRTriggerMatchingObjects)() && event.m_triggerObjects->trgObjects.at(i).p4.Pt() > settings.GetTriggerObjectLowerPtCut())
+                                {
+                                        deltaRMatchedTOs.push_back(std::pair<KLV,std::vector<std::string>>(event.m_triggerObjects->trgObjects.at(i), event.m_triggerObjects->filterLabels.at(i)));
+                                }
+                        }
+                        LOG(DEBUG) << "Number of deltaR matched TOs: " << deltaRMatchedTOs.size();
+                        LOG(DEBUG) << "Total number of TOs: " << triggerObjectsSize;
+                        // Merge matched trigger objects with the same p4 together
+                        std::map<std::array<float, 4>, std::vector<std::string>> mergedTOs; // filling of the array: pt, eta, phi, mass; needed to be able to order within map
+                        for (auto to : deltaRMatchedTOs)
+                        {
+                            std::array<float, 4> momentum_array = {{to.first.p4.Pt(), to.first.p4.Eta(), to.first.p4.Phi(), to.first.p4.mass()}};
+                            unsigned int initial_size = mergedTOs[momentum_array].size();
+                            mergedTOs[momentum_array].insert(mergedTOs[momentum_array].end(),to.second.begin(), to.second.end());
+                            if(mergedTOs[momentum_array].size() != initial_size && initial_size > 0)
+                            {
+                                LOG(DEBUG) << "Merging filters for (Pt, Eta, Phi, mass) = (" << momentum_array[0] << ", " << momentum_array[1] << ", " << momentum_array[2] << ", " <<  momentum_array[3] << ")";
+                            }
+                        }
+                        deltaRMatchedTOs.clear();
+                        // Filling the matched TOs again, this time with merged filtes
+                        for (auto to : mergedTOs)
+                        {
+                            KLV mergedTO;
+                            mergedTO.p4.SetCoordinates(to.first[0], to.first[1], to.first[2], to.first[3]);
+                            deltaRMatchedTOs.push_back(std::pair<KLV,std::vector<std::string>>(mergedTO, to.second));
+                        }
+                        // Prepare HLT path <----> filter matches relation & match TOs
 			for (std::map<std::string, std::vector<std::string>>::const_iterator objectTriggerFilterByHltName = (product.*m_settingsObjectTriggerFiltersByHltName).begin();
 			     objectTriggerFilterByHltName != (product.*m_settingsObjectTriggerFiltersByHltName).end();
 			     ++objectTriggerFilterByHltName)
 			{
-				//LOG(DEBUG) << "objectTriggerFilterByHltName->first = " << objectTriggerFilterByHltName->first;
-				
-				// loop over all fired HLT paths
-				for (unsigned int firedHltIndex = 0; firedHltIndex < product.m_selectedHltNames.size(); ++firedHltIndex)
-				{
-					std::string firedHltName = product.m_selectedHltNames.at(firedHltIndex);
-					int firedHltPosition = product.m_selectedHltPositions.at(firedHltIndex);
-					//LOG(DEBUG) << "\tfiredFilterIndex, firedHltName, firedHltPosition = " << firedHltIndex << ", " << firedHltName << ", " << firedHltPosition;
-					
-					// check that the hlt name given in the config matches the hlt which fired in the event
-					if (boost::regex_search(firedHltName, boost::regex(objectTriggerFilterByHltName->first, boost::regex::icase | boost::regex::extended)))
-					{
-						//LOG(DEBUG) << "\t\thltMatched";
-						
-						// loop over the filter regexp associated with the given hlt in the config
-						for (std::vector<std::string>::const_iterator filterName = objectTriggerFilterByHltName->second.begin();
-						     filterName != objectTriggerFilterByHltName->second.end();
-						     ++filterName)
-						{
-							//LOG(DEBUG) << "\t\t\tfilterName = " << *filterName;
-							
-							// loop over all filters for the fired HLT
-							for (size_t firedFilterIndex = event.m_triggerObjectMetadata->getMinFilterIndex(firedHltPosition);
-							     firedFilterIndex < event.m_triggerObjectMetadata->getMaxFilterIndex(firedHltPosition);
-							     ++firedFilterIndex)
-							{
-								std::string firedFilterName = event.m_triggerObjectMetadata->toFilter[firedFilterIndex];
-								//LOG(DEBUG) << "\t\t\t\tfiredFilterIndex, firedFilterName = " << firedFilterIndex << ", " << firedFilterName;
-								
-								// check that the filter regexp given in the config matches the fired filter
-								if (boost::regex_search(firedFilterName, boost::regex(*filterName, boost::regex::icase | boost::regex::extended)))
-								{
-									hasHltAndFilterMatch = true;
-									//LOG(DEBUG) << "\t\t\t\t\tfilterMatched";
-									
-									// loop over all valid objects to check
-									for (typename std::vector<TValidObject*>::iterator validObject = (product.*m_validObjects).begin();
-									     validObject != (product.*m_validObjects).end(); ++validObject)
-									{
-										std::vector<KLV*> matchedTriggerObjects;
-										//LOG(DEBUG) << "\t\t\t\t\t\tvalidObject = " << *validObject << ", (pt, eta, phi) = (" << (*validObject)->p4.Pt() << ", " << (*validObject)->p4.Eta() << ", " << (*validObject)->p4.Phi() << ")";
-										
-										// loop over all trigger objects for the fired filter
-										for (std::vector<int>::const_iterator triggerObjectIndex = event.m_triggerObjects->toIdxFilter[firedFilterIndex].begin();
-										     triggerObjectIndex != event.m_triggerObjects->toIdxFilter[firedFilterIndex].end();
-										     ++triggerObjectIndex)
-										{
-											KLV* triggerObject = &event.m_triggerObjects->trgObjects.at(*triggerObjectIndex);
-											//LOG(DEBUG) << "\t\t\t\t\t\t\ttriggerObjectIndex, triggerObject = " << *triggerObjectIndex << ", " << triggerObject << ", (pt, eta, phi) = (" << triggerObject->p4.Pt() << ", " << triggerObject->p4.Eta() << ", " << triggerObject->p4.Phi() << ")";
-											
-											// check the matching
-											if (ROOT::Math::VectorUtil::DeltaR(triggerObject->p4, (*validObject)->p4) < (settings.*GetDeltaRTriggerMatchingObjects)() && triggerObject->p4.Pt() > settings.GetTriggerObjectLowerPtCut())
-											{
-												//LOG(DEBUG) << "\t\t\t\t\t\t\t\tobjectMatched";
-												
-												matchedTriggerObjects.push_back(triggerObject);
-											}
-										}
-										
-										(product.*m_detailedTriggerMatchedObjects)[*validObject][firedHltName][firedFilterName] = matchedTriggerObjects;
-									}
-								}
-							}
-						}
-					}
-					else
-					{
-						hasAllHltMatches = false;
-					}
-				}
-			}
-			
-			for (typename std::pair<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > triggerMatchingResult : (product.*m_detailedTriggerMatchedObjects))
-			{
-				// check matching results for having passed all configured filters
-				std::vector<std::string> hltNamesWhereAllFiltersMatched = TriggerMatchingProducerBase::GetHltNamesWhereAllFiltersMatched(triggerMatchingResult.second);
-				if (hltNamesWhereAllFiltersMatched.size() > 0)
-				{
-					// store first trigger object of first filter of first HLT name
-					(product.*m_triggerMatchedObjects)[triggerMatchingResult.first] = ((triggerMatchingResult.second)[hltNamesWhereAllFiltersMatched.front()].begin()->second).front();
-				}
-				else if (hasAllHltMatches && hasHltAndFilterMatch && (settings.*GetInvalidateNonMatchingObjects)())
-				{
-					// invalidate the object if the trigger has not matched
-					(product.*m_invalidObjects).push_back(triggerMatchingResult.first);
-					(product.*m_validObjects).erase(std::find((product.*m_validObjects).begin(), (product.*m_validObjects).end(), &(*triggerMatchingResult.first)));
-				}
-			}
-			
-			// preserve sorting of invalid objects
-			std::sort((product.*m_invalidObjects).begin(), (product.*m_invalidObjects).end(),
-			          [](TValidObject const* object1, TValidObject const* object2) -> bool
-			          { return object1->p4.Pt() > object2->p4.Pt(); });
-			
-			/*
-			// debug output
-			LOG(INFO) << "Result of trigger matching (Run: " << event.m_eventInfo->nRun << ", Lumi: " << event.m_eventInfo->nLumi << ", Event: " << event.m_eventInfo->nEvent << "):";
-			for (typename std::pair<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > validObject : (product.*m_detailedTriggerMatchedObjects))
-			{
-				LOG(INFO) << "Reco object: (pt = " << validObject.first->p4.Pt() << ", eta = " << validObject.first->p4.Eta() << ", phi = " << validObject.first->p4.Phi() << ", mass = " << validObject.first->p4.mass() << ")";
-				for (std::pair<std::string, std::map<std::string, std::vector<KLV*> > > hltName : validObject.second)
-				{
-					LOG(INFO) << "\tHLT name: " << hltName.first;
-					for (std::pair<std::string, std::vector<KLV*> > filterName : hltName.second)
-					{
-						LOG(INFO) << "\t\tFilter name: " << filterName.first;
-						for (KLV* triggerObject : filterName.second)
-						{
-							LOG(INFO) << "\t\t\tTrigger object: (pt = " << triggerObject->p4.Pt() << ", eta = " << triggerObject->p4.Eta() << ", phi = " << triggerObject->p4.Phi() << ", mass = " << triggerObject->p4.mass() << ")";
-						}
-					}
-				}
-			}
-			LOG(INFO) << "==================================================";
-			*/
+				LOG(DEBUG) << "HLT name = " << objectTriggerFilterByHltName->first;
+                                for (auto triggerObject : deltaRMatchedTOs)
+                                {
+                                        LOG(DEBUG) << "\tProcessing trigger object " << triggerObject.first.p4;
+                                        for (auto filterLabel : triggerObject.second)
+                                        {
+                                            LOG(DEBUG) << "\t\tavailable filters: " << filterLabel;
+                                        }
+                                        // loop over the filter regexp associated with the given hlt in the config
+                                        unsigned int countFilterMatches = 0;
+                                        for (std::vector<std::string>::const_iterator filterNames = objectTriggerFilterByHltName->second.begin();
+                                             filterNames != objectTriggerFilterByHltName->second.end();
+                                             ++filterNames)
+                                        {
+                                                LOG(DEBUG) << "\t\t\tcheck filterNames to be ORed = " << *filterNames;
+                                                std::vector<std::string> filterNamesList;
+                                                boost::split(filterNamesList, *filterNames, boost::is_any_of(","));
+                                                bool matchedToOr = false;
+                                                for (std::vector<std::string>::const_iterator filterName = filterNamesList.begin();
+                                                     filterName != filterNamesList.end();
+                                                     ++filterName)
+                                                {
+                                                        matchedToOr = (matchedToOr || (triggerObject.second.end() !=  std::find(triggerObject.second.begin(), triggerObject.second.end(), *filterName)));
+                                                        if(matchedToOr) break;
+                                                }
+                                                if(matchedToOr) countFilterMatches++;
+                                        }
+                                        if (countFilterMatches ==  objectTriggerFilterByHltName->second.size())
+                                        {
+                                                LOG(DEBUG) << "\tFound HLT match! ";
+                                                (product.*m_objectTriggerMatch)[*validObject][objectTriggerFilterByHltName->first] = true;
+                                                (product.*m_triggerMatchedObjects)[*validObject] = triggerObject.first;
+                                                break;
+                                        }
+                                }
+                        }
 		}
 	}
 
 
 private:
-	std::map<TValidObject*, KLV*> KappaProduct::*m_triggerMatchedObjects;
+	std::map<TValidObject*, KLV> KappaProduct::*m_triggerMatchedObjects;
 	std::map<TValidObject*, std::map<std::string, std::map<std::string, std::vector<KLV*> > > > KappaProduct::*m_detailedTriggerMatchedObjects;
+	std::map<TValidObject*, std::map<std::string, bool > > KappaProduct::*m_objectTriggerMatch;
 	std::vector<TValidObject*> KappaProduct::*m_validObjects;
 	std::vector<TValidObject*> KappaProduct::*m_invalidObjects;
 	std::map<size_t, std::vector<std::string> > KappaProduct::*m_settingsObjectTriggerFiltersByIndex;

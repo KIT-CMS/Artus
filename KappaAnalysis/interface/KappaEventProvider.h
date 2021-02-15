@@ -65,6 +65,19 @@ public:
 		if (! settings.GetPuppiMet().empty())
 			this->m_event.m_puppiMet = this->template SecureFileInterfaceGet<KMET>(settings.GetPuppiMet(), false);
 
+		if (! settings.GetTrackMet().empty())
+			this->m_event.m_trackMet = this->template SecureFileInterfaceGet<KMET>(settings.GetTrackMet(), false);
+
+		if (! settings.GetPuMet().empty())
+			this->m_event.m_puMet = this->template SecureFileInterfaceGet<KMET>(settings.GetPuMet(), false);
+
+		if (! settings.GetNoPuMet().empty())
+			this->m_event.m_noPuMet = this->template SecureFileInterfaceGet<KMET>(settings.GetNoPuMet(), false);
+
+		if (! settings.GetPuCorMet().empty())
+			this->m_event.m_puCorMet = this->template SecureFileInterfaceGet<KMET>(settings.GetPuCorMet(), false);
+
+
 		//GenMET info
 		if (! settings.GetGenMet().empty())
 			this->m_event.m_genMet = this->template SecureFileInterfaceGet<KMET>(settings.GetGenMet());
@@ -89,7 +102,7 @@ public:
 		if (! settings.GetTriggerInfos().empty())
 			this->m_event.m_triggerObjectMetadata = this->template SecureFileInterfaceGetMeta<KTriggerObjectMetadata>(settings.GetTriggerInfos(), false);
 		if (! settings.GetTriggerObjects().empty())
-			this->m_event.m_triggerObjects = this->template SecureFileInterfaceGet<KTriggerObjects>(settings.GetTriggerObjects(), false);
+			this->m_event.m_triggerObjects = this->template SecureFileInterfaceGet<KReducedTriggerObjects>(settings.GetTriggerObjects(), false);
 		
 		// Generator info
 		if (! settings.GetGenParticles().empty())

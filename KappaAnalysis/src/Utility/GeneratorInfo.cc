@@ -57,13 +57,13 @@ KGenParticle* GeneratorInfo::GetGenMatchedParticle(
 {
 	KGenParticle* defaultGenParticle = nullptr;
 	KGenParticle* genParticle = SafeMap::GetWithDefault(leptonGenParticleMap, lepton, defaultGenParticle);
-	
+
 	KGenTau* defaultGenTau = nullptr;
 	KGenTau* genTau = SafeMap::GetWithDefault(leptonGenTauMap, lepton, defaultGenTau);
 	
 	float deltaRTauGenTau = (genTau ? ROOT::Math::VectorUtil::DeltaR(lepton->p4, genTau->visible.p4) : std::numeric_limits<float>::max());
 	float deltaRTauGenParticle = (genParticle ? ROOT::Math::VectorUtil::DeltaR(lepton->p4, genParticle->p4) : std::numeric_limits<float>::max());
-	
+
 	if (deltaRTauGenParticle <= deltaRTauGenTau)
 	{
 		return genParticle;
@@ -88,7 +88,7 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 		KGenParticle closest = event.m_genParticles->at(0);
 		double closestDR = 999;
 		std::vector<RMFLV> genTaus = BuildGenTausUW(event);
-		
+
 		//find closest lepton fulfilling the requirements
 		for (typename std::vector<KGenParticle>::iterator genParticle = event.m_genParticles->begin();
 			genParticle != event.m_genParticles->end(); ++genParticle)
@@ -126,6 +126,51 @@ KappaEnumTypes::GenMatchingCode GeneratorInfo::GetGenMatchingCodeUW(
 		return KappaEnumTypes::GenMatchingCode::IS_FAKE;
 	}
 	return KappaEnumTypes::GenMatchingCode::NONE;
+}
+
+float GeneratorInfo::GetGenMatchedParticlePtUW(
+		KappaTypes::event_type const& event,
+		KLepton* lepton
+)
+{
+	LOG(DEBUG) << "----- Generator Matching (UW) -----";
+	LOG(DEBUG) << "Processing run:lumi:event " << event.m_eventInfo->nRun << ":" << event.m_eventInfo->nLumi << ":" << event.m_eventInfo->nEvent;
+        LOG(DEBUG) << "Considered reco lepton p4: " << lepton->p4;
+	if(event.m_genParticles && event.m_genParticles->size() > 0)
+	{
+		KGenParticle closest = event.m_genParticles->at(0);
+		double closestDR = 999;
+		std::vector<RMFLV> genTaus = BuildGenTausUW(event);
+
+		//find closest lepton fulfilling the requirements
+		for (typename std::vector<KGenParticle>::iterator genParticle = event.m_genParticles->begin();
+			genParticle != event.m_genParticles->end(); ++genParticle)
+		{
+			int pdgId = std::abs(genParticle->pdgId);
+			if (genParticle->p4.Pt() > 8. && (pdgId == 11 || pdgId == 13) && (genParticle->isPrompt() || genParticle->isDirectPromptTauDecayProduct())){
+				double tmpDR = ROOT::Math::VectorUtil::DeltaR(lepton->p4, genParticle->p4);
+                LOG(DEBUG) << "\tcomputed deltaR, Pt: " << tmpDR << ", " << genParticle->p4.Pt() << " for paticle " << pdgId;
+				if (tmpDR < closestDR)
+				{
+					closest = *genParticle;
+					closestDR = tmpDR;
+				}
+			}
+		}
+		for(auto genTau : genTaus)
+		{
+			double tauDR = ROOT::Math::VectorUtil::DeltaR(lepton->p4, genTau);
+			if (genTau.Pt() > 15. && tauDR < 0.2 && tauDR < closestDR){
+				LOG(DEBUG) << "Found gentau - dR: " << tauDR << ", pt: " << genTau.Pt();
+				return genTau.Pt();
+			}
+		}
+		LOG(DEBUG) << "Found closest genParticle - dR: " << closestDR << ", pt: " << closest.p4.Pt();
+		if (closestDR > 0.2) return -10.0;
+		else return closest.p4.Pt();
+	}
+	return  -10.0;
+
 }
 
 std::vector<RMFLV> GeneratorInfo::BuildGenTausUW(
