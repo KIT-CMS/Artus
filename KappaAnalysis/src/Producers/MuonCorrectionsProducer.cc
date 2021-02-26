@@ -25,14 +25,14 @@ std::string MuonCorrectionsProducer::GetProducerId() const {
 	return "MuonCorrectionsProducer";
 }
 
-void MuonCorrectionsProducer::Init(KappaSettings const& settings) 
+void MuonCorrectionsProducer::Init(KappaSettings const& settings)
 {
 	KappaProducerBase::Init(settings);
 	muonEnergyCorrection = ToMuonEnergyCorrection(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetMuonEnergyCorrection())));
 	if (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2015)
 	{
 		rmcor2015 = new rochcor2015(settings.GetMuonRochesterCorrectionsFile());
-		
+
 	}
 	if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018UL))
 	{
@@ -57,7 +57,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 		product.m_originalLeptons[product.m_correctedMuons[muonIndex].get()] = &(*muon);
 		++muonIndex;
 	}
-	
+
 	// perform corrections on copied muons
 	for (std::vector<std::shared_ptr<KMuon> >::iterator muon = product.m_correctedMuons.begin();
 		 muon != product.m_correctedMuons.end(); ++muon)
@@ -86,7 +86,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 		}
 
 		// No general correction available
-	
+
 		// perform possible analysis-specific corrections
 		if (muonEnergyCorrection == MuonEnergyCorrection::FALL2015)
 		{
@@ -96,10 +96,10 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 		{
 			TLorentzVector mu;
 			mu.SetPtEtaPhiM(muon->get()->p4.Pt(),muon->get()->p4.Eta(),muon->get()->p4.Phi(),muon->get()->p4.mass());
-	
+
 			int q = muon->get()->charge();
 			float qter = 1.0;
-	
+
 			if (settings.GetInputIsData())
 			{
 				rmcor2015->momcor_data(mu, q, 0, qter);
@@ -112,8 +112,8 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 				muon->get()->p4.SetPxPyPzE(mu.Px(),mu.Py(),mu.Pz(),mu.E());
 			}
 		}
-		
-        else if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017UL))
+
+        else if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017UL))
 		{
 			int q = muon->get()->charge();
 			float pt = muon->get()->p4.Pt();
@@ -161,7 +161,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 
 		if (!settings.GetCorrectOnlyRealMuons() || (settings.GetCorrectOnlyRealMuons() && isRealMuon))
 			AdditionalCorrections(muon->get(), event, product, settings);
-		
+
 		// make sure to also save the corrected lepton and the matched genParticle in the map
 		// if we match genParticles to all leptons
 		if (settings.GetRecoMuonMatchingGenParticleMatchAllMuons())
@@ -175,7 +175,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 			product.m_genTauMatchedLeptons[muon->get()] = &(*product.m_genTauMatchedLeptons[const_cast<KLepton*>(product.m_originalLeptons[muon->get()])]);
 		}
 	}
-	
+
 	// sort vectors of corrected muons by pt
 	std::sort(product.m_correctedMuons.begin(), product.m_correctedMuons.end(),
 	          [](std::shared_ptr<KMuon> muon1, std::shared_ptr<KMuon> muon2) -> bool
@@ -187,7 +187,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 void MuonCorrectionsProducer::AdditionalCorrections(KMuon* muon, KappaEvent const& event,
                                    KappaProduct& product, KappaSettings const& settings) const
 {
-	
+
 }
 
 
