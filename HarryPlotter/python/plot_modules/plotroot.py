@@ -99,6 +99,8 @@ class PlotRoot(plotbase.PlotBase):
 		                               help="Symmetric z-axis limits of the plot. The parameters of --z-lims are taken as <center> <range/2>")
 		self.axis_options.add_argument("--y-subplot-lims", type=float, nargs=2,
 		                               help="Lower and Upper limit for y-axis of a possible subplot.")
+                self.axis_options.add_argument("--y-subplot2-lims", type=float, nargs=2,
+                                               help="Lower and Upper limit for y-axis of a possible subplot.")
 		self.axis_options.add_argument("--y-subplot-log", nargs="?", type="bool", default=False, const=True,
 		                               help="Logarithmic y axis for subplot..")
 		self.axis_options.add_argument("--z-subplot-log", nargs="?", type="bool", default=False, const=True,
@@ -711,10 +713,17 @@ class PlotRoot(plotbase.PlotBase):
 				self.subplot_axes_histogram2 = ROOT.TH2F("subplot_axes_histogram2", "", n_sub_binsX, self.x_min, self.x_max, 100, 0.0, 2.0)
 				self.subplot_axes_histogram2.SetMinimum(0.0)
 				self.subplot_axes_histogram2.SetMaximum(2.0)
-			else:
-				self.subplot_axes_histogram2 = ROOT.TH2F("subplot_axes_histogram2", "", n_sub_binsX, self.x_min, self.x_max, 100, 0.0, 0.4)
-				self.subplot_axes_histogram2.SetMinimum(0.0)
-				self.subplot_axes_histogram2.SetMaximum(0.4)			
+			else:   
+                                if not plotData.plotdict["y_subplot2_lims"] is None:
+					subplot2_min = plotData.plotdict["y_subplot2_lims"][0]
+                                        subplot2_max = plotData.plotdict["y_subplot2_lims"][1]
+ 				else:
+                                        subplot2_min = 0.0
+                                        subplot2_max = 1.0
+
+				self.subplot_axes_histogram2 = ROOT.TH2F("subplot_axes_histogram2", "", n_sub_binsX, self.x_min, self.x_max, 100, subplot2_min, subplot2_max)
+				self.subplot_axes_histogram2.SetMinimum(subplot2_min)
+				self.subplot_axes_histogram2.SetMaximum(subplot2_max)			
 			# axis labels
 			if (not plotData.plotdict["x_label"] is None) and (plotData.plotdict["x_label"] != ""):
 				self.subplot_axes_histogram2.GetXaxis().SetTitle("")
