@@ -257,6 +257,7 @@ class PlotBase(processor.Processor):
 		# write name of output file in dictionary
 		plotData.plotdict["output_filenames"] = []
 		for plot_format in plotData.plotdict["formats"]:
+			print plot_format
 			plotData.plotdict["output_filenames"].append(os.path.join(plotData.plotdict["output_dir"], plotData.plotdict["filename"]+"."+plot_format))
 		
 		if plotData.plotdict["export_json"] == "default":
@@ -425,13 +426,14 @@ class PlotBase(processor.Processor):
 					else:
 						unit = "fb"
 						factor = 1
-					run_periods.append("%s \,\mathrm{%s}^{-1} (%s \,TeV)" % (str(round(lumi*factor, 2)), unit, str(int(energy))))
+					run_periods.append("%s \,\mathrm{%s}^{-1} (%s \,TeV)" % (str(lumi*factor), unit, str(int(energy))))
 			# if only energy is available (MC-plots):
 			elif (not plotData.plotdict["energies"] is None):
 				for energy in plotData.plotdict["energies"]:
 					run_periods.append("\sqrt{s} = %s \,TeV" % str(int(energy)))
 			if len(run_periods) > 0:
-				self.dataset_title = "$" + (" + ".join(run_periods)) + "$"
+                                self.dataset_title = "$" + (" + ".join(run_periods)) + "$"
+				#self.dataset_title = "#scale[0.8]{#font[62]{CMS} data, $" + (" + ".join(run_periods)) + "$}"
 	
 	def plot_end(self, plotData):
 		if plotData.plotdict["dict"]:

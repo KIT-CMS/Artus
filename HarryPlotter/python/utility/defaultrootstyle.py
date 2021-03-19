@@ -83,6 +83,8 @@ def set_default_root_style():
 
 	default_root_style.SetTitleSize(0.055, "Y")
 	default_root_style.SetTitleOffset(1.600, "Y")
+        #default_root_style.SetTitleOffset(1.8, "Y")
+
 	default_root_style.SetLabelOffset(0.010, "Y")
 	default_root_style.SetLabelSize(0.040, "Y")
 	default_root_style.SetLabelFont(42, "Y")
@@ -118,6 +120,7 @@ def make_canvas(name, title, dx=600, dy=600):
 	
 	# Set margins to reasonable defaults
 	canvas.SetLeftMargin(0.18)
+        #canvas.SetLeftMargin(0.199)
 	canvas.SetRightMargin(0.05)
 	canvas.SetTopMargin(0.08)
 	canvas.SetBottomMargin(0.15)

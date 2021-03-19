@@ -48,11 +48,18 @@ class Chi2Test(analysisbase.AnalysisBase):
 
 	def run(self, plotData=None):
 		super(Chi2Test, self).run(plotData)
-
+		add_to_legend=[]
 		for chi2test_nicks, chi2test_compare in zip(
 				*[plotData.plotdict[k] for k in ["chi2test_nicks", "chi2test_compare"]]
 		):
 			print "chi2test between ", chi2test_nicks[0], " and ", chi2test_nicks[1]
 			chi2test_result = plotData.plotdict["root_objects"][chi2test_nicks[0]].Chi2Test(plotData.plotdict["root_objects"][chi2test_nicks[1]], chi2test_compare)
 			print chi2test_result
-			plotData.plotdict["texts_below_legend"] = ["#chi^{2}/ndf = "+str(round(chi2test_result,3))]
+			if "CHI2/NDF" in chi2test_compare:
+				add_to_legend.append("#chi^{2}/ndf = %s"%str(round(chi2test_result,2)))
+			elif "P" in chi2test_compare:
+				add_to_legend.append("p = %s"%str(round(chi2test_result,2))) 
+			else:
+				add_to_legend.append("#chi^{2} = %s"%str(round(chi2test_result,2)))
+		plotData.plotdict["texts_below_legend"] = add_to_legend
+

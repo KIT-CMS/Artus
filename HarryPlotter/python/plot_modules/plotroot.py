@@ -30,6 +30,16 @@ import Artus.HarryPlotter.utility.CMS_lumi as CMS_lumi
 import Artus.HarryPlotter.utility.newrootcolors as newrootcolors
 
 
+def CreateTransparentColor(color, alpha):
+    adapt = ROOT.gROOT.GetColor(color)
+    new_idx = ROOT.gROOT.GetListOfColors().GetLast() + 1
+    trans = ROOT.TColor(new_idx, adapt.GetRed(), adapt.GetGreen(),
+                     adapt.GetBlue(), '', alpha)
+    COL_STORE.append(trans)
+    trans.SetName('userColor%i' % new_idx)
+    return new_idx
+
+
 class RootPlotContainer(plotdata.PlotContainer):
 	def __init__(self, canvas=None, plot_pad=None, subplot_pad=None):
 		self.canvas = canvas
@@ -222,9 +232,19 @@ class PlotRoot(plotbase.PlotBase):
 					fill_style = 0
 				elif ("E" in marker.upper()) and (not "HIST" in marker.upper()) and ((marker.upper() != "E") and (marker.upper() != "EX0")):
 					marker_style = 0
-                                        line_width = 0
+					line_width = 0
 					fill_style = 3144
-			
+				elif ("BAND" in marker.upper()):
+					marker = "E2"
+					marker_style = 0
+					line_width = 1
+					fill_style = 3002
+				elif ("LEGENDBAND" in legend_marker.upper()):
+					legend_marker = "FLP"
+					marker_style = 0
+					#~ line_width = 1
+					fill_style = 3002
+												
 			if legend_marker is None:
 				# TODO: implement defaults here
 				#legend_marker = "FLP"
@@ -321,7 +341,7 @@ class PlotRoot(plotbase.PlotBase):
 			line_graph.SetPoint(0, x_line, -sys.float_info.max)
 			line_graph.SetPoint(1, x_line, +sys.float_info.max)
 
-			line_graph.SetLineColor(2)
+			line_graph.SetLineColor(12)
 			line_graph.SetLineWidth(3)
 			line_graph.SetLineStyle(2)
 			self.plot_vertical_lines.append(line_graph)
@@ -402,7 +422,7 @@ class PlotRoot(plotbase.PlotBase):
 				for z_bin in range(min(root_object.GetNbinsZ(), len(plotData.plotdict["z_tick_labels"]))):
 					root_object.GetZaxis().SetBinLabel(z_bin+1, plotData.plotdict["z_tick_labels"][z_bin])
 			
-			ROOT.TGaxis.SetMaxDigits(5)
+			ROOT.TGaxis.SetMaxDigits(4)
 
 	def determine_plot_lims(self, plotData):
 		super(PlotRoot, self).determine_plot_lims(plotData)
@@ -459,12 +479,11 @@ class PlotRoot(plotbase.PlotBase):
 					self.y_max = tmp_y_max
 		else:
 			if plotData.plotdict["sym_y_lims"]:
-				log.warning("Symmetric limits are not yet implemented for logarithmic axes!")
-			
+				log.warning("Symmetric limits are not yet implemented for logarithmic axes!")	
 			if not plotData.plotdict["y_lims"] is None:
 				self.y_min = plotData.plotdict["y_lims"][0]
 			elif self.max_dim < 3:
-				self.y_min *= (plotData.plotdict["y_rel_lims"][0] if self.y_min > 0.0 else 2.0-plotData.plotdict["y_rel_lims"][0])
+				self.y_min *= plotData.plotdict["y_rel_lims"][0] #if self.y_min > 0.0 else 2.0-plotData.plotdict["y_rel_lims"][0])
 		
 			if not plotData.plotdict["y_lims"] is None and len(plotData.plotdict["y_lims"]) > 1:
 				self.y_max = plotData.plotdict["y_lims"][1]
@@ -472,6 +491,8 @@ class PlotRoot(plotbase.PlotBase):
 				self.y_max *= (plotData.plotdict["y_rel_lims"][1] if self.y_max > 0.0 else 2.0-plotData.plotdict["y_rel_lims"][1])
 				if plotData.plotdict["cms"]:
 					self.y_max *= 1.2
+		if plotData.plotdict["y_log"] and self.y_min<0.0001:
+			self.y_min = 0.0001
 
 		if self.y_min == self.y_max:
 			self.y_max += 1.0
@@ -622,8 +643,6 @@ class PlotRoot(plotbase.PlotBase):
 				exclude_graph_after = ROOT.TGraph(2)
 				exclude_graph_after.SetName("exclude_after_graph")
 				exclude_graph_after.SetTitle()
-				print plotData.plotdict["exclude_after"]
-				print sys.float_info.max
 				exclude_graph_after.SetPoint(0, plotData.plotdict["exclude_after"], self.y_min)
 				exclude_graph_after.SetPoint(1, plotData.plotdict["exclude_after"], self.y_max)
 				exclude_graph_after.SetLineColor(2)
@@ -864,6 +883,27 @@ class PlotRoot(plotbase.PlotBase):
 				self.subplot_legend = ROOT.TLegend(*transformed_subplot_legend_pos)
 				self.subplot_legend.SetNColumns(plotData.plotdict["subplot_legend_cols"])
 				self.subplot_legend.SetColumnSeparation(0.01)
+		
+			for subplot, nick, label, legend_marker in zip(
+					plotData.plotdict["subplots"],
+					plotData.plotdict["nicks"],
+					plotData.plotdict["labels"],
+					plotData.plotdict["legend_markers"],
+			):
+				root_object = plotData.plotdict["root_objects"][nick]
+				if legend_marker is None:
+					# TODO: defaults should be defined in prepare_args function
+					legend_marker = "FLP"
+					if isinstance(root_object, ROOT.TH1):
+						legend_marker = "F"
+					elif isinstance(root_object, ROOT.TGraph):
+						legend_marker = "LP"
+					elif isinstance(root_object, ROOT.TF1):
+						legend_marker = "L"
+				#~ legend_marker = "PEX0"
+				if (nick == "data") and (not label is None) and (label != "") and (nick not in plotData.plotdict["subplot_nicks"]):
+					
+					self.legend.AddEntry(root_object, label, legend_marker)						    
 			for subplot, nick, label, legend_marker in zip(
 					plotData.plotdict["subplots"],
 					plotData.plotdict["nicks"],
@@ -882,6 +922,7 @@ class PlotRoot(plotbase.PlotBase):
 						elif isinstance(root_object, ROOT.TF1):
 							legend_marker = "L"
 					if (not label is None) and (label != ""):
+						print label
 						self.subplot_legend.AddEntry(root_object, label, legend_marker)
 				if legend_marker is None:
 					# TODO: defaults should be defined in prepare_args function
@@ -892,7 +933,10 @@ class PlotRoot(plotbase.PlotBase):
 						legend_marker = "LP"
 					elif isinstance(root_object, ROOT.TF1):
 						legend_marker = "L"
-				if (not label is None) and (label != "") and (nick not in plotData.plotdict["subplot_nicks"]):
+				if (nick != "data") and (not label is None) and (label != "") and (nick not in plotData.plotdict["subplot_nicks"]):
+
+					# if "\\" in label:
+						# label=label.replace("\\","\\\\")
 					self.legend.AddEntry(root_object, label, legend_marker)
 			for text_below_legend in plotData.plotdict["texts_below_legend"]:
 				if (not text_below_legend is None) and (text_below_legend != ""):
@@ -902,7 +946,6 @@ class PlotRoot(plotbase.PlotBase):
 				plotData.plot.subplot_pad.cd()
 				defaultrootstyle.set_legend_style(self.subplot_legend)
 				if plotData.plotdict["subplot_legend_fontsize"] is not None:
-					print plotData.plotdict["subplot_legend_fontsize"]
 					self.subplot_legend.SetTextSize(plotData.plotdict["subplot_legend_fontsize"])
 				self.subplot_legend.Draw()
 				plotData.plot.subplot_pad.Update()
@@ -912,6 +955,7 @@ class PlotRoot(plotbase.PlotBase):
 			defaultrootstyle.set_legend_style(self.legend)
 			if plotData.plotdict["legend_fontsize"] is not None:
 				self.legend.SetTextSize(plotData.plotdict["legend_fontsize"])
+			self.legend.SetTextFont(42)
 			self.legend.Draw()
 	
 	def add_texts(self, plotData):
@@ -937,13 +981,17 @@ class PlotRoot(plotbase.PlotBase):
 		# lumi and energy: outside plot, top right, with best possible offset
 		if self.dataset_title != "":
 			if "Simulation" in plotData.plotdict["extra_text"]:
-				CMS_lumi.lumi_sqrtS = ""
+				CMS_lumi.lumi_sqrtS = self.dataset_title
+				if plotData.plotdict["year"] != "":
+					CMS_lumi.lumi_sqrtS = "#scale[0.9]{#font[62]{CMS} simulation ("+plotData.plotdict["year"] + ", 13 TeV)}"
 			else:
 				self.dataset_title = re.sub(r"\\mathrm{(fb|pb)}", re.search(r"\\mathrm{(fb|pb)}", self.dataset_title).group(1), self.dataset_title)
 				year = "("
 				if plotData.plotdict["year"] != "":
 					year += plotData.plotdict["year"] + ", "
 					CMS_lumi.lumi_sqrtS = self.dataset_title.replace("$", "").replace("\,", "").split("(")[0] + year + self.dataset_title.replace("$", "").replace("\,", "").split("(")[1]
+				else:
+					CMS_lumi.lumi_sqrtS = self.dataset_title.replace("$", "").replace("\,", "").split("(")[0] + "(" + self.dataset_title.replace("$", "").replace("\,", "").split("(")[1]
 			CMS_lumi.lumiTextSize = 0.5
 			if not self.subplot_axes_histogram is None:
 				CMS_lumi.lumiTextOffset = 0.4
@@ -978,10 +1026,12 @@ class PlotRoot(plotbase.PlotBase):
 	@staticmethod
 	def _set_axis_limits(pad, root_object, max_dim, x_lims=None, y_lims=None, z_lims=None, reverse_x_axis=False, reverse_y_axis=False, reverse_z_axis=False):
 		""" not needed here due to axis histogram
+		"""	
 		if not x_lims is None:
 			root_object.GetXaxis().SetRangeUser(*x_lims)
 			root_object.GetXaxis().SetLimits(*x_lims)
-		
+			
+		"""
 		if (max_dim > 1) and (not y_lims is None):
 			root_object.GetYaxis().SetRangeUser(*y_lims)
 			root_object.GetYaxis().SetLimits(*y_lims)

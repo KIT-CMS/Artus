@@ -109,7 +109,7 @@ class Ratio(analysisbase.AnalysisBase):
 				successful_division = True
 				for point in range(0,numerator_histogram.GetN()):
 					x_value = ROOT.Double(0)
-					y_value_numerator = ROOT.Double(0)
+					y_value_numerator = ROOT.Double(1)
 					numerator_histogram.GetPoint(point, x_value, y_value_numerator)
 					y_value_denominator = denominator_histogram.Eval(x_value)
 					if y_value_denominator != 0.:
