@@ -41,10 +41,11 @@ def CreateTransparentColor(color, alpha):
 
 
 class RootPlotContainer(plotdata.PlotContainer):
-	def __init__(self, canvas=None, plot_pad=None, subplot_pad=None):
+	def __init__(self, canvas=None, plot_pad=None, subplot_pad=None, subplot_pad2=None):
 		self.canvas = canvas
 		self.plot_pad = plot_pad
 		self.subplot_pad = subplot_pad
+		self.subplot_pad2 = subplot_pad2
 	
 	def finish(self):
 		self.canvas.RedrawAxis("g")
@@ -54,6 +55,9 @@ class RootPlotContainer(plotdata.PlotContainer):
 		if not self.subplot_pad is None:
 			self.subplot_pad.RedrawAxis("g")
 			self.subplot_pad.Update()
+		if not self.subplot_pad2 is None:
+			self.subplot_pad2.RedrawAxis("g")
+			self.subplot_pad2.Update()
 		self.canvas.Update()
 		
 	def save(self, filename):
@@ -173,7 +177,8 @@ class PlotRoot(plotbase.PlotBase):
 											help="Set the number of digits that are printed when using the draw option TEXT. [Default: ROOT default]")
 		self.formatting_options.add_argument("--no-fit-results-box", action="store_true", default=False,
 											help="Do not display fit results. [Default: ROOT default]")
-		
+		self.formatting_options.add_argument("--nmssm-signal", nargs="?", type="bool", default=False, const=True,
+		                               help="")
 	def prepare_args(self, parser, plotData):
 		super(PlotRoot, self).prepare_args(parser, plotData)
 		self.prepare_list_args(
@@ -291,7 +296,7 @@ class PlotRoot(plotbase.PlotBase):
 		canvas = None if plotData.plot is None else plotData.plot.canvas
 		plot_pad = None if plotData.plot is None else plotData.plot.plot_pad
 		subplot_pad = None if plotData.plot is None else plotData.plot.subplot_pad
-		
+		subplot_pad2 = None
 		if canvas is None:
 			# TODO: Creating the canvas like this leads to segmentation faults
 			canvas = defaultrootstyle.make_canvas("canvas", "", dx=plotData.plotdict["canvas_width"], dy=plotData.plotdict["canvas_height"])
@@ -300,23 +305,30 @@ class PlotRoot(plotbase.PlotBase):
 		if len(plotData.plotdict["subplot_nicks"]) > 0:
 			if subplot_pad is None:
 				canvas.cd()
-				plot_pad = ROOT.TPad("plot_pad", "", 0.0, self.plot_subplot_slider_y, 1.0, 1.0)
+				plot_pad = ROOT.TPad("plot_pad", "", 0.0, 0.4, 1.0, 1.0)
 				ROOT.SetOwnership(plot_pad, False) # https://root.cern.ch/phpBB3/viewtopic.php?t=13547#p58247
 				plot_pad.SetNumber(1)
 				plot_pad.Draw()
 				defaultrootstyle.init_sub_pad(plot_pad)
 			if subplot_pad is None:
 				canvas.cd()
-				subplot_pad = ROOT.TPad("subplot_pad", "", 0.0, 0.0, 1.0, self.plot_subplot_slider_y)
+				subplot_pad = ROOT.TPad("subplot_pad", "", 0.0, 0.0, 1.0, 0.25)
 				ROOT.SetOwnership(subplot_pad, False) # https://root.cern.ch/phpBB3/viewtopic.php?t=13547#p58247
 				subplot_pad.SetNumber(2)
 				subplot_pad.Draw()
 				defaultrootstyle.init_sub_pad(subplot_pad)
-			
+			if subplot_pad2 is None:
+				canvas.cd()
+				subplot_pad2 = ROOT.TPad("subplot_pad2", "", 0.0, 0.24, 1.0, 0.4)
+				ROOT.SetOwnership(subplot_pad2, False) # https://root.cern.ch/phpBB3/viewtopic.php?t=13547#p58247
+				subplot_pad2.SetNumber(3)
+				subplot_pad2.Draw()
+				defaultrootstyle.init_sub_pad(subplot_pad2)			
 			plot_pad.SetTopMargin(0.122)
 			plot_pad.SetBottomMargin(0.031)
-			subplot_pad.SetBottomMargin(0.35)
-			
+			subplot_pad.SetBottomMargin(0.45)
+			subplot_pad2.SetTopMargin(0.08)
+
 			for index, y_line in enumerate(plotData.plotdict["subplot_lines"]):
 				line_graph = ROOT.TGraph(2)
 				line_graph.SetName("line_graph_"+str(index)+"_"+str(y_line))
@@ -352,14 +364,20 @@ class PlotRoot(plotbase.PlotBase):
 		plot_pad.SetRightMargin(0.25)
 		if not subplot_pad is None:
 			subplot_pad.SetRightMargin(0.25)
+		if not subplot_pad2 is None:
+			subplot_pad2.SetRightMargin(0.25)
 		if not plotData.plotdict["left_pad_margin"] is None:
 			plot_pad.SetLeftMargin(plotData.plotdict["left_pad_margin"])
 			if not subplot_pad is None:
 				subplot_pad.SetLeftMargin(plotData.plotdict["left_pad_margin"])
+			if not subplot_pad2 is None:
+				subplot_pad2.SetLeftMargin(plotData.plotdict["left_pad_margin"])
 		if not plotData.plotdict["right_pad_margin"] is None:
 			plot_pad.SetRightMargin(plotData.plotdict["right_pad_margin"])
 			if not subplot_pad is None:
 				subplot_pad.SetRightMargin(plotData.plotdict["right_pad_margin"])
+			if not subplot_pad2 is None:
+				subplot_pad2.SetRightMargin(plotData.plotdict["right_pad_margin"])
 		if not plotData.plotdict["top_pad_margin"] is None:
 			plot_pad.SetTopMargin(plotData.plotdict["top_pad_margin"])
 		if not plotData.plotdict["bottom_pad_margin"] is None:
@@ -367,8 +385,11 @@ class PlotRoot(plotbase.PlotBase):
 				plot_pad.SetBottomMargin(plotData.plotdict["bottom_pad_margin"])
 			else:
 				subplot_pad.SetBottomMargin(plotData.plotdict["bottom_pad_margin"])
-		
-		plotData.plot = RootPlotContainer(canvas, plot_pad, subplot_pad)
+			if subplot_pad2 is None:
+				plot_pad.SetBottomMargin(plotData.plotdict["bottom_pad_margin"])
+			else:
+				subplot_pad2.SetBottomMargin(plotData.plotdict["bottom_pad_margin"])		
+		plotData.plot = RootPlotContainer(canvas, plot_pad, subplot_pad, subplot_pad2)
 
 	def prepare_histograms(self, plotData):
 		super(PlotRoot, self).prepare_histograms(plotData)
@@ -620,12 +641,12 @@ class PlotRoot(plotbase.PlotBase):
 					arr = ROOT.TArrow(plotData.plotdict["arrow_x"], self.axes_histogram.GetMinimum()+(self.axes_histogram.GetMaximum()-self.axes_histogram.GetMinimum())/32.0, plotData.plotdict["arrow_x"], self.axes_histogram.GetMinimum()+(self.axes_histogram.GetMaximum()-self.axes_histogram.GetMinimum())/8.0, 0.02, "<|")
 				else:
 					arr = ROOT.TArrow(plotData.plotdict["arrow_x"], 1.5*self.axes_histogram.GetMinimum(), plotData.plotdict["arrow_x"], 5*self.axes_histogram.GetMinimum(), 0.02, "<|")					
-				arr.SetLineColor(ROOT.kBlack);
-				arr.SetFillColor(ROOT.kBlack);
-				arr.SetFillStyle(1001);
-				arr.SetLineWidth(6);
-				arr.SetLineStyle(1);
-				arr.SetAngle(60);
+				arr.SetLineColor(ROOT.kBlack)
+				arr.SetFillColor(ROOT.kBlack)
+				arr.SetFillStyle(1001)
+				arr.SetLineWidth(6)
+				arr.SetLineStyle(1)
+				arr.SetAngle(60)
 				self.arrows.append(arr)
 			if plotData.plotdict["exclude_before"] is not None:
 				exclude_graph_before = ROOT.TGraph(2)
@@ -683,7 +704,41 @@ class PlotRoot(plotbase.PlotBase):
 			self.subplot_axes_histogram.GetXaxis().SetNoExponent(True)
 			
 			self.subplot_axes_histogram.Draw("AXIS")
-		
+
+		if plotData.plot.subplot_pad2:
+			plotData.plot.subplot_pad2.cd()
+			if plotData.plotdict["nmssm_signal"]:
+				self.subplot_axes_histogram2 = ROOT.TH2F("subplot_axes_histogram2", "", n_sub_binsX, self.x_min, self.x_max, 100, 0.0, 2.0)
+				self.subplot_axes_histogram2.SetMinimum(0.0)
+				self.subplot_axes_histogram2.SetMaximum(2.0)
+			else:
+				self.subplot_axes_histogram2 = ROOT.TH2F("subplot_axes_histogram2", "", n_sub_binsX, self.x_min, self.x_max, 100, 0.0, 0.4)
+				self.subplot_axes_histogram2.SetMinimum(0.0)
+				self.subplot_axes_histogram2.SetMaximum(0.4)			
+			# axis labels
+			if (not plotData.plotdict["x_label"] is None) and (plotData.plotdict["x_label"] != ""):
+				self.subplot_axes_histogram2.GetXaxis().SetTitle("")
+			if (not plotData.plotdict["y_subplot_label"] is None) and (plotData.plotdict["y_subplot_label"] != ""):
+				if plotData.plotdict["nmssm_signal"]:
+					self.subplot_axes_histogram2.GetYaxis().SetTitle("#frac{Signal}{Background}")
+				else:
+					self.subplot_axes_histogram2.GetYaxis().SetTitle("Purity")
+
+			#if (self.max_sub_dim > 2) and (not plotData.plotdict["z_subplot_label"] is None) and (plotData.plotdict["z_subplot_label"] != ""):
+			#	self.subplot_axes_histogram2.GetZaxis().SetTitle(plotData.plotdict["z_subplot_label"])
+			
+			# tick labels
+			if plotData.plotdict["x_tick_labels"] and len(plotData.plotdict["x_tick_labels"]) > 0:
+				for x_bin in range(n_sub_binsX):
+					self.subplot_axes_histogram2.GetXaxis().SetBinLabel(x_bin+1, plotData.plotdict["x_tick_labels"][x_bin])
+			
+			self.subplot_axes_histogram2.GetXaxis().SetLabelSize(0.0)
+			self.subplot_axes_histogram2.GetXaxis().SetTickSize(0.05)
+			# avoid scientific notation for x-axis
+			self.subplot_axes_histogram2.GetXaxis().SetNoExponent(True)
+			# self.subplot_axes_histogram2.GetYaxis().SetTickLength(0.)
+			self.subplot_axes_histogram2.Draw("AXIS")
+
 		for nick, subplot, marker, colors, colormap in zip(
 				plotData.plotdict["nicks"],
 				plotData.plotdict["subplots"],
@@ -693,6 +748,8 @@ class PlotRoot(plotbase.PlotBase):
 		):
 			# select pad to plot on
 			pad = plotData.plot.subplot_pad if subplot else plotData.plot.plot_pad
+			if nick == "nmssm_500_125_110_ratio" or "purity" in nick:
+				pad = plotData.plot.subplot_pad2
 			pad.cd()
 			
 			# set color map
@@ -726,7 +783,7 @@ class PlotRoot(plotbase.PlotBase):
                         for line_graph in self.subplot_line_graphs:
                                 line_graph.Draw("L SAME")
                         plotData.plot.subplot_pad.Update()
-	
+
 	def modify_axes(self, plotData):
 		super(PlotRoot, self).modify_axes(plotData)
 		
@@ -778,6 +835,9 @@ class PlotRoot(plotbase.PlotBase):
 			root_object = plotData.plotdict["root_objects"][nick]
 			if subplot:
 				PlotRoot._set_axis_limits(plotData.plot.subplot_pad, root_object, self.max_dim, [self.x_min, self.x_max], [self.y_sub_min, self.y_sub_max], [self.z_sub_min, self.z_sub_max], reverse_x_axis=plotData.plotdict["reverse_x_axis"], reverse_y_axis=False, reverse_z_axis=False)
+				if nick == "nmssm_500_125_110_ratio" or "purity" in nick:
+					print "HERE"
+					PlotRoot._set_axis_limits(plotData.plot.subplot_pad2, root_object, self.max_dim, [self.x_min, self.x_max], [self.y_sub_min, self.y_sub_max], [self.z_sub_min, self.z_sub_max], reverse_x_axis=plotData.plotdict["reverse_x_axis"], reverse_y_axis=False, reverse_z_axis=False)
 			else:
 				PlotRoot._set_axis_limits(plotData.plot.plot_pad, root_object, self.max_dim, [self.x_min, self.x_max], [self.y_min, self.y_max], [self.z_min, self.z_max], reverse_x_axis=plotData.plotdict["reverse_x_axis"], reverse_y_axis=plotData.plotdict["reverse_y_axis"], reverse_z_axis=plotData.plotdict["reverse_z_axis"])
 		
@@ -788,16 +848,48 @@ class PlotRoot(plotbase.PlotBase):
 			self.axes_histogram.GetYaxis().SetTitleSize((self.axes_histogram.GetYaxis().GetTitleSize() / (1.0 - self.plot_subplot_slider_y))-0.01)
 
 			self.axes_histogram.GetYaxis().SetTitleOffset(self.axes_histogram.GetYaxis().GetTitleOffset() * (1.0 - self.plot_subplot_slider_y))
-			
-			self.subplot_axes_histogram.GetXaxis().SetLabelSize(self.subplot_axes_histogram.GetXaxis().GetLabelSize() / self.plot_subplot_slider_y)
-			self.subplot_axes_histogram.GetXaxis().SetTitleSize((self.subplot_axes_histogram.GetXaxis().GetTitleSize() / self.plot_subplot_slider_y) - 0.01)
-			self.subplot_axes_histogram.GetYaxis().SetLabelSize(self.subplot_axes_histogram.GetYaxis().GetLabelSize() / self.plot_subplot_slider_y)
-			self.subplot_axes_histogram.GetYaxis().SetTitleSize((self.subplot_axes_histogram.GetYaxis().GetTitleSize() / self.plot_subplot_slider_y) - 0.01)
-			
-			self.subplot_axes_histogram.GetXaxis().SetTitleOffset(2.0 * self.subplot_axes_histogram.GetXaxis().GetTitleOffset() * self.plot_subplot_slider_y+0.2)
-			self.subplot_axes_histogram.GetYaxis().SetTitleOffset(self.subplot_axes_histogram.GetYaxis().GetTitleOffset() * self.plot_subplot_slider_y)
+			self.subplot_axes_histogram.GetXaxis().SetLabelSize(1.3*self.subplot_axes_histogram.GetXaxis().GetLabelSize() / self.plot_subplot_slider_y)
+			self.subplot_axes_histogram.GetXaxis().SetTitleSize(1.4*(self.subplot_axes_histogram.GetXaxis().GetTitleSize() / self.plot_subplot_slider_y) - 0.01)
+			# self.subplot_axes_histogram.GetYaxis().SetLabelSize(self.subplot_axes_histogram.GetYaxis().GetLabelSize() / self.plot_subplot_slider_y)
+			# self.subplot_axes_histogram.GetYaxis().SetTitleSize((self.subplot_axes_histogram.GetYaxis().GetTitleSize() / self.plot_subplot_slider_y) - 0.01)
+			self.subplot_axes_histogram.GetYaxis().SetLabelSize(0.13	)
+			if plotData.plotdict["nmssm_signal"]:
+				self.subplot_axes_histogram.GetYaxis().SetTitleSize(0.125)
+			else:
+				self.subplot_axes_histogram.GetYaxis().SetTitleSize(0.15)
+
+			self.subplot_axes_histogram.GetXaxis().SetTitleOffset((1./1.4) * 2.0 * self.subplot_axes_histogram.GetXaxis().GetTitleOffset() * self.plot_subplot_slider_y+0.2)
+			self.subplot_axes_histogram.GetYaxis().SetTitleOffset(0.5)
+
+			# self.subplot_axes_histogram.GetYaxis().SetTitleOffset(self.subplot_axes_histogram.GetYaxis().GetTitleOffset() * self.plot_subplot_slider_y)
 			self.subplot_axes_histogram.GetYaxis().SetNdivisions(5, 0, 0)
-		
+		if not self.subplot_axes_histogram2 is None:
+			self.axes_histogram.GetXaxis().SetLabelSize(0)
+			self.axes_histogram.GetXaxis().SetTitleSize(0)
+			self.axes_histogram.GetYaxis().SetLabelSize(self.axes_histogram.GetYaxis().GetLabelSize() / (1.0 - self.plot_subplot_slider_y))
+			self.axes_histogram.GetYaxis().SetTitleSize((self.axes_histogram.GetYaxis().GetTitleSize() / (1.0 - self.plot_subplot_slider_y))-0.01)
+
+			self.axes_histogram.GetYaxis().SetTitleOffset(self.axes_histogram.GetYaxis().GetTitleOffset() * (1.0 - self.plot_subplot_slider_y))
+			
+			self.subplot_axes_histogram2.GetXaxis().SetLabelSize(self.subplot_axes_histogram2.GetXaxis().GetLabelSize() / self.plot_subplot_slider_y)
+			self.subplot_axes_histogram2.GetXaxis().SetTitleSize((self.subplot_axes_histogram2.GetXaxis().GetTitleSize() / self.plot_subplot_slider_y) - 0.01)
+			if plotData.plotdict["nmssm_signal"]:
+				self.subplot_axes_histogram2.GetYaxis().SetLabelSize(0.195)
+				self.subplot_axes_histogram2.GetYaxis().SetTitleSize(0.16)
+				
+				self.subplot_axes_histogram2.GetXaxis().SetTitleOffset(2.0 * self.subplot_axes_histogram2.GetXaxis().GetTitleOffset() * self.plot_subplot_slider_y+0.2)
+				self.subplot_axes_histogram2.GetYaxis().SetTitleOffset(0.4)
+				self.subplot_axes_histogram2.GetYaxis().SetNdivisions(3, 0, 0)
+			else:
+				self.subplot_axes_histogram2.GetYaxis().SetLabelSize(0.195)
+				self.subplot_axes_histogram2.GetYaxis().SetTitleSize(0.25)
+				
+				self.subplot_axes_histogram2.GetXaxis().SetTitleOffset(2.0 * self.subplot_axes_histogram2.GetXaxis().GetTitleOffset() * self.plot_subplot_slider_y+0.2)
+				self.subplot_axes_histogram2.GetYaxis().SetTitleOffset(0.25)
+				self.subplot_axes_histogram2.GetYaxis().SetNdivisions(2, 0, 0)
+			# self.subplot_axes_histogram2.GetYaxis().SetTickLength(0.0)
+			# self.subplot_axes_histogram2.GetYaxis().SetTickSize(0.0)
+
 		if not plotData.plotdict["x_title_offset"] is None:
 			if not self.subplot_axes_histogram is None:
 				self.subplot_axes_histogram.GetXaxis().SetTitleOffset(plotData.plotdict["x_title_offset"])
@@ -819,12 +911,14 @@ class PlotRoot(plotbase.PlotBase):
 			plotData.plot.plot_pad.SetRightMargin(0.05)
 			if not plotData.plot.subplot_pad is None:
 				plotData.plot.subplot_pad.SetRightMargin(0.05)
-
+			if not plotData.plot.subplot_pad2 is None:
+				plotData.plot.subplot_pad2.SetRightMargin(0.05)
 		if (self.max_dim < 3) and (plotData.plotdict["right_pad_margin"] is None):
 			plotData.plot.plot_pad.SetRightMargin(0.05)
 			if not plotData.plot.subplot_pad is None:
 				plotData.plot.subplot_pad.SetRightMargin(0.05)
-		
+			if not plotData.plot.subplot_pad2 is None:
+				plotData.plot.subplot_pad2.SetRightMargin(0.05)		
 		# redraw axes only and update the canvas
 		plotData.plot.plot_pad.cd()
 		self.axes_histogram.Draw("AXIS SAME")
@@ -835,7 +929,11 @@ class PlotRoot(plotbase.PlotBase):
 			if not self.subplot_axes_histogram is None:
 				self.subplot_axes_histogram.Draw("AXIS SAME")
 			plotData.plot.subplot_pad.Update()
-		
+		if not plotData.plot.subplot_pad2 is None:
+			plotData.plot.subplot_pad2.cd()
+			if not self.subplot_axes_histogram2 is None:
+				self.subplot_axes_histogram2.Draw("AXIS SAME")
+			plotData.plot.subplot_pad2.Update()		
 		plotData.plot.canvas.Update()
 		#tdrstyle.fixOverlay(self.plot_pad)
 		

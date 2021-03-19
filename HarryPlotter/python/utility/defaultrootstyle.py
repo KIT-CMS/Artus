@@ -33,7 +33,7 @@ def set_default_root_style():
 	default_root_style.SetPadBorderMode(0)
 	default_root_style.SetPadBottomMargin(0.13)
 	default_root_style.SetPadTopMargin(0.08)
-	default_root_style.SetPadLeftMargin(0.15)
+	default_root_style.SetPadLeftMargin(0.17)
 	default_root_style.SetPadRightMargin(0.05)
 	default_root_style.SetPadGridX(0)
 	default_root_style.SetPadGridY(0)
@@ -81,12 +81,12 @@ def set_default_root_style():
 	default_root_style.SetStripDecimals(False)
 	default_root_style.SetLineStyleString(11, "20 10")
 
-	default_root_style.SetTitleSize(0.055, "Y")
+	default_root_style.SetTitleSize(0.05, "Y")
 	default_root_style.SetTitleOffset(1.600, "Y")
-        #default_root_style.SetTitleOffset(1.8, "Y")
+	default_root_style.SetTitleOffset(2.3, "Y")
 
 	default_root_style.SetLabelOffset(0.010, "Y")
-	default_root_style.SetLabelSize(0.040, "Y")
+	default_root_style.SetLabelSize(0.025, "Y")
 	default_root_style.SetLabelFont(42, "Y")
 
 	default_root_style.SetTextSize(0.055)
@@ -120,7 +120,7 @@ def make_canvas(name, title, dx=600, dy=600):
 	
 	# Set margins to reasonable defaults
 	canvas.SetLeftMargin(0.18)
-        #canvas.SetLeftMargin(0.199)
+	canvas.SetLeftMargin(0.22)
 	canvas.SetRightMargin(0.05)
 	canvas.SetTopMargin(0.08)
 	canvas.SetBottomMargin(0.15)
@@ -140,7 +140,7 @@ def make_canvas(name, title, dx=600, dy=600):
 
 def init_sub_pad(sub_pad):
 	sub_pad.cd()
-	sub_pad.SetLeftMargin(0.18)
+	sub_pad.SetLeftMargin(0.22)
 	sub_pad.SetTopMargin(0.05)
 	sub_pad.SetRightMargin(0.07)
 	sub_pad.SetBottomMargin(0.15)
