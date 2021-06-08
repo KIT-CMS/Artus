@@ -113,7 +113,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 			}
 		}
 
-        else if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017UL))
+        else if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018UL))
 		{
 			int q = muon->get()->charge();
 			float pt = muon->get()->p4.Pt();
