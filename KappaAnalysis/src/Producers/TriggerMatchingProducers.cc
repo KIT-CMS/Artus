@@ -89,6 +89,19 @@ void MuonTriggerMatchingProducer::Produce(KappaEvent const& event, KappaProduct&
 	}
 }
 
+void MuonTriggerMatchingProducer::ReplaceFilterName(KappaEvent const& event, KappaProduct& product,
+                                              KappaSettings const& settings) const
+{
+    if (settings.GetInputIsData() && settings.GetYear() == 2018 && event.m_eventInfo->nRun < 315974) {
+        for (size_t i = 0; i < product.m_settingsMuonTriggerFiltersByHltName["HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1_v"].size(); i++) {
+            if (product.m_settingsMuonTriggerFiltersByHltName["HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1_v"][i] == std::string("hltL3crIsoBigORMu18erTauXXer2p1L1f0L2f10QL3f20QL3trkIsoFiltered0p07")) {
+                product.m_settingsMuonTriggerFiltersByHltName["HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1_v"][i] = std::string("hltL3crIsoL1sMu18erTau24erIorMu20erTau24erL1f0L2f10QL3f20QL3trkIsoFiltered0p07");
+            }
+        }
+    }
+    return;
+}
+
 
 std::string TauTriggerMatchingProducer::GetProducerId() const
 {

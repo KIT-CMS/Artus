@@ -91,6 +91,7 @@ public:
 		{
 			(product.*m_settingsObjectTriggerFiltersByHltName).insert(m_objectTriggerFiltersByHltNameFromSettings.begin(),
 			                                                          m_objectTriggerFiltersByHltNameFromSettings.end());
+                        ReplaceFilterName(event, product, settings);
 		}
 		
 		(product.*m_triggerMatchedObjects).clear();
@@ -189,6 +190,12 @@ public:
 		}
 	}
 
+protected:
+        // Replace filter name for specific run in 2018 mt.
+        virtual void ReplaceFilterName(KappaEvent const& event,
+                                       KappaProduct& product, KappaSettings const& settings) const
+        {}
+
 
 private:
 	std::map<TValidObject*, KLV> KappaProduct::*m_triggerMatchedObjects;
@@ -247,6 +254,8 @@ public:
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override;
 
+        void ReplaceFilterName(KappaEvent const& event, KappaProduct& product,
+                               KappaSettings const& settings) const override;
 };
 
 
@@ -267,7 +276,6 @@ public:
 	
 	void Produce(KappaEvent const& event, KappaProduct& product,
 	                     KappaSettings const& settings) const override;
-
 };
 
 
