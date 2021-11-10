@@ -17,7 +17,7 @@ elif [ -n "$ZSH_VERSION" ]; then
 		export ARTUSPATH=$CMSSW_BASE/src/Artus
 	else
 		# get Artus dir relative to location of this script for zsh
-		export ARTUSPATH=$(readlink -f -- $(dirname -- "$(readlink -f -- "${0}")")/../..)
+		export ARTUSPATH=$(readlink -f $(dirname "$(readlink -f "${0}")")/../..)
 	fi
 
 fi
