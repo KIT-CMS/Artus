@@ -284,7 +284,7 @@ public:
                                 jet->muonFraction < maxMuFraction &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) // TODO: earlier: (jet->electronFraction < maxCEMFraction || maxCEMFraction < 0.0); ???
+                                jet->electronFraction < maxCEMFraction)) 
                                 return false;
                         }
                         else {
@@ -310,7 +310,7 @@ public:
                                 jet->nConstituents > minNumConstituents &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) //TODO earlier: (jet->electronFraction < maxCEMFraction || maxCEMFraction < 0.0); ???
+                                jet->electronFraction < maxCEMFraction)) 
                                 return false;
                         }
                         else {
@@ -335,7 +335,7 @@ public:
                                 jet->nConstituents > minNumConstituents &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) // TODO: earlier: (jet->electronFraction < maxCEMFraction || maxCEMFraction < 0.0); ???
+                                jet->electronFraction < maxCEMFraction)) 
                                 return false;
                         }
                         else { // 2.4 <= 2.7
@@ -402,7 +402,7 @@ public:
                     }
 
                 }
-            }
+            } 
             // 2017: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID13TeVRun2017
             else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017) {
                 if (std::abs(jet->p4.eta()) <= 2.7f) {
@@ -424,7 +424,7 @@ public:
                                 jet->muonFraction < maxMuFraction &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) // TODO: BUG?!: (jet->electronFraction < maxCEMFraction || maxCEMFraction < 0.0);
+                                jet->electronFraction < maxCEMFraction)) 
                                 return false;
                         }
                         else
@@ -504,7 +504,7 @@ public:
                 }
             }
             // 2018: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2018
-            // Note: there is no JetID anymore for 2018; standard is "tight"
+            // Note: there is no "loose" JetID anymore for 2018; standard is "tight"
             else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018) {
                 if (std::abs(jet->p4.eta()) <= 2.6f) {
                     float maxNHFraction = 0.90f;
@@ -602,7 +602,7 @@ public:
                         return false;
                 }
             }
-            else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL) {
+            else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL) {
                 if (std::abs(jet->p4.eta()) <= 2.6f) {
                     float maxNHFraction = 0.90f;
                     float maxNEMFraction = 0.90f;
@@ -653,6 +653,9 @@ public:
                         (jet->nConstituents - jet->nCharged) > minNeutral))
                         return false;
                 }
+            }
+            else { // no valid jetIDVersion selected
+            	LOG(ERROR) << "No valid jetIDVersion selected!" << std::endl;
             }
         }
         else if (settings.GetTaggedJets().find("PUPPI") != std::string::npos) { // for future; PUPPI jets not used yet
