@@ -1,5 +1,6 @@
 
 #include "Artus/KappaAnalysis/interface/KappaEnumTypes.h"
+#include <boost/algorithm/string.hpp>
 
 
 KappaEnumTypes::GenParticleType KappaEnumTypes::ToGenParticleType(std::string const& genParticleName)
@@ -29,18 +30,19 @@ KappaEnumTypes::ValidJetsInput KappaEnumTypes::ToValidJetsInput(std::string cons
 
 KappaEnumTypes::JetIDVersion KappaEnumTypes::ToJetIDVersion(std::string const& jetIDVersion)
 {
-	if (jetIDVersion == "2010") return KappaEnumTypes::JetIDVersion::ID2010;
-	else if (jetIDVersion == "2014") return KappaEnumTypes::JetIDVersion::ID2014;
-	else if (jetIDVersion == "73x") return KappaEnumTypes::JetIDVersion::ID73X;
-	else if (jetIDVersion == "73xtemp") return KappaEnumTypes::JetIDVersion::ID73Xtemp;
-	else if (jetIDVersion == "73xnohf") return KappaEnumTypes::JetIDVersion::ID73XnoHF;
-	else if (jetIDVersion == "2015") return KappaEnumTypes::JetIDVersion::ID2015;
-	else if (jetIDVersion == "2016") return KappaEnumTypes::JetIDVersion::ID2016;
-	else if (jetIDVersion == "2017") return KappaEnumTypes::JetIDVersion::ID2017;
-	else if (jetIDVersion == "2018") return KappaEnumTypes::JetIDVersion::ID2018;
-	else if ((jetIDVersion == "2016UL") || (jetIDVersion == "UL2016")) return KappaEnumTypes::JetIDVersion::ID2016UL;
-	else if ((jetIDVersion == "2017UL") || (jetIDVersion == "UL2017")) return KappaEnumTypes::JetIDVersion::ID2017UL;
-	else if ((jetIDVersion == "2018UL") || (jetIDVersion == "UL2018")) return KappaEnumTypes::JetIDVersion::ID2018UL;
+	std::string jetIDVersionLower = boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(jetIDVersion));
+	if (jetIDVersionLower == "2010") return KappaEnumTypes::JetIDVersion::ID2010;
+	else if (jetIDVersionLower == "2014") return KappaEnumTypes::JetIDVersion::ID2014;
+	else if (jetIDVersionLower == "73x") return KappaEnumTypes::JetIDVersion::ID73X;
+	else if (jetIDVersionLower == "73xtemp") return KappaEnumTypes::JetIDVersion::ID73Xtemp;
+	else if (jetIDVersionLower == "73xnohf") return KappaEnumTypes::JetIDVersion::ID73XnoHF;
+	else if (jetIDVersionLower == "2015") return KappaEnumTypes::JetIDVersion::ID2015;
+	else if (jetIDVersionLower == "2016") return KappaEnumTypes::JetIDVersion::ID2016;
+	else if (jetIDVersionLower == "2017") return KappaEnumTypes::JetIDVersion::ID2017;
+	else if (jetIDVersionLower == "2018") return KappaEnumTypes::JetIDVersion::ID2018;
+	else if ((jetIDVersionLower == "2016ul") || (jetIDVersionLower == "ul2016")) return KappaEnumTypes::JetIDVersion::ID2016UL;
+	else if ((jetIDVersionLower == "2017ul") || (jetIDVersionLower == "ul2017")) return KappaEnumTypes::JetIDVersion::ID2017UL;
+	else if ((jetIDVersionLower == "2018ul") || (jetIDVersionLower == "ul2018")) return KappaEnumTypes::JetIDVersion::ID2018UL;
 	else LOG(FATAL) << "Jet ID version '" << jetIDVersion << "' is not available";
 	return KappaEnumTypes::JetIDVersion::ID2016;
 }
