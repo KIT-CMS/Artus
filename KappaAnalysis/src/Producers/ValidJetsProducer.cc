@@ -84,6 +84,11 @@ void ValidTaggedJetsProducer::Init(KappaSettings const& settings)
 bool ValidTaggedJetsProducer::AdditionalCriteria(KJet* jet, KappaEvent const& event,
                                                  KappaProduct& product, KappaSettings const& settings) const
 {
+	return true;
+	// ++++++++++++ This code is depracated and not used anymore! ++++++++++++
+	// if PU jet ID should be applied by index, this has to be reimplemented 
+	// in Excalibur for consistency!
+	/*
 	assert(event.m_jetMetadata);
 	
 	bool validJet = ValidJetsProducerBase<KJet, KBasicJet>::AdditionalCriteria(jet, event, product, settings);
@@ -140,5 +145,6 @@ bool ValidTaggedJetsProducer::PassPuJetIds(KJet* jet, std::vector<std::string> c
 	}
 	
 	return validJet;
+	*/
 }
 
