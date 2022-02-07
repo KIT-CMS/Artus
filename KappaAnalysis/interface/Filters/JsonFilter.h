@@ -14,18 +14,18 @@
  *  in order to fully skip this event in the following analysis.
  *  This filter can savely be run as global or local filter.
  */
-class JsonFilter: public FilterBase<KappaTypes>
-{
+class JsonFilter : public FilterBase<KappaTypes> {
 
 public:
 
-	std::string GetFilterId() const override;
+    std::string GetFilterId() const override;
 
-	void Init(KappaSettings const& settings) override;
-	bool DoesEventPass(KappaEvent const& event, KappaProduct const& product,
-	                           KappaSettings const& settings) const override;
+    void Init(KappaSettings const &settings) override;
+
+    bool DoesEventPass(KappaEvent const &event, KappaProduct const &product,
+                       KappaSettings const &settings) const override;
 
 
 private:
-	RunLumiSelector m_runLumiSelector;
+    RunLumiSelector m_runLumiSelector;
 };

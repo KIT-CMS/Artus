@@ -14,18 +14,17 @@
  *
  *	
  */
-class HltProducer: public KappaProducerBase
-{
+class HltProducer : public KappaProducerBase {
 public:
-	std::string GetProducerId() const override;
+    std::string GetProducerId() const override;
 
-	void Init(KappaSettings const& settings) override;
+    void Init(KappaSettings const &settings) override;
 
-	void Produce(KappaEvent const& event, KappaProduct& product,
-	             KappaSettings const& settings) const override;
+    void Produce(KappaEvent const &event, KappaProduct &product,
+                 KappaSettings const &settings) const override;
 
 private:
-	mutable HLTTools m_hltInfo;
+    mutable HLTTools m_hltInfo;
 
 };
 

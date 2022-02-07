@@ -8,14 +8,13 @@
  *
  *  Should run after the last change to the vectors of (in-) valid electrons/muons/taus
  */
-class ValidLeptonsProducer: public KappaProducerBase
-{
+class ValidLeptonsProducer : public KappaProducerBase {
 
 public:
-	std::string GetProducerId() const override;
+    std::string GetProducerId() const override;
 
-	void Produce(KappaEvent const& event, KappaProduct& product,
-	                     KappaSettings const& settings) const override;
+    void Produce(KappaEvent const &event, KappaProduct &product,
+                 KappaSettings const &settings) const override;
 
 };
 

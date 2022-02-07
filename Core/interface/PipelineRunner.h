@@ -145,6 +145,13 @@ public:
 		// always evaluates to true (processNEvents<0) = (-1<0) and is terminated via the 'if (!evtProvider.GetEntry(i)) break' statement
 		for (long long iEvent = firstEvent; (iEvent < (firstEvent + nEvents)); ++iEvent)
 		{
+			// Note: this is printed at the END of an event!
+			auto currEvt = evtProvider.GetCurrentEvent();
+			LOG(DEBUG) << "/////////////////////////////////////////////////////////////\n";
+		        LOG(DEBUG) << "////////// Processing event: " << currEvt.m_eventInfo->nRun << ":" << currEvt.m_eventInfo->nLumi
+			             << ":" << currEvt.m_eventInfo->nEvent << " ///////////\n";
+			LOG(DEBUG) << "/////////////////////////////////////////////////////////////\n";
+
 			// quit here according to OS
 			if (osHasSIGINT())
 			{
@@ -228,6 +235,8 @@ public:
 							productGlobal, globalFilterResult);
 					pipelineFilterRes.SetFilterDecision(
 							it->GetSettings().GetName(), result);
+					LOG(DEBUG) << "[PipelineRunner] Result: " << result;
+					LOG(DEBUG) << "+++Pipeline processed: " << it->GetSettings().GetName();
 				}
 			}
 		}
