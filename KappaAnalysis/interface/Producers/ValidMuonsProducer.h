@@ -291,55 +291,45 @@ public:
             } else if (muonID == MuonID::TIGHT) {
                 if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
                     validMuon = validMuon && IsTightMuon2015(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else if (settings.GetYear() == 2012) {
                     validMuon = validMuon && IsTightMuon2012(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else if (settings.GetYear() == 2011) {
                     validMuon = validMuon && IsTightMuon2011(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else if (settings.GetYear() == 2018) {
                     validMuon = validMuon && IsTightMuon2018(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else {
                     LOG(FATAL) << "Tight MuonID for year " << settings.GetYear() << " not yet implemented!";
                 }
             } else if (muonID == MuonID::MEDIUM) {
                 if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
                     validMuon = validMuon && IsMediumMuon2015(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else {
                     LOG(FATAL) << "Medium MuonID for year " << settings.GetYear() << " not yet implemented!";
                 }
             } else if (muonID == MuonID::LOOSE) {
                 if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
                     validMuon = validMuon && IsLooseMuon2015(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else if (settings.GetYear() == 2012) {
                     validMuon = validMuon && IsLooseMuon2012(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else {
                     LOG(FATAL) << "Loose MuonID for year " << settings.GetYear() << " not yet implemented!";
                 }
             } else if (muonID == MuonID::VETO) {
                 validMuon = validMuon && IsVetoMuon(*muon, event, product);
-                LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
             } else if (muonID == MuonID::FAKEABLE) {
                 validMuon = validMuon && IsFakeableMuon(*muon, event, product);
-                LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
             } else if (muonID == MuonID::EMBEDDING) {
                 validMuon = validMuon && IsEmbeddingMuon(*muon, event, product);
-                LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
             } else if (muonID == MuonID::MEDIUMHIPSAFE2016) {
                 if (settings.GetYear() == 2016) {
                     validMuon = validMuon && IsMediumMuon2016ShortTerm(*muon, event, product);
-                    LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
                 } else {
                     LOG(FATAL) << "Medium2016 MuonID for year " << settings.GetYear() << " not yet implemented!";
                 }
             } else {
                 LOG(FATAL) << "MuonID of type " << Utility::ToUnderlyingValue(muonID) << " not yet implemented!";
             }
+            LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
             // Muon Isolation according to Muon POG definitions (independent of year)
             if (muonIsoType == MuonIsoType::PF) {
                 // Run I
