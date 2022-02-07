@@ -95,7 +95,6 @@ class ZProducerBase : public KappaProducerBase
 	             KappaProduct& product,
 	             KappaSettings const& settings) const override
 {
-	LOG(WARNING) << "Correction of the jet collections will be applied!";
 	/*
 	Try all lepton combinations to find a valid Z
 

@@ -44,7 +44,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 {
 	assert(event.m_muons);
 	LOG(DEBUG) << "\n[MuonCorrectionsProducer]";
-	LOG(DEBUG) << "Number of muons: " << event.m_muons->size() << "\n";
+	LOG(DEBUG) << "Number of m_muons: " << event.m_muons->size() << "\n";
 
 	// create a copy of all muons in the event
 	product.m_correctedMuons.clear();
@@ -133,10 +133,11 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 			float scaledPy = muon->get()->p4.Py() * scaleFactor;
 			float scaledPz = muon->get()->p4.Pz() * scaleFactor;
 			float scaledE = TMath::Sqrt(TMath::Power(scaledPx,2) + TMath::Power(scaledPy,2) + TMath::Power(scaledPz,2) + TMath::Power(muonMass,2));
-			LOG(DEBUG) << "Corrected: " << "scaledPx: " << scaledPx << " scaledPy: " << scaledPy << " scaledPz: " 
-				<< scaledPz << " scaledE: " << scaledE << " Pt: " << muon->get()->p4.Pt() * scaleFactor;
 			muon->get()->p4.SetPxPyPzE(scaledPx, scaledPy, scaledPz, scaledE);
-		} else if (muonEnergyCorrection != MuonEnergyCorrection::NONE) {
+            LOG(DEBUG) << "Corrected: " << "scaledPx: " << muon->get()->p4.Px() << " scaledPy: " << muon->get()->p4.Py() << " scaledPz: "
+                       << muon->get()->p4.Pz() << " scaledE: " << muon->get()->p4.E() << " Pt: " << muon->get()->p4.Pt();
+
+        } else if (muonEnergyCorrection != MuonEnergyCorrection::NONE) {
 			LOG(FATAL) << "Muon energy correction of type " << Utility::ToUnderlyingValue(muonEnergyCorrection) << " not yet implemented!";
 		}
 

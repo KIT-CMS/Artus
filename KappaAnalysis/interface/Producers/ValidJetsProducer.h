@@ -68,10 +68,10 @@ public:
                 boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetJetID())));
 
         if (jetID == KappaEnumTypes::JetID::MEDIUM && jetIDVersion != KappaEnumTypes::JetIDVersion::ID2010)
-            LOG(WARNING) << "Since 2012, the medium jet ID is not supported officially any longer.";
+            LOG(WARNING) << "Since 2012, the medium jetID is not supported officially any longer.";
         if (jetID != KappaEnumTypes::JetID::NONE && (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2010 ||
                                                      jetIDVersion == KappaEnumTypes::JetIDVersion::ID2014))
-            LOG(WARNING) << "This jet ID version is not valid for 73X samples.";
+            LOG(WARNING) << "This jetID version is not valid for 73X samples.";
 
         // add possible quantities for the lambda ntuples consumers
         LambdaNtupleConsumer<KappaTypes>::AddIntQuantity("nJets",
@@ -305,9 +305,9 @@ public:
         std::vector < TJet * > jets;
         if ((validJetsInput == KappaEnumTypes::ValidJetsInput::AUTO && ((product.*m_correctedJetsMember).size() > 0)) ||
             (validJetsInput == KappaEnumTypes::ValidJetsInput::CORRECTED)) {
-            LOG(DEBUG) << "Use correctedJets as input.";
+            LOG(DEBUG) << "Use m_correctedJetsMember as input.";
             jets.resize((product.*m_correctedJetsMember).size());
-            LOG(DEBUG) << "N jets: " << (product.*m_correctedJetsMember).size();
+            LOG(DEBUG) << "Number of m_correctedJetsMember: " << (product.*m_correctedJetsMember).size();
             size_t jetIndex = 0;
             for (typename std::vector<std::shared_ptr < TJet> > ::iterator jet = (product.*
                                                                                   m_correctedJetsMember).begin();
@@ -317,8 +317,8 @@ public:
                 ++jetIndex;
             }
         } else {
-            LOG(DEBUG) << "Use basic jets as input.";
-            LOG(DEBUG) << "N jets: " << (event.*m_basicJetsMember)->size();
+            LOG(DEBUG) << "Use m_basicJetsMember as input.";
+            LOG(DEBUG) << "Number of m_basicJetsMember: " << (event.*m_basicJetsMember)->size();
             jets.resize((event.*m_basicJetsMember)->size());
             size_t jetIndex = 0;
             for (typename std::vector<TJet>::iterator jet = (event.*m_basicJetsMember)->begin();
@@ -329,10 +329,10 @@ public:
         }
 
         if (product.m_validLeptons.size() < 1) {
-            LOG(WARNING) << "Number of valid leptons:" << product.m_validLeptons.size()
+            LOG(WARNING) << "Number of m_validLeptons:" << product.m_validLeptons.size()
                          << "! Forgot to add the ValidLeptonsProducer?";
         } else {
-            LOG(DEBUG) << "Number of valid leptons used for Lepton removal: " << product.m_validLeptons.size();
+            LOG(DEBUG) << "Number of valid leptons used for lepton removal: " << product.m_validLeptons.size();
         }
 
         if (settings.GetDebugVerbosity() > 0 && jetID == KappaEnumTypes::JetID::NONE) {
@@ -343,7 +343,7 @@ public:
             bool validJet = true;
             validJet = validJet && passesJetID(*jet, jetIDVersion, jetID, settings);
             if (settings.GetDebugVerbosity() > 0) {
-                LOG(DEBUG) << "\nJet pt: " << (*jet)->p4.Pt() << " jet eta: " << (*jet)->p4.eta() << " jet phi: "
+                LOG(DEBUG) << "\nJet pt: " << (*jet)->p4.Pt() << " eta: " << (*jet)->p4.eta() << " phi: "
                            << (*jet)->p4.phi();
                 if (passesJetID(*jet, jetIDVersion, jetID, settings)) {
                     LOG(DEBUG) << "Object-based JetID passed (or skipped).";
@@ -358,7 +358,7 @@ public:
                 validJet = validJet && ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4) >
                                        settings.GetJetLeptonLowerDeltaRCut();
                 if (settings.GetDebugVerbosity() > 1) {
-                    LOG(DEBUG) << "Check lepton with pt: " << (*lepton)->p4.Pt() << "eta: " << (*lepton)->p4.Pt()
+                    LOG(DEBUG) << "Check lepton with pt: " << (*lepton)->p4.Pt() << " eta: " << (*lepton)->p4.Pt()
                                << " phi: "
                                << (*lepton)->p4.Pt() << " Delta R: "
                                << ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4);
@@ -399,7 +399,7 @@ public:
                           << std::endl;
             }
         }
-        LOG(DEBUG) << "\nn ValidJets: " << product.m_validJets.size() << ", n invalidJets: "
+        LOG(DEBUG) << "\nNumber of m_validJets: " << product.m_validJets.size() << ", Number of m_invalidJets: "
                    << product.m_invalidJets.size();
     }
 
