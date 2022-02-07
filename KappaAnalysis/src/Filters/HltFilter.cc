@@ -14,6 +14,16 @@
 	bool HltFilter::DoesEventPass(KappaEvent const& event, KappaProduct const& product,
 	                           KappaSettings const& settings) const
 	{
-		if (settings.GetNoHltFiltering()) return true;
+		LOG(DEBUG) << "\n[HltFilter]";
+		
+		if (settings.GetNoHltFiltering()) {
+			LOG(DEBUG) << "No Hlt filtering applied! (cfg: 'NoHltFiltering')";
+			return true;
+		}
+		if (! product.m_selectedHltNames.empty()){
+			LOG(DEBUG) << "Hlt Filter passed!\n";
+		} else {
+			LOG(DEBUG) << "Hlt Filter not passed!\n";
+		}
 		return (! product.m_selectedHltNames.empty());
 	}

@@ -211,12 +211,15 @@ public:
 	void Produce(event_type const& event, product_type& product,
 	                     setting_type const& settings) const override
 	{
+		//if (LOG_LEVEL == DEBUG
 		assert(event.m_muons);
+		LOG(DEBUG) << "\n[ValidMuonsProducer]";
 
 		// select input source
 		std::vector<KMuon*> muons;
 		if ((validMuonsInput == ValidMuonsInput::AUTO && (product.m_correctedMuons.size() > 0)) || (validMuonsInput == ValidMuonsInput::CORRECTED))
 		{
+			LOG(DEBUG) << "Using corrected Muons as input; nmuons=" << product.m_correctedMuons.size();
 			muons.resize(product.m_correctedMuons.size());
 			size_t muonIndex = 0;
 			for (std::vector<std::shared_ptr<KMuon> >::iterator muon = product.m_correctedMuons.begin();
@@ -228,6 +231,7 @@ public:
 		}
 		else
 		{
+			LOG(DEBUG) << "Standard input (uncorrected); nmuons=" << event.m_muons->size();
 			muons.resize(event.m_muons->size());
 			size_t muonIndex = 0;
 			for (KMuons::iterator muon = event.m_muons->begin(); muon != event.m_muons->end(); ++muon)
@@ -238,127 +242,211 @@ public:
 		}
 
 		// Apply muon isolation and MuonID
-		for (std::vector<KMuon*>::iterator muon = muons.begin(); muon != muons.end(); ++muon)
-		{
+		// DEBUG --------------------------------------
+		LOG(DEBUG) << "Apply muons iso and ID:";
+		LOG(DEBUG) << "Year: " << settings.GetYear();
+		LOG(DEBUG) << "MuonID: ";
+		if (muonID == MuonID::TIGHT) {
+			LOG(DEBUG) << "--TIGHT";
+		}
+		else if (muonID == MuonID::MEDIUM){
+			LOG(DEBUG) << "--MEDIUM";	
+		}
+		else if (muonID == MuonID::LOOSE){
+			LOG(DEBUG) << "--LOOSE";
+		}
+		else if (muonID == MuonID::VETO){
+			LOG(DEBUG) << "--VETO";
+		}
+		else {
+			LOG(DEBUG) << "--OTHER: Please verify!";
+		}
+		LOG(DEBUG) << "MuonsIsoType: ";
+		if (muonIsoType == MuonIsoType::PF) {
+			LOG(DEBUG) << "--PF\n";
+		}
+		else if (muonIsoType == MuonIsoType::DETECTOR) {
+			LOG(DEBUG) << "--DETECTOR\n";
+		}
+		else {
+			LOG(DEBUG) << "PLEASE VERIFY YOUR MUON ISO!\n";
+		}
+		//---------------------------------------------
+		
+		for (std::vector<KMuon*>::iterator muon = muons.begin(); muon != muons.end(); ++muon) {
 			bool validMuon = true;
-
+			LOG(DEBUG) << "Muon:";
+			LOG(DEBUG) << "Muon pt: " << (*muon)->p4.Pt() << " charge: " << (*muon)->charge() << " eta: " << (*muon)->p4.Eta() << " phi: " << (*muon)->p4.Phi();   
 			// Muon ID according to Muon POG definitions
-			if (muonID == MuonID::TIGHT) {
-				if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017)
+			if (muonID == MuonID::NONE) {
+				validMuon = true;
+				LOG(WARNING) << "Muon ID is not applied!";
+			} else if (muonID == MuonID::TIGHT) {
+				if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
 					validMuon = validMuon && IsTightMuon2015(*muon, event, product);
-				else if (settings.GetYear() == 2012)
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else if (settings.GetYear() == 2012) {
 					validMuon = validMuon && IsTightMuon2012(*muon, event, product);
-				else if (settings.GetYear() == 2011)
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else if (settings.GetYear() == 2011) {
 					validMuon = validMuon && IsTightMuon2011(*muon, event, product);
-                else if (settings.GetYear() == 2018)
-                    validMuon = validMuon && IsTightMuon2018(*muon, event, product);
-				else
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else if (settings.GetYear() == 2018) {
+                    			validMuon = validMuon && IsTightMuon2018(*muon, event, product);
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else {
 					LOG(FATAL) << "Tight muon ID for year " << settings.GetYear() << " not yet implemented!";
-			}
-			else if (muonID == MuonID::MEDIUM) {
-				if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017)
+				}
+			} else if (muonID == MuonID::MEDIUM) {
+				if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
 					validMuon = validMuon && IsMediumMuon2015(*muon, event, product);
-				else
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else {
 					LOG(FATAL) << "Medium muon ID for year " << settings.GetYear() << " not yet implemented!";
-			}
-			else if (muonID == MuonID::LOOSE) {
-				if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017)
+				}
+			} else if (muonID == MuonID::LOOSE) {
+				if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
 					validMuon = validMuon && IsLooseMuon2015(*muon, event, product);
-				else if (settings.GetYear() == 2012)
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else if (settings.GetYear() == 2012) {
 					validMuon = validMuon && IsLooseMuon2012(*muon, event, product);
-				else
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else {
 					LOG(FATAL) << "Loose muon ID for year " << settings.GetYear() << " not yet implemented!";
-			}
-			else if (muonID == MuonID::VETO)
-			{
+				}
+			} else if (muonID == MuonID::VETO) {
 				validMuon = validMuon && IsVetoMuon(*muon, event, product);
-			}
-			else if (muonID == MuonID::FAKEABLE)
-			{
+				LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+			} else if (muonID == MuonID::FAKEABLE) {
 				validMuon = validMuon && IsFakeableMuon(*muon, event, product);
-			}
-			else if (muonID == MuonID::EMBEDDING)
-			{
+				LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+			} else if (muonID == MuonID::EMBEDDING) {
 				validMuon = validMuon && IsEmbeddingMuon(*muon, event, product);
-			}
-			else if (muonID == MuonID::MEDIUMHIPSAFE2016) {
-				if (settings.GetYear() == 2016)
+				LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+			} else if (muonID == MuonID::MEDIUMHIPSAFE2016) {
+				if (settings.GetYear() == 2016) {
 					validMuon = validMuon && IsMediumMuon2016ShortTerm(*muon, event, product);
-				else
+					LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
+				} else {
 					LOG(FATAL) << "Medium2016 muon ID for year " << settings.GetYear() << " not yet implemented!";
-			}
-			else if (muonID != MuonID::NONE)
-			{
+				}
+			} else if (muonID != MuonID::NONE) {
 				LOG(FATAL) << "Muon ID of type " << Utility::ToUnderlyingValue(muonID) << " not yet implemented!";
 			}
-
 			// Muon Isolation according to Muon POG definitions (independent of year)
 			if (muonIsoType == MuonIsoType::PF) {
-                // Run I
-                // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
-                // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation_AN1
-                if (settings.GetYear() < 2015){
-                    if (muonIso == MuonIso::TIGHT)
-                        validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.12f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::LOOSE)
-                        validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::FAKEABLE)
-                        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
-                    else if (muonIso != MuonIso::NONE)
-                        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
-                }
-                // Run II
-                // https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2
-                else if (settings.GetYear() >= 2015 && settings.GetYear() <=2018){
-                    if (muonIso == MuonIso::TIGHT)
-                        validMuon = validMuon && ((((*muon)->pfIsoR04() / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::LOOSE)
-                        validMuon = validMuon && ((((*muon)->pfIsoR04() / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::TIGHT_2015)
-                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::LOOSE_2015)
-                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.30f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::TIGHT_2016)
-                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::MEDIUM_2016)
-                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::LOOSE_2016)
-                        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-                    else if (muonIso == MuonIso::FAKEABLE)
-                        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
-                    else if (muonIso != MuonIso::NONE)
-                        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
-                }
-                else
-                    LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented for year "<< settings.GetYear() << "!";
-
+                		// Run I
+                		// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
+                		// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation_AN1
+                		if (settings.GetYear() < 2015) {
+                		    if (muonIso == MuonIso::TIGHT) {
+                		        validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.12f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+				    }
+                		    else if (muonIso == MuonIso::LOOSE) {
+                		        validMuon = validMuon && ((((*muon)->pfIso() / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+				    }
+                		    else if (muonIso == MuonIso::FAKEABLE) {
+                		        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
+				    }
+                		    else if (muonIso != MuonIso::NONE) {
+                		        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
+				    }
+                		}
+                		// Run II
+                		// https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2
+                		else if (settings.GetYear() >= 2015 && settings.GetYear() <=2018) {
+                		    if (muonIso == MuonIso::TIGHT) {
+				    	LOG(DEBUG) << "Iso Value: " << ((*muon)->pfIsoR04() / (*muon)->p4.Pt()) << " < 0.15 for TIGHT iso?";
+                		        validMuon = validMuon && ((((*muon)->pfIsoR04() / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso == MuonIso::LOOSE) {
+					LOG(DEBUG) << "Iso Value: " << ((*muon)->pfIsoR04() / (*muon)->p4.Pt()) << " < 0.25 for LOOSE iso?";
+                		        validMuon = validMuon && ((((*muon)->pfIsoR04() / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso == MuonIso::TIGHT_2015) {
+					LOG(DEBUG) << "Iso Value: " << ((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) << " < 0.15 for TIGHT_2015 iso?";
+                		        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso == MuonIso::LOOSE_2015) {
+					LOG(DEBUG) << "Iso Value: " << ((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) << " < 0.3 for LOOSE_2015 iso?";
+                		        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.30f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso == MuonIso::TIGHT_2016) {
+					LOG(DEBUG) << "Iso Value: " << ((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) << " < 0.15 for TIGHT_2016 iso?";
+                		        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso == MuonIso::MEDIUM_2016) {
+					LOG(DEBUG) << "Iso Value: " << ((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) << " < 0.2 for MEDIUM_2016 iso?";
+                		        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.20f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso == MuonIso::LOOSE_2016) {
+					LOG(DEBUG) << "Iso Value: " << ((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) << " < 0.25 for LOOSE_2015 iso?";
+                		        validMuon = validMuon && ((((*muon)->pfIsoR04(0.5) / (*muon)->p4.Pt()) < 0.25f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso == MuonIso::FAKEABLE) {
+					LOG(DEBUG) << "Is FakableMuonIso: " << IsFakeableMuonIso(*muon, event, product, settings);
+                		        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				    }
+                		    else if (muonIso != MuonIso::NONE)
+                		        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
+                		}
+                		else
+                		    LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented for year "<< settings.GetYear() << "!";
 			}
 			else if (muonIsoType == MuonIsoType::DETECTOR) {
-				if (muonIso == MuonIso::TIGHT)
+				if (muonIso == MuonIso::TIGHT) {
+				    	LOG(DEBUG) << "Iso Value: " << ((*muon)->trackIso / (*muon)->p4.Pt()) << " < 0.05 for TIGHT detector iso?";
 					validMuon = validMuon && ((((*muon)->trackIso / (*muon)->p4.Pt()) < 0.05f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
-				else if (muonIso == MuonIso::LOOSE)
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				}
+				else if (muonIso == MuonIso::LOOSE) {
+				    	LOG(DEBUG) << "Iso Value: " << ((*muon)->trackIso / (*muon)->p4.Pt()) << " < 0.10 for LOOSE detector iso?";
 					validMuon = validMuon && ((((*muon)->trackIso / (*muon)->p4.Pt()) < 0.10f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
+					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
+				}
 				else if (muonIso != MuonIso::NONE)
 					LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
 			}
 			else if (muonIsoType != MuonIsoType::USER && muonIsoType != MuonIsoType::NONE)
 				LOG(FATAL) << "Muon isolation type of type " << Utility::ToUnderlyingValue(muonIsoType) << " not yet implemented!";
 
-			// kinematic cuts
+			// kinematic cuts  --> verified to not make a difference (tested for JEC 2017) =>  remove?
 			validMuon = validMuon && this->PassKinematicCuts(*muon, event, product);
+			if (this->PassKinematicCuts(*muon, event, product) == false) {
+				LOG(WARNING) << "(OLD) kinematic cut not passed! Please verify.";
+			}
 
 			// check possible analysis-specific criteria
 			validMuon = validMuon && AdditionalCriteria(*muon, event, product, settings);
-
-			if (validMuon)
-			{
-				(product.*m_validMuonsMember).push_back(*muon);
+			if (AdditionalCriteria(*muon, event, product, settings) == false) {
+				LOG(DEBUG) << "Additional criteria not passed!";
 			}
-			else
-			{
+
+			if (validMuon) {
+				(product.*m_validMuonsMember).push_back(*muon);
+			} else {
 				(product.*m_invalidMuonsMember).push_back(*muon);
 			}
+			LOG(DEBUG) << "";			
 		}
+		LOG(DEBUG) << "nValidMuons: " << (product.*m_validMuonsMember).size(); 
+		LOG(DEBUG) << "nInvalidMuons: " << (product.*m_invalidMuonsMember).size();
+		if (settings.GetDebugVerbosity() > 0) {
+			//loop over all mu
+			LOG(DEBUG) << "\nAll valid muons:";
+			for(auto mu = (product.*m_validMuonsMember).begin(); mu != (product.*m_validMuonsMember).end(); ++mu) {
+				std::cout << "Pt:" << (*mu)->p4.Pt() << " eta: " << (*mu)->p4.Eta() << " phi: " << (*mu)->p4.Phi() << "\n";
+			}
+		}
+
 	}
 
 	static bool IsEmbeddingMuon(const KMuon* muon, event_type const& event, product_type& product)

@@ -23,7 +23,12 @@
 	bool JsonFilter::DoesEventPass(KappaEvent const& event, KappaProduct const& product,
 	                           KappaSettings const& settings) const
 	{
+		LOG(DEBUG) << "\n[JsonFilter]";
 		assert(event.m_eventInfo);
-		
+		if (m_runLumiSelector.accept(event.m_eventInfo->nRun, (event.m_eventInfo->nLumi & 0x0000FFFF)) == false) {
+       		     LOG(DEBUG) << "JsonFilter not passed.";
+        	} else {
+			LOG(DEBUG) << "JsonFilter passed.";
+		}
 		return m_runLumiSelector.accept(event.m_eventInfo->nRun, (event.m_eventInfo->nLumi & 0x0000FFFF));
 	}

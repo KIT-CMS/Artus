@@ -395,4 +395,11 @@ public:
 
 	IMPL_SETTING_DEFAULT(std::string, DatabasePDG, "$ROOTSYS/etc/pdg_table.txt");
 	IMPL_SETTING_DEFAULT(std::string, GenCollectionToPrint, "all");
+
+	// Logging and Debugging
+	// 0: default
+	// 1: jet lists, muon lists etc
+	// 2: everything
+	IMPL_SETTING_DEFAULT(int, DebugVerbosity, 0);
+
 };

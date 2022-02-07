@@ -199,55 +199,97 @@ public:
 	                     KappaSettings const& settings) const override
 	{
 		assert((event.*m_basicJetsMember));
-
+		LOG(DEBUG) << "\n[ValidTaggedJetsProducer] or [ValidJetsProducer]\n";
 		// select input source
 		std::vector<TJet*> jets;
-		if ((validJetsInput == KappaEnumTypes::ValidJetsInput::AUTO && ((product.*m_correctedJetsMember).size() > 0)) || (validJetsInput == KappaEnumTypes::ValidJetsInput::CORRECTED))
-		{
+		if ((validJetsInput == KappaEnumTypes::ValidJetsInput::AUTO && ((product.*m_correctedJetsMember).size() > 0)) ||
+			(validJetsInput == KappaEnumTypes::ValidJetsInput::CORRECTED)) {
+			LOG(DEBUG) << "Use correctedJets as input.";
 			jets.resize((product.*m_correctedJetsMember).size());
+			LOG(DEBUG) << "N jets: " << (product.*m_correctedJetsMember).size();
 			size_t jetIndex = 0;
 			for (typename std::vector<std::shared_ptr<TJet> >::iterator jet = (product.*m_correctedJetsMember).begin();
-			     jet != (product.*m_correctedJetsMember).end(); ++jet)
-			{
+					jet != (product.*m_correctedJetsMember).end(); ++jet) {
 				jets[jetIndex] = jet->get();
 				++jetIndex;
 			}
-		}
-		else
-		{
+		} else {
+			LOG(DEBUG) << "Use basic jets as input.";
+			LOG(DEBUG) << "N jets: " << (event.*m_basicJetsMember)->size();
 			jets.resize((event.*m_basicJetsMember)->size());
 			size_t jetIndex = 0;
-			for (typename std::vector<TJet>::iterator jet = (event.*m_basicJetsMember)->begin(); jet != (event.*m_basicJetsMember)->end(); ++jet)
-			{
+			for (typename std::vector<TJet>::iterator jet = (event.*m_basicJetsMember)->begin();
+                        		jet != (event.*m_basicJetsMember)->end(); ++jet) {
 				jets[jetIndex] = &(*jet);
 				++jetIndex;
 			}
 		}
+		
+		if (product.m_validLeptons.size() < 1 ) {
+			LOG(WARNING) << "Number of valid leptons:" << product.m_validLeptons.size()
+                         << "! Forgot to add the ValidLeptonsProducer?";
+		} else {
+			LOG(DEBUG) << "Number of valid leptons used for Lepton removal: " << product.m_validLeptons.size();
+		}
 
-		for (typename std::vector<TJet*>::iterator jet = jets.begin(); jet != jets.end(); ++jet)
-		{
+		if (settings.GetDebugVerbosity() > 0 && jetID == KappaEnumTypes::JetID::NONE) {
+			LOG(WARNING) << "Object-based JetID skipped!";
+		}
+
+		for (typename std::vector<TJet*>::iterator jet = jets.begin(); jet != jets.end(); ++jet) {
 			bool validJet = true;
-
 			validJet = validJet && passesJetID(*jet, jetIDVersion, jetID, settings);
+			if( settings.GetDebugVerbosity() > 0) {
+				LOG(DEBUG) << "\nJet pt: " << (*jet)->p4.Pt() << " jet eta: " << (*jet)->p4.eta() << " jet phi: " << (*jet)->p4.phi();
+				if (passesJetID(*jet, jetIDVersion, jetID, settings)) {
+					LOG(DEBUG) << "Object-based JetID passed (or skipped).";
+				} else {
+					LOG(DEBUG) << "Jet does not pass JetID.";
+				}
+			}
 
-			// remove leptons from list of jets via simple DeltaR isolation
+			// remove valid leptons from list of jets via simple DeltaR isolation
 			for (std::vector<KLepton*>::const_iterator lepton = product.m_validLeptons.begin();
-			     validJet && lepton != product.m_validLeptons.end(); ++lepton)
-			{
+				     validJet && lepton != product.m_validLeptons.end(); ++lepton) {
 				validJet = validJet && ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4) > settings.GetJetLeptonLowerDeltaRCut();
+				if (settings.GetDebugVerbosity() > 1) {
+					LOG(DEBUG) << "Check lepton with pt: " << (*lepton)->p4.Pt() << "eta: " << (*lepton)->p4.Pt() << " phi: " 
+						<< (*lepton)->p4.Pt() << " Delta R: " << ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4);
+					if (validJet == false) {
+					LOG(DEBUG) << "Jet invalidated and removed due to delta R cut (" << settings.GetJetLeptonLowerDeltaRCut() << ")";
+					}
+				}
 			}
 
 			// kinematic cuts
 			validJet = validJet && this->PassKinematicCuts(*jet, event, product);
-
+			if (this->PassKinematicCuts(*jet, event, product) == false) {
+				LOG(WARNING) << "Jet does not pass (OLD) KinematicCuts. Please verify!!\n";
+			}	
 			// check possible analysis-specific criteria
 			validJet = validJet && AdditionalCriteria(*jet, event, product, settings);
-
-			if (validJet)
+			if (AdditionalCriteria(*jet, event, product, settings) == false) {
+				LOG(DEBUG) << "Jet does not pass AdditionalCriteria. Please verify!\n";
+			}
+			if (validJet) {
 				product.m_validJets.push_back(*jet);
-			else
+			} else {
 				product.m_invalidJets.push_back(*jet);
+			}
 		}
+		LOG(DEBUG) << "\n===== Jet Summary: =====";
+		if(settings.GetDebugVerbosity() > 0) {
+			LOG(DEBUG) << "Valid Jets:";
+			for (auto jet = product.m_validJets.begin(); jet != product.m_validJets.end(); ++jet) {
+				std::cout << (*jet)->p4.Pt() << " eta: " << (*jet)->p4.eta() << " phi: " << (*jet)->p4.phi() << std::endl;
+			}
+		
+			LOG(DEBUG) << "\nInvalid Jets:";
+			for (auto jet = product.m_invalidJets.begin(); jet != product.m_invalidJets.end(); ++jet) {
+				std::cout << (*jet)->p4.Pt() << " eta: " << (*jet)->p4.eta() << " phi: " << (*jet)->p4.phi() << std::endl;
+			}
+		}
+		LOG(DEBUG) << "\nn ValidJets: " << product.m_validJets.size() << ", n invalidJets: " << product.m_invalidJets.size();
 	}
 
 	// check on jet type added and cut logic refactored
@@ -255,10 +297,11 @@ public:
                             KappaEnumTypes::JetID jetID, KappaSettings const& settings)
 	{
 		// if applying jet ID is not requested, return immediately
-		if (jetID == KappaEnumTypes::JetID::NONE)
+		if (jetID == KappaEnumTypes::JetID::NONE) {
 			return true;
+		}
 
-		// -- stage 1: check for TaggedJets
+	// -- stage 1: check for TaggedJets
             // -- stage 2: check for jetIDVersion
                 // -- stage 3: different eta ranges
                     // -- stage 4: check for JetID (deprecated for UL)
@@ -284,19 +327,18 @@ public:
                                 jet->muonFraction < maxMuFraction &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) 
-                                return false;
-                        }
-                        else {
+                                jet->electronFraction < maxCEMFraction)) {
+                            	   return false;
+			    }
+                        } else {
                             if (!(jet->neutralHadronFraction < maxNHFraction &&
                                 (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
                                 jet->nConstituents > minNumConstituents &&
-                                jet->muonFraction < maxMuFraction))
-                                return false;
+                                jet->muonFraction < maxMuFraction)) {
+                             	   return false;
+			    }
                         }
-                    }
-                    else if (jetID == KappaEnumTypes::JetID::TIGHT)
-                    {
+                    } else if (jetID == KappaEnumTypes::JetID::TIGHT) {
                         float maxNHFraction = 0.90f;
                         float maxNEMFraction = 0.90f;
                         float minNumConstituents = 1;
@@ -310,17 +352,17 @@ public:
                                 jet->nConstituents > minNumConstituents &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) 
-                                return false;
-                        }
-                        else {
+                                jet->electronFraction < maxCEMFraction)) {
+                                    return false;
+			    }
+                        } else {
                             if (!(jet->neutralHadronFraction < maxNHFraction &&
                                 (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                                jet->nConstituents > minNumConstituents))
-                                return false;
+                                jet->nConstituents > minNumConstituents)) {
+                                    return false;
+			    }
                         }
-                    }
-                    else if (jetID == KappaEnumTypes::JetID::LOOSE) {
+                    } else if (jetID == KappaEnumTypes::JetID::LOOSE) {
                         float maxNHFraction = 0.99f;
                         float maxNEMFraction = 0.99f;
                         float minNumConstituents = 1;
@@ -335,25 +377,25 @@ public:
                                 jet->nConstituents > minNumConstituents &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) 
-                                return false;
-                        }
-                        else { // 2.4 <= 2.7
+                                jet->electronFraction < maxCEMFraction)) {
+                            	    return false;
+			    }
+                        } else { // 2.4 <= 2.7
                             if (!(jet->neutralHadronFraction < maxNHFraction &&
                                 (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                                jet->nConstituents > minNumConstituents))
-                                return false;
+                                jet->nConstituents > minNumConstituents)) {
+                                    return false;
+			    }
                         }
-                    }
-                    else {
+                    } else {
                         // non-official: if this is still necessary, pls check the pull request from 19.07.2021 /TODO
-                        if (jetID == KappaEnumTypes::JetID::MEDIUM || jetID == KappaEnumTypes::JetID::LOOSELEPVETO)
-                            LOG(ERROR) << "+++ JetID = MEDIUM or LOOSELEPVETO not implemented +++" << std::endl;
+                        if (jetID == KappaEnumTypes::JetID::MEDIUM || jetID == KappaEnumTypes::JetID::LOOSELEPVETO) {
+                            LOG(FATAL) << "+++ JetID = MEDIUM or LOOSELEPVETO not implemented +++" << std::endl;
+			}
 
-                        LOG(ERROR) << "+++ Unknown JetID +++ please check your configuration!" << std::endl;
+                        LOG(FATAL) << "+++ Unknown JetID +++ please check your configuration!" << std::endl;
                     }
-                }
-                else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
+                } else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT){
                         float maxNHFraction = 0.98f;
                         float minNEMFraction = 0.01f;
@@ -361,44 +403,43 @@ public:
 
                         if (!(jet->neutralHadronFraction < maxNHFraction &&
                               (jet->photonFraction + jet->hfEMFraction) > minNEMFraction &&
-                              (jet->nConstituents - jet->nCharged) > minNeutral)) // NumNeutralParticles = pfjet->neutralMultiplicity()
+                              (jet->nConstituents - jet->nCharged) > minNeutral)) { // NumNeutralParticles = pfjet->neutralMultiplicity()
                             // not implemented in Kappa
-                            return false;
-                    }
-                    else if (jetID == KappaEnumTypes::JetID::LOOSE) {
+                                return false;
+			}
+                    } else if (jetID == KappaEnumTypes::JetID::LOOSE) {
                         float maxNHFraction = 0.98f;
                         float minNEMFraction = 0.01f;
                         float minNeutral = 2;
 
                         if (!(jet->neutralHadronFraction < maxNHFraction &&
                               (jet->photonFraction + jet->hfEMFraction) > minNEMFraction &&
-                              (jet->nConstituents - jet->nCharged) > minNeutral))
+                              (jet->nConstituents - jet->nCharged) > minNeutral)) {
                             // not implemented in Kappa
-                            return false;
+                        	return false;
+			}
+                    } else {
+                        LOG(FATAL) << "+++ Unknown JetID or no valid cuts available for this eta region! +++" << std::endl;
                     }
-                    else {
-                        LOG(ERROR) << "+++ Unknown JetID or no valid cuts available for this eta region! +++" << std::endl;
-                    }
-                }
-                else if (std::abs(jet->p4.eta()) > 3.0f) {
+                } else if (std::abs(jet->p4.eta()) > 3.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT){
                         float maxNEMFraction = 0.90f;
                         float minNeutral = 10;
 
                         if (!((jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                            (jet->nConstituents - jet->nCharged) > minNeutral))
-                            return false;
-                    }
-                    else if (jetID == KappaEnumTypes::JetID::LOOSE) {
+                            (jet->nConstituents - jet->nCharged) > minNeutral)) {
+	                	return false;
+			}
+                    } else if (jetID == KappaEnumTypes::JetID::LOOSE) {
                         float maxNEMFraction = 0.90f;
                         float minNeutral = 10;
 
                         if (!((jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                            (jet->nConstituents - jet->nCharged) > minNeutral))
-                            return false;
-                    }
-                    else {
-                        LOG(ERROR) << "+++ No valid cuts available for this eta region! +++" << std::endl;
+                            (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                        	return false;
+			}
+                    } else {
+                        LOG(FATAL) << "+++ No valid cuts available for this eta region! +++" << std::endl;
                     }
 
                 }
@@ -424,19 +465,18 @@ public:
                                 jet->muonFraction < maxMuFraction &&
                                 jet->chargedHadronFraction > minCHFraction &&
                                 jet->nCharged > minChargedMult &&
-                                jet->electronFraction < maxCEMFraction)) 
-                                return false;
-                        }
-                        else
-                        {
+                                jet->electronFraction < maxCEMFraction)) {
+                            	    return false;
+			    }
+                        } else {
                             if (!(jet->neutralHadronFraction < maxNHFraction &&
                                 (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
                                 jet->nConstituents > minNumConstituents &&
-                                jet->muonFraction < maxMuFraction))
-                                return false;
+                                jet->muonFraction < maxMuFraction)) {
+	    	                    return false;
+			    }
                         }
-                    }
-                    else if (jetID == KappaEnumTypes::JetID::TIGHT) {
+                    } else if (jetID == KappaEnumTypes::JetID::TIGHT) {
                         float maxNHFraction = 0.90f;
                         float maxNEMFraction = 0.90f;
                         float minNumConstituents = 1;
@@ -448,25 +488,22 @@ public:
                                 (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
                                 jet->nConstituents > minNumConstituents &&
                                 jet->chargedHadronFraction > minCHFraction &&
-                                jet->nCharged > minChargedMult))
-                                return false;
-                        }
-                        else {  // 2.4 <= eta <= 2.7
+                                jet->nCharged > minChargedMult)) {
+                                    return false;
+			    }
+                        } else {  // 2.4 <= eta <= 2.7
                             if (!(jet->neutralHadronFraction < maxNHFraction &&
                                 (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                                jet->nConstituents > minNumConstituents))
-                                return false;
+                                jet->nConstituents > minNumConstituents)) {
+                                    return false;
+			    }
                         }
+                    } else if (jetID == KappaEnumTypes::JetID::LOOSE ) {
+                        LOG(WARNING) << "+++ JetID = LOOSE not recommended anymore! +++" << std::endl;
+                    } else {
+                        LOG(FATAL) << "+++ Unknown JetID +++ please check your configuration!" << std::endl;
                     }
-                    else if (jetID == KappaEnumTypes::JetID::LOOSE )
-                    {
-                        LOG(ERROR) << "+++ JetID = LOOSE not recommended anymore! +++" << std::endl;
-                    }
-                    else {
-                        LOG(ERROR) << "+++ Unknown JetID +++ please check your configuration!" << std::endl;
-                    }
-                }
-                else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
+                } else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT) {
                         float minNEMFraction = 0.02f;
                         float maxNEMFraction = 0.99f;
@@ -474,17 +511,15 @@ public:
 
                         if (!((jet->photonFraction + jet->hfEMFraction) > minNEMFraction &&
                             (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                            (jet->nConstituents - jet->nCharged) > minNeutral))
-                            return false;
+                            (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                                return false;
+			}
+                    } else if (jetID == KappaEnumTypes::JetID::LOOSE) {
+                        LOG(WARNING) << " JetID = LOOSE not recommended anymore!" << std::endl;
+                    } else {
+                        LOG(FATAL) << "+++ Unknown JetID or no valid cuts available for this eta region! +++" << std::endl;
                     }
-                    else if (jetID == KappaEnumTypes::JetID::LOOSE) {
-                        LOG(ERROR) << " JetID = LOOSE not recommended anymore!" << std::endl;
-                    }
-                    else {
-                        LOG(ERROR) << "+++ Unknown JetID or no valid cuts available for this eta region! +++" << std::endl;
-                    }
-                }
-                else if (std::abs(jet->p4.eta()) > 3.0f) {
+                } else if (std::abs(jet->p4.eta()) > 3.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT) {
                         float maxNEMFraction = 0.90f;
                         float minNHFraction = 0.02;
@@ -492,14 +527,13 @@ public:
 
                         if (!((jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
                             jet->neutralHadronFraction > minNHFraction &&
-                            (jet->nConstituents - jet->nCharged) > minNeutral))
-                            return false;
-                    }
-                    else if (jetID == KappaEnumTypes::JetID::LOOSE) {
-                        LOG(ERROR) << " JetID = LOOSE not recommended anymore!" << std::endl;
-                    }
-                    else {
-                        LOG(ERROR) << "+++ No valid cuts available for this eta region! +++" << std::endl;
+                            (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                                return false;
+			}
+                    } else if (jetID == KappaEnumTypes::JetID::LOOSE) {
+                        LOG(WARNING) << " JetID = LOOSE not recommended anymore!" << std::endl;
+                    } else {
+                        LOG(FATAL) << "+++ No valid cuts available for this eta region! +++" << std::endl;
                     }
                 }
             }
@@ -520,10 +554,10 @@ public:
                          jet->muonFraction < maxMuFraction &&
                          jet->chargedHadronFraction > minCHFraction &&
                          jet->nCharged > minChargedMult &&
-                         jet->electronFraction < maxCEMFraction))
-                         return false;
-                }
-                else if (std::abs(jet->p4.eta()) > 2.6f && std::abs(jet->p4.eta()) <= 2.7f) {
+                         jet->electronFraction < maxCEMFraction)) {
+                             return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) > 2.6f && std::abs(jet->p4.eta()) <= 2.7f) {
                     float maxNHFraction = 0.90f;
                     float maxNEMFraction = 0.99f;
                     float maxMuFraction = 0.8f;  // for LepVeto (see twiki)
@@ -533,26 +567,27 @@ public:
                          (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
                          jet->muonFraction < maxMuFraction &&
                          jet->nCharged > minChargedMult &&
-                         jet->electronFraction < maxCEMFraction))
-                         return false;
-                }
-                else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
+                         jet->electronFraction < maxCEMFraction)) {
+                             return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
                     float minNEMFraction = 0.02f;
                     float maxNEMFraction = 0.99f;
                     float minNeutral = 2;
                     if (!((jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
                          (jet->photonFraction + jet->hfEMFraction) > minNEMFraction &&
-                         (jet->nConstituents - jet->nCharged) > minNeutral))
-                         return false;
-                }
-                else if (std::abs(jet->p4.eta()) > 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
+                         (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                             return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) > 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
                     float minNHFraction = 0.20f;
                     float maxNEMFraction = 0.90f;
                     float minNeutral = 10;
                     if (!(jet->neutralHadronFraction > minNHFraction &&
                         (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                        (jet->nConstituents - jet->nCharged) > minNeutral))
-                        return false;
+                        (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                            return false;
+		    }
                 }
             }
             // Ultra Legacy: https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVUL
@@ -571,17 +606,17 @@ public:
                         jet->muonFraction < maxMuFraction &&
                         jet->chargedHadronFraction > minCHFraction &&
                         jet->nCharged > minChargedMult &&
-                        jet->electronFraction < maxCEMFraction))
-                        return false;
-                }
-                else if (std::abs(jet->p4.eta()) < 2.4f && std::abs(jet->p4.eta()) <= 2.7f) {
+                        jet->electronFraction < maxCEMFraction)) {
+                            return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) < 2.4f && std::abs(jet->p4.eta()) <= 2.7f) {
                     float maxNHFraction = 0.90f;
                     float maxNEMFraction = 0.99f;
                     if (!(jet->neutralHadronFraction < maxNHFraction &&
-                        (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction))
-                        return false;
-                }
-                else if (std::abs(jet->p4.eta()) < 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
+                        (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction)) {
+                             return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) < 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
                     float maxNHFraction = 0.90f;
                     float minNEMFraction = 0.0f;
                     float maxNEMFraction = 0.99f;
@@ -589,20 +624,20 @@ public:
                     if (!(jet->neutralHadronFraction < maxNHFraction &&
                         (jet->photonFraction + jet->hfEMFraction) > minNEMFraction &&
                         (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                        (jet->nConstituents - jet->nCharged) > minNeutral ))
-                        return false;
-                }
-                else if (std::abs(jet->p4.eta()) < 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
+                        (jet->nConstituents - jet->nCharged) > minNeutral )) {
+                             return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) < 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
                     float minNHFraction = 0.20f;
                     float maxNEMFraction = 0.90f;
                     float minNeutral = 10;
                     if (!(jet->neutralHadronFraction > minNHFraction &&
                         (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                        (jet->nConstituents - jet->nCharged) > minNeutral))
-                        return false;
+                        (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                            return false;
+		    }
                 }
-            }
-            else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL) {
+            } else if (jetIDVersion == KappaEnumTypes::JetIDVersion::ID2017UL || jetIDVersion == KappaEnumTypes::JetIDVersion::ID2018UL) {
                 if (std::abs(jet->p4.eta()) <= 2.6f) {
                     float maxNHFraction = 0.90f;
                     float maxNEMFraction = 0.90f;
@@ -618,10 +653,10 @@ public:
                         jet->muonFraction < maxMuFraction &&
                         jet->chargedHadronFraction > minCHFraction &&
                         jet->nCharged > minChargedMult &&
-                        jet->electronFraction < maxCEMFraction))
-                        return false;
-                }
-                else if (std::abs(jet->p4.eta()) < 2.6f && std::abs(jet->p4.eta()) <= 2.7f) {
+                        jet->electronFraction < maxCEMFraction)) {
+                            return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) < 2.6f && std::abs(jet->p4.eta()) <= 2.7f) {
                     float maxNHFraction = 0.90f;
                     float maxNEMFraction = 0.99f;
                     float maxMuFraction = 0.8f;
@@ -632,43 +667,40 @@ public:
                         (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
                         jet->muonFraction < maxMuFraction &&
                         jet->nCharged > minChargedMult &&
-                        jet->electronFraction < maxCEMFraction))
-                        return false;
-                }
-                else if (std::abs(jet->p4.eta()) < 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
+                        jet->electronFraction < maxCEMFraction)) {
+                            return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) < 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
                     float minNEMFraction = 0.01f;
                     float maxNEMFraction = 0.99f;
                     float minNeutral = 1;
                     if (!((jet->photonFraction + jet->hfEMFraction) > minNEMFraction &&
                         (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                        (jet->nConstituents - jet->nCharged) > minNeutral))
-                        return false;
-                }
-                else if (std::abs(jet->p4.eta()) < 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
+                        (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                            return false;
+		    }
+                } else if (std::abs(jet->p4.eta()) < 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
                     float minNHFraction = 0.20f;
                     float maxNEMFraction = 0.90f;
                     float minNeutral = 10;
                     if (!(jet->neutralHadronFraction > minNHFraction &&
                         (jet->photonFraction + jet->hfEMFraction) < maxNEMFraction &&
-                        (jet->nConstituents - jet->nCharged) > minNeutral))
-                        return false;
+                        (jet->nConstituents - jet->nCharged) > minNeutral)) {
+                            return false;
+		    }
                 }
+            } else { // no valid jetIDVersion selected
+            	LOG(FATAL) << "No valid jetIDVersion selected!" << std::endl;
             }
-            else { // no valid jetIDVersion selected
-            	LOG(ERROR) << "No valid jetIDVersion selected!" << std::endl;
-            }
-        }
-        else if (settings.GetTaggedJets().find("PUPPI") != std::string::npos) { // for future; PUPPI jets not used yet
+        } else if (settings.GetTaggedJets().find("PUPPI") != std::string::npos) { // for future; PUPPI jets not used yet
             // Note that the jet ID requirements for |eta|>2.7 are not recommended for PUPPI jets
-
-            LOG(ERROR) << "PUPPI not implemented yet!" << std::endl;
-        }
-	    else {  // unknown TaggedJets
-            LOG(ERROR) << "Unknown TaggedJets; Please verify your configuration!" << std::endl;
+            LOG(FATAL) << "PUPPI not implemented yet!" << std::endl;
+        } else {  // unknown TaggedJets
+            LOG(FATAL) << "Unknown TaggedJets; Please verify your configuration!" << std::endl;
         }
 
         // all cuts passed!
-		return true;
+	    return true;
 	}
 
 
@@ -677,7 +709,7 @@ protected:
 	virtual bool AdditionalCriteria(TJet* jet, KappaEvent const& event,
 	                                KappaProduct& product, KappaSettings const& settings) const
 	{
-		return true;
+	    return true;
 	}
 
 

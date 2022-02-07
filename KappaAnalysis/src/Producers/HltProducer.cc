@@ -26,7 +26,7 @@ void HltProducer::Produce(KappaEvent const& event, KappaProduct& product,
 {
 	assert(event.m_lumiInfo);
 	assert(event.m_eventInfo);
-	
+	LOG(DEBUG) << "\n[HltProducer]";
 	if (product.m_settingsHltPaths.empty())
 	{
 		product.m_settingsHltPaths.insert(product.m_settingsHltPaths.begin(),
@@ -68,7 +68,7 @@ void HltProducer::Produce(KappaEvent const& event, KappaProduct& product,
 			if (event.m_eventInfo->hltFired(hltName, event.m_lumiInfo) && (settings.GetAllowPrescaledTrigger() || (prescale <= 1)))
 			{
 				product.m_selectedHltNames.push_back(hltName);
-				
+                		LOG(DEBUG) << "Hlt: " << hltName;
 				// do not use hltName here as a parameter because *hltPath is already cached.
 				product.m_selectedHltPositions.push_back(static_cast<int>(m_hltInfo.getHLTPosition(*hltPath)));
 				

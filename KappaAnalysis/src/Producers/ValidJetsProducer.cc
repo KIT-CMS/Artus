@@ -87,7 +87,6 @@ bool ValidTaggedJetsProducer::AdditionalCriteria(KJet* jet, KappaEvent const& ev
 	return true;
 	// ++++++++++++ This code is depracated and not used anymore! ++++++++++++
 	// if PU jet ID should be applied by index, this has to be reimplemented 
-	// in Excalibur for consistency!
 	/*
 	assert(event.m_jetMetadata);
 	
