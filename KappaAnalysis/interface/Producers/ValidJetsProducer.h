@@ -723,6 +723,7 @@ public:
                             float maxMuFraction = 0.8f;
                             float maxCEMFraction = 0.80f;
                             if (!(jet->muonFraction < maxMuFraction &&
+
                                   jet->electronFraction < maxCEMFraction)) {
                                 return false;
                             }
@@ -786,7 +787,6 @@ public:
                               jet->nCharged > minChargedMult)) {
                             return false;
                         }
-
                         if (jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) {
                             float maxMuFraction = 0.8f;
                             float maxCEMFraction = 0.80f;
