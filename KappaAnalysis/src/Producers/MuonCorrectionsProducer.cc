@@ -18,7 +18,8 @@ MuonCorrectionsProducer::MuonEnergyCorrection MuonCorrectionsProducer::ToMuonEne
 	else if (muonEnergyCorrection == "rochcorr2017ul") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2017UL;
 	else if (muonEnergyCorrection == "rochcorr2018") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2018;
 	else if (muonEnergyCorrection == "rochcorr2018ul") return MuonCorrectionsProducer::MuonEnergyCorrection::ROCHCORR2018UL;
-	else return MuonCorrectionsProducer::MuonEnergyCorrection::NONE;
+    else if (muonEnergyCorrection == "none") return MuonCorrectionsProducer::MuonEnergyCorrection::NONE;
+	else LOG(FATAL) << "No correct 'MuonEnergyCorrection' config entry was given!";
 }
 
 std::string MuonCorrectionsProducer::GetProducerId() const {

@@ -35,8 +35,6 @@ public:
         ROCHCORR2016UL = 5,
         ROCHCORR2017UL = 6,
         ROCHCORR2018UL = 7
-
-
     };
 
     static MuonEnergyCorrection ToMuonEnergyCorrection(std::string const &muonEnergyCorrection);
