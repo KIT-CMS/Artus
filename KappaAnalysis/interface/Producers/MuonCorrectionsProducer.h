@@ -14,42 +14,42 @@
    \brief Producer for muon four momentum corrections.
    \Rochester Corrections are included
 */
-class MuonCorrectionsProducer: public KappaProducerBase
-{
+class MuonCorrectionsProducer : public KappaProducerBase {
 
 public:
-	std::string GetProducerId() const override;
+    std::string GetProducerId() const override;
 
-	void Init(setting_type const& settings) override;
+    void Init(setting_type const &settings) override;
 
-	void Produce(KappaEvent const& event, KappaProduct& product,
-	                     KappaSettings const& settings) const override;
+    void Produce(KappaEvent const &event, KappaProduct &product,
+                 KappaSettings const &settings) const override;
 
 public:
-	enum class MuonEnergyCorrection : int
-	{
-		NONE  = -1,
-		FALL2015 = 0,
-		ROCHCORR2015 = 1,
-		ROCHCORR2016 = 2,
-		ROCHCORR2017 = 3,
-		ROCHCORR2018 = 4,
-		ROCHCORR2016UL = 5,
-		ROCHCORR2017UL = 6,
-		ROCHCORR2018UL = 7
+    enum class MuonEnergyCorrection : int {
+        NONE = -1,
+        FALL2015 = 0,
+        ROCHCORR2015 = 1,
+        ROCHCORR2016 = 2,
+        ROCHCORR2017 = 3,
+        ROCHCORR2018 = 4,
+        ROCHCORR2016UL = 5,
+        ROCHCORR2017UL = 6,
+        ROCHCORR2018UL = 7
 
 
-	};
-	static MuonEnergyCorrection ToMuonEnergyCorrection(std::string const& muonEnergyCorrection);
+    };
+
+    static MuonEnergyCorrection ToMuonEnergyCorrection(std::string const &muonEnergyCorrection);
 
 protected:
 
-	// Can be overwritten for analysis-specific use cases
-	virtual void AdditionalCorrections(KMuon* muon, KappaEvent const& event,
-	                                   KappaProduct& product, KappaSettings const& settings) const;
+    // Can be overwritten for analysis-specific use cases
+    virtual void AdditionalCorrections(KMuon *muon, KappaEvent const &event,
+                                       KappaProduct &product, KappaSettings const &settings) const;
+
 private:
-	MuonEnergyCorrection muonEnergyCorrection;
-	rochcor2015 *rmcor2015;
-	RoccoR *rmcor;
-	TRandom3 *random;
+    MuonEnergyCorrection muonEnergyCorrection;
+    rochcor2015 *rmcor2015;
+    RoccoR *rmcor;
+    TRandom3 *random;
 };

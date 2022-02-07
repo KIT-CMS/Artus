@@ -15,13 +15,14 @@
  *  Therefore this filter cannot meaningfully run as a global pre-filter
  *  which gets an empty product.
  */
-class HltFilter: public FilterBase<KappaTypes> {
+class HltFilter : public FilterBase<KappaTypes> {
 
 public:
 
-	std::string GetFilterId() const override;
-	bool DoesEventPass(KappaEvent const& event, KappaProduct const& product,
-	                           KappaSettings const& settings) const override;
+    std::string GetFilterId() const override;
+
+    bool DoesEventPass(KappaEvent const &event, KappaProduct const &product,
+                       KappaSettings const &settings) const override;
 
 };
 

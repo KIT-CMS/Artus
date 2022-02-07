@@ -76,7 +76,8 @@ public:
 		else if (muonID == "fakeable") return MuonID::FAKEABLE;
 		else if (muonID == "embedding") return MuonID::EMBEDDING;
 		else if (muonID == "mediumhipsafe2016") return MuonID::MEDIUMHIPSAFE2016;
-		else return MuonID::NONE;
+		else if (muonID == "none") return MuonID::NONE;
+		else LOG(FATAL) << "MuonID not known!";
 	}
 
 	enum class MuonIsoType : int
@@ -91,7 +92,8 @@ public:
 		if (muonIsoType == "pf") return MuonIsoType::PF;
 		else if (muonIsoType == "detector") return MuonIsoType::DETECTOR;
 		else if (muonIsoType == "user") return MuonIsoType::USER;
-		else return MuonIsoType::NONE;
+		else if (muonIsoType == "none") return MuonIsoType::NONE;
+		else LOG(FATAL) << "Muon Iso Type not known!";
 	}
 
 	enum class MuonIso : int
@@ -116,7 +118,8 @@ public:
 		else if (muonIso == "tight_2016") return MuonIso::TIGHT_2016;
 		else if (muonIso == "medium_2016") return MuonIso::MEDIUM_2016;
 		else if (muonIso == "loose_2016") return MuonIso::LOOSE_2016;
-		else return MuonIso::NONE;
+		else if (muonIso == "none") return MuonIso::NONE;
+		else LOG(FATAL) << "Muon Iso not known!";
 	}
 
 	std::string GetProducerId() const override {
@@ -279,7 +282,7 @@ public:
 			LOG(DEBUG) << "Muon pt: " << (*muon)->p4.Pt() << " charge: " << (*muon)->charge() << " eta: " << (*muon)->p4.Eta() << " phi: " << (*muon)->p4.Phi();   
 			// Muon ID according to Muon POG definitions
 			if (muonID == MuonID::NONE) {
-				validMuon = true;
+				// all cases are skipped and validMuon stays true
 				LOG(WARNING) << "Muon ID is not applied!";
 			} else if (muonID == MuonID::TIGHT) {
 				if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
@@ -330,7 +333,7 @@ public:
 				} else {
 					LOG(FATAL) << "Medium2016 muon ID for year " << settings.GetYear() << " not yet implemented!";
 				}
-			} else if (muonID != MuonID::NONE) {
+			} else {
 				LOG(FATAL) << "Muon ID of type " << Utility::ToUnderlyingValue(muonID) << " not yet implemented!";
 			}
 			// Muon Isolation according to Muon POG definitions (independent of year)
@@ -349,6 +352,7 @@ public:
                 		        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
 				    }
                 		    else if (muonIso != MuonIso::NONE) {
+					    // if "none": validMuon stays true
                 		        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
 				    }
                 		}
@@ -395,8 +399,10 @@ public:
                 		        validMuon = validMuon && IsFakeableMuonIso(*muon, event, product, settings);
 					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
 				    }
-                		    else if (muonIso != MuonIso::NONE)
+                		    else if (muonIso != MuonIso::NONE) {
+					    // If "none": validMuon stays true
                 		        LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
+				    }
                 		}
                 		else
                 		    LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented for year "<< settings.GetYear() << "!";
@@ -412,11 +418,13 @@ public:
 					validMuon = validMuon && ((((*muon)->trackIso / (*muon)->p4.Pt()) < 0.10f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
 					LOG(DEBUG) << "Valid muon: " << validMuon << " Pt:" << (*muon)->p4.Pt();
 				}
-				else if (muonIso != MuonIso::NONE)
+				else if (muonIso != MuonIso::NONE) {
 					LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso) << " not yet implemented!";
+				}
 			}
-			else if (muonIsoType != MuonIsoType::USER && muonIsoType != MuonIsoType::NONE)
+			else if (muonIsoType != MuonIsoType::USER && muonIsoType != MuonIsoType::NONE) {
 				LOG(FATAL) << "Muon isolation type of type " << Utility::ToUnderlyingValue(muonIsoType) << " not yet implemented!";
+			}
 
 			// kinematic cuts  --> verified to not make a difference (tested for JEC 2017) =>  remove?
 			validMuon = validMuon && this->PassKinematicCuts(*muon, event, product);
