@@ -56,12 +56,9 @@ public:
         KappaProducerBase::Init(settings);
         ValidPhysicsObjectTools<KappaTypes, TValidJet>::Init(settings);
 
-        validJetsInput = KappaEnumTypes::ToValidJetsInput(
-                boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetValidJetsInput())));
-        jetIDVersion = KappaEnumTypes::ToJetIDVersion(
-                boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetJetIDVersion())));
-        jetID = KappaEnumTypes::ToJetID(
-                boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetJetID())));
+        validJetsInput = KappaEnumTypes::ToValidJetsInput(settings.GetValidJetsInput());
+        jetIDVersion = KappaEnumTypes::ToJetIDVersion(settings.GetJetIDVersion());
+        jetID = KappaEnumTypes::ToJetID(settings.GetJetID());
 
         if (jetID == KappaEnumTypes::JetID::MEDIUM && jetIDVersion != KappaEnumTypes::JetIDVersion::ID2010)
             LOG(WARNING) << "Since 2012, the medium jetID is not supported officially any longer.";
@@ -297,7 +294,7 @@ public:
                  KappaSettings const &settings) const override {
         assert((event.*m_basicJetsMember));
         // DEBUG output
-        LOG(DEBUG) << "\n[ValidTaggedJetsProducer] or [ValidJetsProducer]\n";
+        LOG(DEBUG) << "\n[ValidTaggedJetsProducer] or [ValidJetsProducer]";
         LOG(DEBUG) << "JetID: " << settings.GetJetID();
         LOG(DEBUG) << "JetIDVersion: " << settings.GetJetIDVersion();
 
@@ -342,11 +339,16 @@ public:
         for (typename std::vector<TJet *>::iterator jet = jets.begin(); jet != jets.end(); ++jet) {
             bool validJet = true;
             validJet = validJet && passesJetID(*jet, jetIDVersion, jetID, settings);
+
             if (settings.GetDebugVerbosity() > 0) {
                 LOG(DEBUG) << "\nJet pt: " << (*jet)->p4.Pt() << " eta: " << (*jet)->p4.eta() << " phi: "
                            << (*jet)->p4.phi();
                 if (passesJetID(*jet, jetIDVersion, jetID, settings)) {
-                    LOG(DEBUG) << "Object-based JetID passed (or skipped).";
+                    if (jetID != KappaEnumTypes::JetID::NONE) {
+                        LOG(DEBUG) << "Object-based JetID passed.";
+                    } else {
+                        LOG(DEBUG) << "Object-based JetID skipped.";
+                    }
                 } else {
                     LOG(DEBUG) << "Jet does not pass JetID.";
                 }
@@ -406,8 +408,10 @@ public:
     // check on jet type added and cut logic refactored
     static bool passesJetID(TJet *jet, KappaEnumTypes::JetIDVersion jetIDVersion,
                             KappaEnumTypes::JetID jetID, KappaSettings const &settings) {
-        // if applying jet ID is not requested, return immediately
-        if (jetID == KappaEnumTypes::JetID::NONE) {
+        // check config keys and if applying jet ID is not requested, return immediately
+        if (jetIDVersion == KappaEnumTypes::JetIDVersion::NONE && jetID != KappaEnumTypes::JetID::NONE) {
+            LOG(FATAL) << "(Cut)JetIDVersion has to be specified if a (Cut)JetID is configured!";
+        } else if (jetID == KappaEnumTypes::JetID::NONE) {
             return true;
         }
 
