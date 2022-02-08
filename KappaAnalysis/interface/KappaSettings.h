@@ -225,9 +225,9 @@ public:
 	IMPL_SETTING_DEFAULT(bool, DirectIso, true);
 
 	IMPL_SETTING_DEFAULT(std::string, ValidMuonsInput, "auto");
-	IMPL_SETTING(std::string, MuonID);
-	IMPL_SETTING(std::string, MuonIsoType);
-	IMPL_SETTING(std::string, MuonIso);
+	IMPL_SETTING_DEFAULT(std::string, MuonID, "none");
+	IMPL_SETTING_DEFAULT(std::string, MuonIsoType, "none");
+	IMPL_SETTING_DEFAULT(std::string, MuonIso, "none");
 
 	IMPL_SETTING_DEFAULT(std::string, ValidElectronsInput, "auto");
 	IMPL_SETTING(std::string, ElectronID);
@@ -250,9 +250,9 @@ public:
 	IMPL_SETTING_DEFAULT(bool, UseJECShiftsForBJets, false);
 
 	IMPL_SETTING_DEFAULT(std::string, ValidJetsInput, "auto");
-	IMPL_SETTING(std::string, JetID);
-	IMPL_SETTING_DEFAULT(float, JetLeptonLowerDeltaRCut, -1.0f);
-	IMPL_SETTING_DEFAULT(std::string, JetIDVersion, "2010");
+	IMPL_SETTING_DEFAULT(std::string, JetID, "none");
+	IMPL_SETTING(float, JetLeptonLowerDeltaRCut);
+	IMPL_SETTING_DEFAULT(std::string, JetIDVersion, "none");
 	IMPL_SETTING_DEFAULT(std::string, PuJetIDFullDiscrName, "puJetIDFullDiscriminant");
 	IMPL_SETTING_STRINGLIST_DEFAULT(PuJetIDs, {});
 	IMPL_SETTING_STRINGLIST_DEFAULT(JetTaggerLowerCuts, {});

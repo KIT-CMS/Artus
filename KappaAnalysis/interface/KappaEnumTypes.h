@@ -62,6 +62,7 @@ public:
 
 	enum class JetIDVersion : int
 	{
+		NONE = -1,
 		ID2010 = 0,  // old run1 version (most run 1 analyses)
 		ID2014 = 1,  // new run1 version (run 1 legacy: old version + muon fraction cut)
 		             // first run 2 version identical to run 1 legacy version

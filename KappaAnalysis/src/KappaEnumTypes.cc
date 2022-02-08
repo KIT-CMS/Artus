@@ -23,6 +23,7 @@ KappaEnumTypes::DiLeptonDecayMode KappaEnumTypes::ToDiLeptonDecayMode(std::strin
 
 KappaEnumTypes::ValidJetsInput KappaEnumTypes::ToValidJetsInput(std::string const& validJetsInput)
 {
+	std::string validJetsInput_lower = boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(validJetsInput));
 	if (validJetsInput == "uncorrected") return KappaEnumTypes::ValidJetsInput::UNCORRECTED;
 	else if (validJetsInput == "corrected") return KappaEnumTypes::ValidJetsInput::CORRECTED;
 	else return KappaEnumTypes::ValidJetsInput::AUTO;
@@ -43,20 +44,26 @@ KappaEnumTypes::JetIDVersion KappaEnumTypes::ToJetIDVersion(std::string const& j
 	else if ((jetIDVersionLower == "2016ul") || (jetIDVersionLower == "ul2016")) return KappaEnumTypes::JetIDVersion::ID2016UL;
 	else if ((jetIDVersionLower == "2017ul") || (jetIDVersionLower == "ul2017")) return KappaEnumTypes::JetIDVersion::ID2017UL;
 	else if ((jetIDVersionLower == "2018ul") || (jetIDVersionLower == "ul2018")) return KappaEnumTypes::JetIDVersion::ID2018UL;
-	else LOG(FATAL) << "Jet ID version '" << jetIDVersion << "' is not available";
-	return KappaEnumTypes::JetIDVersion::ID2016;
+	else if (jetIDVersionLower == "none") return KappaEnumTypes::JetIDVersion::NONE;
+	else {
+	    LOG(FATAL) << "[KappaEnumTypes] Jet ID version '" << jetIDVersion << "' is not available";
+	    return KappaEnumTypes::JetIDVersion::NONE; // necessary but never happens!
+	}
 }
 
 KappaEnumTypes::JetID KappaEnumTypes::ToJetID(std::string const& jetID)
 {
-	if (jetID == "loose") return KappaEnumTypes::JetID::LOOSE;
-	else if (jetID == "looselepveto") return KappaEnumTypes::JetID::LOOSELEPVETO;
-	else if (jetID == "medium") return KappaEnumTypes::JetID::MEDIUM;
-	else if (jetID == "tight") return KappaEnumTypes::JetID::TIGHT;
-	else if (jetID == "tightlepveto") return KappaEnumTypes::JetID::TIGHTLEPVETO;
-	else if (jetID == "none") return KappaEnumTypes::JetID::NONE;
-	else LOG(FATAL) << "Jet ID of type '" << jetID << "' not implemented!";
-	return KappaEnumTypes::JetID::NONE;
+	std::string jetIDLower = boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(jetID));
+	if (jetIDLower == "loose") return KappaEnumTypes::JetID::LOOSE;
+	else if (jetIDLower == "looselepveto") return KappaEnumTypes::JetID::LOOSELEPVETO;
+	else if (jetIDLower == "medium") return KappaEnumTypes::JetID::MEDIUM;
+	else if (jetIDLower == "tight") return KappaEnumTypes::JetID::TIGHT;
+	else if (jetIDLower == "tightlepveto") return KappaEnumTypes::JetID::TIGHTLEPVETO;
+	else if (jetIDLower == "none") return KappaEnumTypes::JetID::NONE;
+	else {
+	    LOG(FATAL) << "Jet ID of type '" << jetID << "' not implemented!";
+	    return KappaEnumTypes::JetID::NONE; // necessary but never happens!
+	}
 }
 
 KappaEnumTypes::BTagScaleFactorMethod KappaEnumTypes::ToBTagScaleFactorMethod(std::string const& bTagSFMethod)
