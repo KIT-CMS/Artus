@@ -5,6 +5,7 @@
 *.a
 *.so
 *.d
+.idea
 
 __init__.py
 !Plotting/**/__init__.py
