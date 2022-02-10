@@ -22,10 +22,21 @@ void GenParticleProducer::Produce(KappaEvent const& event, KappaProduct& product
                      KappaSettings const& settings) const
 {
 	assert(event.m_genParticles);
+	LOG(DEBUG) << "\n[GenParticleProducer]";
+	LOG(DEBUG) << "GenParticleTypes:";
+	for (auto type_it = settings.GetGenParticleTypes().begin(); type_it != settings.GetGenParticleTypes().end(); ++type_it) {
+		LOG(DEBUG) << *type_it;
+	}
 
 	// gen particles (can be used for quarks, W, Z, .., but also for leptons if needed)
 	if (Utility::Contains(m_genParticleTypes, KappaEnumTypes::GenParticleType::GENPARTICLE))
 	{
+		LOG(DEBUG) << "Looking for general particle with GenParticlePdgIds:";
+		for (auto id_it = settings.GetGenParticlePdgIds().begin(); id_it != settings.GetGenParticlePdgIds().end(); ++id_it) {
+			LOG(DEBUG) << *id_it;
+		}
+		LOG(DEBUG) << "GenParticleStatus: " << settings.GetGenParticleStatus(); 
+		
 		for (KGenParticles::iterator part = event.m_genParticles->begin();
 		     part != event.m_genParticles->end(); ++part)
 		{
@@ -34,8 +45,19 @@ void GenParticleProducer::Produce(KappaEvent const& event, KappaProduct& product
 			{
 				if ((settings.GetGenParticleStatus() == -1) || ( settings.GetGenParticleStatus() == part->status()))
 				{
+					if (settings.GetDebugVerbosity() > 1) {
+						LOG(DEBUG) << "Found genParticle with pdgId " << part->pdgId
+							<< " and status " << part->status();
+					}
 					product.m_genParticlesMap[part->pdgId].push_back(&(*part));
 				}
+			}
+		}
+		if (settings.GetDebugVerbosity() > 0) {
+			for (auto id_it = settings.GetGenParticlePdgIds().begin();
+				id_it != settings.GetGenParticlePdgIds().end(); id_it++) {
+				LOG(DEBUG) << "Number m_genParticlesMap[" << *id_it << "]: "
+					<< product.m_genParticlesMap[*id_it].size();
 			}
 		}
 	}
@@ -43,6 +65,8 @@ void GenParticleProducer::Produce(KappaEvent const& event, KappaProduct& product
 	// gen electrons
 	if (Utility::Contains(m_genParticleTypes, KappaEnumTypes::GenParticleType::GENELECTRON))
 	{
+		LOG(DEBUG) << "Looking for genElectron with status " << settings.GetGenElectronStatus();
+		LOG(DEBUG) << "GenElectronFromTauDecay: (0:No | 1:Yes): " << settings.GetGenElectronFromTauDecay();
 		for (KGenParticles::iterator part = event.m_genParticles->begin();
 		     part != event.m_genParticles->end(); ++part)
 		{
@@ -64,11 +88,14 @@ void GenParticleProducer::Produce(KappaEvent const& event, KappaProduct& product
 				}
 			}
 		}
+		LOG(DEBUG) << "Number m_genElectrons: " << product.m_genElectrons.size();
 	}
 
 	// gen muons
 	if (Utility::Contains(m_genParticleTypes, KappaEnumTypes::GenParticleType::GENMUON))
 	{
+		LOG(DEBUG) << "Looking for genMuons with status " << settings.GetGenMuonStatus();
+		LOG(DEBUG) << "GenMuonFromTauDecay (0:No | 1:Yes): " << settings.GetGenMuonFromTauDecay();
 		for (KGenParticles::iterator part = event.m_genParticles->begin();
 		     part != event.m_genParticles->end(); ++part)
 		{
@@ -90,11 +117,13 @@ void GenParticleProducer::Produce(KappaEvent const& event, KappaProduct& product
 				}
 			}
 		}
+		LOG(DEBUG) << "Number m_genMuons: " << product.m_genMuons.size();
 	}
 
 	// gen taus
 	if (Utility::Contains(m_genParticleTypes, KappaEnumTypes::GenParticleType::GENTAU))
 	{
+		LOG(DEBUG) << "Looking for genTaus with status " << settings.GetGenTauStatus();
 		for (KGenParticles::iterator part = event.m_genParticles->begin();
 		     part != event.m_genParticles->end(); ++part)
 		{
@@ -106,6 +135,7 @@ void GenParticleProducer::Produce(KappaEvent const& event, KappaProduct& product
 				}
 			}
 		}
+		LOG(DEBUG) << "Number m_genTaus: " << product.m_genTaus.size();
 	}
 }
 

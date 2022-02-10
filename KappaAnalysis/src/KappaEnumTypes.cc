@@ -9,7 +9,8 @@ KappaEnumTypes::GenParticleType KappaEnumTypes::ToGenParticleType(std::string co
 	else if (genParticleName == "genElectron") return KappaEnumTypes::GenParticleType::GENELECTRON;
 	else if (genParticleName == "genMuon") return KappaEnumTypes::GenParticleType::GENMUON;
 	else if (genParticleName == "genTau") return KappaEnumTypes::GenParticleType::GENTAU;
-	else return KappaEnumTypes::GenParticleType::NONE;
+	LOG(FATAL) << "Unkown genParticleType: " << genParticleName;
+	return KappaEnumTypes::GenParticleType::NONE;
 }
 
 KappaEnumTypes::DiLeptonDecayMode KappaEnumTypes::ToDiLeptonDecayMode(std::string const& diLeptonDecayMode)

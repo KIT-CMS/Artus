@@ -13,7 +13,8 @@ EventWeightProducer::~EventWeightProducer()
 {
 	if (! m_weightNames.empty())
 	{
-		LOG(DEBUG) << "Constructed event weight from indidual weights ("
+        LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
+		LOG(DEBUG) << "Constructed event weight from individual weights ("
 		           << boost::algorithm::join(m_weightNames, ", ")
 		           << ") in the pipeline \"" << pipelineName << "\".";
 	}
