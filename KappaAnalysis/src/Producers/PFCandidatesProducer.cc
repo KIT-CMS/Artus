@@ -35,6 +35,7 @@ void PFCandidatesProducer::Init(KappaSettings const& settings)
 
 void PFCandidatesProducer::Produce(KappaEvent const& event, KappaProduct& product, KappaSettings const& settings) const
 {
+    LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
 	for (KPFCandidates::const_iterator pfCandidate = event.m_packedPFCandidates->begin();
 		pfCandidate != event.m_packedPFCandidates->end(); ++pfCandidate)
 	{
@@ -56,8 +57,15 @@ void PFCandidatesProducer::Produce(KappaEvent const& event, KappaProduct& produc
 		else if (std::abs(pfCandidate->pdgId) == 2)
 			product.m_pfElectromagneticHF.push_back(&(*pfCandidate));
 		else
-			std::cout << "Unknown PFCandidate!!!! pdgId: " << pfCandidate->pdgId << std::endl;
+			LOG(WARNING) << "Unknown PFCandidate! Has pdgId: " << pfCandidate->pdgId;
 	}
+    LOG(DEBUG) << "Size m_pfChargedHadrons: " << product.m_pfChargedHadrons.size();
+    LOG(DEBUG) << "Size m_pfNeutralHadrons: " << product.m_pfNeutralHadrons.size();
+    LOG(DEBUG) << "Size m_pfElectrons: " << product.m_pfElectrons.size();
+    LOG(DEBUG) << "Size m_pfMuons: " << product.m_pfMuons.size();
+    LOG(DEBUG) << "Size m_pfPhotons: " << product.m_pfPhotons.size();
+    LOG(DEBUG) << "Size m_pfHadronicHF: " << product.m_pfHadronicHF.size();
+    LOG(DEBUG) << "Size m_pfElectromagneticHF: " << product.m_pfElectromagneticHF.size();
 }
 
 

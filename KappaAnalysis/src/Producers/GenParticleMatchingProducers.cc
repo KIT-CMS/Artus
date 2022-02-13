@@ -26,6 +26,9 @@ void RecoJetGenParticleMatchingProducer::Produce(event_type const& event, produc
                                                  setting_type const& settings) const
 {
 	assert(event.m_genParticles);
+    LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
+
+    LOG(DEBUG) << "DeltaRMatchingRecoJetGenParticle: " << settings.GetDeltaRMatchingRecoJetGenParticle();
 
 	if (m_DeltaRMatchingRecoJetGenParticle > 0.0f)
 	{
@@ -36,6 +39,10 @@ void RecoJetGenParticleMatchingProducer::Produce(event_type const& event, produc
 			KGenParticle* matchedParticle = Match(event, product, settings, static_cast<KLV*>(*validJet));
 			if (matchedParticle != nullptr)
 			{
+                if (settings.GetDebugVerbosity() > 0) {
+                    LOG(DEBUG) << "(event " << event.m_eventInfo->nEvent << "): " << (*validJet)->p4 << " --> " << matchedParticle->p4
+                               << ", pdg=" << matchedParticle->pdgId << ", status=" << matchedParticle->status();
+                }
 				product.m_genParticleMatchedJets[*validJet] = matchedParticle;
 			}
 
@@ -43,6 +50,7 @@ void RecoJetGenParticleMatchingProducer::Produce(event_type const& event, produc
 			if (((matchedParticle == nullptr) && m_InvalidateNonGenParticleMatchingRecoJets) ||
 			    ((matchedParticle != nullptr) && m_InvalidateGenParticleMatchingRecoJets))
 			{
+                LOG(DEBUG) << "Invalidating (non) matching jet " << (*validJet)->p4;
 				product.m_invalidJets.push_back(*validJet);
 				validJet = product.m_validJets.erase(validJet);
 			}

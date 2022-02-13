@@ -294,7 +294,7 @@ public:
                  KappaSettings const &settings) const override {
         assert((event.*m_basicJetsMember));
         // DEBUG output
-        LOG(DEBUG) << "\n[ValidTaggedJetsProducer] or [ValidJetsProducer]";
+        LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
         LOG(DEBUG) << "JetID: " << settings.GetJetID();
         LOG(DEBUG) << "JetIDVersion: " << settings.GetJetIDVersion();
 

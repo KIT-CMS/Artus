@@ -109,16 +109,24 @@ public:
 						 setting_type const& settings) const override
 	{
 		assert(event.m_genParticles);
+		LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
 
 		float ratioGenParticleMatched = 0.0f;
 
+		LOG(DEBUG) << "DeltaRMatchingRecoLeptonsGenParticle: " << (settings.*GetDeltaRMatchingRecoLeptonsGenParticle)();
+		LOG(DEBUG) << "InvalidateGenParticleMatchingLeptons? (0:No|1:Yes) " << (settings.*GetInvalidateGenParticleMatchingLeptons)();
+		LOG(DEBUG) << "InvalidateNonGenParticleMatchingLeptons? (0:No|1:Yes)" << (settings.*GetInvalidateNonGenParticleMatchingLeptons)();
 		if ((settings.*GetDeltaRMatchingRecoLeptonsGenParticle)() > 0.0f)
 		{
 			// choose valid leptons or all leptons for matching
 			std::vector<TLepton*> leptons;
+
+			LOG(DEBUG) << "RecoLeptonMatchingGenParticleMatchAllLeptons? (0:No|1:Yes) "
+				<< (settings.*GetRecoLeptonMatchingGenParticleMatchAllLeptons)();
 			if ((settings.*GetRecoLeptonMatchingGenParticleMatchAllLeptons)())
 			{
 				assert((event.*m_leptons));
+				LOG(DEBUG) << "Matching all Leptons, number m_leptons: " << (event.*m_leptons)->size();
 
 				leptons.resize((event.*m_leptons)->size());
 				size_t leptonIndex = 0;
@@ -130,6 +138,8 @@ public:
 			}
 			else
 			{
+				LOG(DEBUG) << "Only matching valid Leptons, number m_validLeptons "
+					<< (product.*m_validLeptons).size();
 				leptons.resize((product.*m_validLeptons).size());
 				size_t leptonIndex = 0;
 				for (typename std::vector<TLepton*>::iterator lepton = (product.*m_validLeptons).begin(); lepton != (product.*m_validLeptons).end(); ++lepton)
@@ -138,6 +148,7 @@ public:
 					++leptonIndex;
 				}
 			}
+			
 			// loop over all chosen leptons to check
 			for (typename std::vector<TLepton*>::iterator lepton = leptons.begin();
 				 lepton != leptons.end();)
@@ -166,7 +177,10 @@ public:
 								product.m_genParticleMatchDeltaR = deltaR;
 								deltaRmin = deltaR;
 								leptonMatched = true;
-								//LOG(INFO) << this->GetProducerId() << " (event " << event.m_eventInfo->nEvent << "): " << (*lepton)->p4 << " --> " << genParticle->p4 << ", pdg=" << genParticle->pdgId << ", status=" << genParticle->status();
+								if (settings.GetDebugVerbosity() > 0) {
+									LOG(DEBUG) << "(event " << event.m_eventInfo->nEvent << "): " << (*lepton)->p4 << " --> " << genParticle->p4
+										<< ", pdg=" << genParticle->pdgId << ", status=" << genParticle->status();
+								}
 							}
 							else product.m_genParticleMatchDeltaR = DefaultValues::UndefinedFloat;
 						}
@@ -179,6 +193,7 @@ public:
 					(((! leptonMatched) && (settings.*GetInvalidateNonGenParticleMatchingLeptons)()) ||
 					(leptonMatched && (settings.*GetInvalidateGenParticleMatchingLeptons)())))
 				{
+					LOG(DEBUG) << "Invalidating (non) matching lepton: " << (*lepton)->p4;
 					(product.*m_invalidLeptons).push_back(*lepton);
 					lepton = (product.*m_validLeptons).erase(lepton);
 				}
@@ -201,6 +216,7 @@ public:
 		}
 		
 		product.m_ratioGenParticleMatched = ratioGenParticleMatched;
+		LOG(DEBUG) << "Ratio matched: " << product.m_ratioGenParticleMatched*100 << "%";
 	}
 
 
