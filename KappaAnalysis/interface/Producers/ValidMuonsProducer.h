@@ -66,15 +66,17 @@ public:
     };
 
     static MuonID ToMuonID(std::string const &muonID) {
-        if (muonID == "tight") return MuonID::TIGHT;
-        else if (muonID == "medium") return MuonID::MEDIUM;
-        else if (muonID == "loose") return MuonID::LOOSE;
-        else if (muonID == "veto") return MuonID::VETO;
-        else if (muonID == "fakeable") return MuonID::FAKEABLE;
-        else if (muonID == "embedding") return MuonID::EMBEDDING;
-        else if (muonID == "mediumhipsafe2016") return MuonID::MEDIUMHIPSAFE2016;
-        else if (muonID == "none") return MuonID::NONE;
+        std::string muonID_lower = boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(muonID));
+        if (muonID_lower == "tight") return MuonID::TIGHT;
+        else if (muonID_lower == "medium") return MuonID::MEDIUM;
+        else if (muonID_lower == "loose") return MuonID::LOOSE;
+        else if (muonID_lower == "veto") return MuonID::VETO;
+        else if (muonID_lower == "fakeable") return MuonID::FAKEABLE;
+        else if (muonID_lower == "embedding") return MuonID::EMBEDDING;
+        else if (muonID_lower == "mediumhipsafe2016") return MuonID::MEDIUMHIPSAFE2016;
+        else if (muonID_lower == "none") return MuonID::NONE;
         else LOG(FATAL) << "MuonID not known!";
+        return MuonID::NONE;
     }
 
     enum class MuonIsoType : int {
@@ -85,11 +87,13 @@ public:
     };
 
     static MuonIsoType ToMuonIsoType(std::string const &muonIsoType) {
-        if (muonIsoType == "pf") return MuonIsoType::PF;
-        else if (muonIsoType == "detector") return MuonIsoType::DETECTOR;
-        else if (muonIsoType == "user") return MuonIsoType::USER;
-        else if (muonIsoType == "none") return MuonIsoType::NONE;
+        std::string muonIsoType_lower = boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(muonIsoType));
+        if (muonIsoType_lower == "pf") return MuonIsoType::PF;
+        else if (muonIsoType_lower == "detector") return MuonIsoType::DETECTOR;
+        else if (muonIsoType_lower == "user") return MuonIsoType::USER;
+        else if (muonIsoType_lower == "none") return MuonIsoType::NONE;
         else LOG(FATAL) << "MuonIsoType not known!";
+        return MuonIsoType::NONE;
     }
 
     enum class MuonIso : int {
@@ -105,16 +109,18 @@ public:
     };
 
     static MuonIso ToMuonIso(std::string const &muonIso) {
-        if (muonIso == "tight") return MuonIso::TIGHT;
-        else if (muonIso == "loose") return MuonIso::LOOSE;
-        else if (muonIso == "fakeable") return MuonIso::FAKEABLE;
-        else if (muonIso == "tight_2015") return MuonIso::TIGHT_2015;
-        else if (muonIso == "loose_2015") return MuonIso::LOOSE_2015;
-        else if (muonIso == "tight_2016") return MuonIso::TIGHT_2016;
-        else if (muonIso == "medium_2016") return MuonIso::MEDIUM_2016;
-        else if (muonIso == "loose_2016") return MuonIso::LOOSE_2016;
-        else if (muonIso == "none") return MuonIso::NONE;
+        std::string muonIso_lower = boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(muonIso));
+        if (muonIso_lower == "tight") return MuonIso::TIGHT;
+        else if (muonIso_lower == "loose") return MuonIso::LOOSE;
+        else if (muonIso_lower == "fakeable") return MuonIso::FAKEABLE;
+        else if (muonIso_lower == "tight_2015") return MuonIso::TIGHT_2015;
+        else if (muonIso_lower == "loose_2015") return MuonIso::LOOSE_2015;
+        else if (muonIso_lower == "tight_2016") return MuonIso::TIGHT_2016;
+        else if (muonIso_lower == "medium_2016") return MuonIso::MEDIUM_2016;
+        else if (muonIso_lower == "loose_2016") return MuonIso::LOOSE_2016;
+        else if (muonIso_lower == "none") return MuonIso::NONE;
         else LOG(FATAL) << "MuonIso not known!";
+        return MuonIso::NONE;
     }
 
     std::string GetProducerId() const override {
@@ -146,10 +152,9 @@ public:
         validMuonsInput = ToValidMuonsInput(
                 boost::algorithm::to_lower_copy(boost::algorithm::trim_copy(settings.GetValidMuonsInput())));
 
-        muonID = ToMuonID(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy((settings.*GetMuonID)())));
-        muonIsoType = ToMuonIsoType(
-                boost::algorithm::to_lower_copy(boost::algorithm::trim_copy((settings.*GetMuonIsoType)())));
-        muonIso = ToMuonIso(boost::algorithm::to_lower_copy(boost::algorithm::trim_copy((settings.*GetMuonIso)())));
+        muonID = ToMuonID((settings.*GetMuonID)());
+        muonIsoType = ToMuonIsoType((settings.*GetMuonIsoType)());
+        muonIso = ToMuonIso((settings.*GetMuonIso)());
 
         // add possible quantities for the lambda ntuples consumers
         LambdaNtupleConsumer<TTypes>::AddIntQuantity("nMuons",
@@ -226,7 +231,7 @@ public:
                  setting_type const &settings) const override {
         //if (LOG_LEVEL == DEBUG
         assert(event.m_muons);
-        LOG(DEBUG) << "\n[ValidMuonsProducer]";
+        LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
 
         // select input source
         std::vector < KMuon * > muons;
@@ -255,6 +260,8 @@ public:
 
         // Apply muon isolation and MuonID
         // DEBUG --------------------------------------
+        // Note: This is more complicated than necessary, but it 
+        // ensures that the correct config parameters are set
         LOG(DEBUG) << "Apply muons iso and ID:";
         LOG(DEBUG) << "Year: " << settings.GetYear();
         LOG(DEBUG) << "MuonID: ";
@@ -266,14 +273,28 @@ public:
             LOG(DEBUG) << "--LOOSE";
         } else if (muonID == MuonID::VETO) {
             LOG(DEBUG) << "--VETO";
+        } else if (muonID == MuonID::NONE) {
+            LOG(DEBUG) << "--NONE"; 
         } else {
             LOG(DEBUG) << "--OTHER: Please verify!";
+        }
+        LOG(DEBUG) << "MuonIso:";
+        if (muonIso == MuonIso::TIGHT) {
+            LOG(DEBUG) << "--TIGHT";
+        } else if (muonIso == MuonIso::LOOSE) {
+            LOG(DEBUG) << "--LOOSE";
+        } else if (muonIso == MuonIso::NONE) {
+            LOG(DEBUG) << "--NONE";
+        } else {
+            LOG(DEBUG) << "--OTHER (outdated!): Please verify!";
         }
         LOG(DEBUG) << "MuonsIsoType: ";
         if (muonIsoType == MuonIsoType::PF) {
             LOG(DEBUG) << "--PF\n";
         } else if (muonIsoType == MuonIsoType::DETECTOR) {
             LOG(DEBUG) << "--DETECTOR\n";
+        } else if (muonIsoType == MuonIsoType::NONE) {
+            LOG(DEBUG) << "--NONE\n";
         } else {
             LOG(DEBUG) << "PLEASE VERIFY YOUR MUON ISO!\n";
         }
@@ -287,7 +308,7 @@ public:
             // Muon ID according to Muon POG definitions
             if (muonID == MuonID::NONE) {
                 // all cases are skipped and validMuon stays true
-                LOG(WARNING) << "MuonID is not applied!";
+                LOG(WARNING) << "MuonID is not applied! It passes automatically.";
             } else if (muonID == MuonID::TIGHT) {
                 if (settings.GetYear() == 2015 || settings.GetYear() == 2016 || settings.GetYear() == 2017) {
                     validMuon = validMuon && IsTightMuon2015(*muon, event, product);
@@ -331,7 +352,12 @@ public:
             }
             LOG(DEBUG) << "MuonID passed? (0: no | 1: yes) " << validMuon;
             // Muon Isolation according to Muon POG definitions (independent of year)
-            if (muonIsoType == MuonIsoType::PF) {
+            if (muonIsoType == MuonIsoType::NONE && muonIso != MuonIso::NONE) {
+                LOG(FATAL) << "Muon Iso specified but no MuonIsoType given. Please review your config!";
+            }
+            if (muonIsoType == MuonIsoType::NONE) {
+                LOG(WARNING) << "No MuonIsoType specified!";
+            } else if (muonIsoType == MuonIsoType::PF) {
                 // Run I
                 // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
                 // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation_AN1
@@ -413,9 +439,10 @@ public:
                         LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso)
                                    << " not yet implemented!";
                     }
-                } else
+                } else {
                     LOG(FATAL) << "Muon isolation of type " << Utility::ToUnderlyingValue(muonIso)
                                << " not yet implemented for year " << settings.GetYear() << "!";
+                }
             } else if (muonIsoType == MuonIsoType::DETECTOR) {
                 if (muonIso == MuonIso::TIGHT) {
                     LOG(DEBUG) << "Iso Value: " << ((*muon)->trackIso / (*muon)->p4.Pt())
