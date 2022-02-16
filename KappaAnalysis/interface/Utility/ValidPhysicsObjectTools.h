@@ -40,6 +40,8 @@ public:
 		                                                               upperAbsEtaCutsByHltName);
 	}
 
+	virtual ~ValidPhysicsObjectTools() = default;
+
 
 protected:
 	
