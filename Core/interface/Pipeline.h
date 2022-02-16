@@ -34,6 +34,7 @@ public:
 
 	virtual void InitPipeline(pipeline_type * pLine, setting_type const& pset) const {};
 
+	virtual ~PipelineInitilizerBase() = default;
 };
 
 /**

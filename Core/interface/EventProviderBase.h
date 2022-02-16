@@ -19,4 +19,6 @@ public:
 	virtual bool NewLumisection() const { return false; }
 	virtual bool NewRun() const { return false; }
 
+	virtual ~EventProviderBase() = default;
+
 };
