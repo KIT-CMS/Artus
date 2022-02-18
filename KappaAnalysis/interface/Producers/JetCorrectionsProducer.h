@@ -238,9 +238,20 @@ public:
 								{JME::Binning::JetPt, jet->p4.Pt()},
 								{JME::Binning::JetEta, jet->p4.Eta()}
 							}, JER_shift);
-							double shift = randm.Gaus(0, jetResolution) * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
+                                                        double res_rndm = randm.Gaus(0, jetResolution);
+							double shift = res_rndm * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
 							if (shift < -1.0) shift = -1.0;
-							if ((jet->p4*(1.0+shift)).Pt()>15.0) product.m_MET_shift.p4 -= jet->p4*shift; // requirement for type I corrections
+							if (((jet->p4*(1.0+shift)).Pt()>15.0)&&(JER_shift!=Variation::NOMINAL)) {
+                                                            // MET is already corrected for nominal jer correction,
+                                                            // so we need to only propagate the difference in corrections here
+                                                            double jetResolutionScaleFactor_nom = m_jetResolutionScaleFactor->getScaleFactor({
+                                                                    {JME::Binning::JetPt, jet->p4.Pt()},
+                                                                    {JME::Binning::JetEta, jet->p4.Eta()}
+                                                            }, Variation::NOMINAL);
+                                                            double shift_nom = res_rndm * std::sqrt(std::max(jetResolutionScaleFactor_nom * jetResolutionScaleFactor_nom - 1, 0.0));
+                                                            if (shift_nom < -1.0) shift_nom = -1.0;
+                                                            product.m_MET_shift.p4 -= jet->p4*(shift-shift_nom); // requirement for type I corrections
+                                                        }
 							jet->p4 *= 1.0 + shift;
 					}
 				}
@@ -268,6 +279,9 @@ public:
                    			LOG(DEBUG) << "resolution: " << jetResolution;
                     		LOG(DEBUG) << "resolution scale factor: " << jetResolutionScaleFactor;
 							double shift = 0.;
+                                                        // Need to define this variable to have the correct random number for the nominal shift
+                                                        // when calculating the MET later.
+                                                        double res_rndm = 0;
 							RMFLV recoJetp4 = jet->p4;
 							// now try to find a matching genjet
 							KGenJet* genJet = match_genJet_deltaR(recoJetp4, event, jet->p4.Pt() * jetResolution);
@@ -278,14 +292,40 @@ public:
 							}
 							else if(jetResolutionScaleFactor > 1){
 								// no matching genjet, smear based on gaussian variation
-								shift = randm.Gaus(0, jetResolution) * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
+                                                                res_rndm = randm.Gaus(0, jetResolution);
+								shift = res_rndm * std::sqrt(std::max(jetResolutionScaleFactor * jetResolutionScaleFactor - 1, 0.0));
 							}
 							else {
 								LOG(DEBUG) << "Jet smearing of this jet is not possible ! - setting shift to zero";
 								shift = 0.;
 							}
 							if (shift < -1.0) shift = -1.0;
-							if ((jet->p4*(1.0+shift)).Pt()>15.0) product.m_MET_shift.p4 -= jet->p4*shift; // requirement for type I corrections
+							if (((jet->p4*(1.0+shift)).Pt()>15.0)&&(JER_shift!=Variation::NOMINAL)) {
+                                                            // MET is already corrected for nominal jer correction,
+                                                            // so we need to only propagate the difference in corrections here
+                                                            //
+                                                            // First we need to get the nominal scale factor and afterwards calculate the shift
+                                                            // as it would have been for the nominal variation of the SF
+                                                            double jetResolutionScaleFactor_nom = m_jetResolutionScaleFactor->getScaleFactor({
+                                                                    {JME::Binning::JetPt, jet->p4.Pt()},
+                                                                    {JME::Binning::JetEta, jet->p4.Eta()}
+                                                            }, Variation::NOMINAL);
+                                                            double shift_nom = 0.;
+                                                            if (genJet != NULL){
+                                                                    // we found a matching genJet, now we apply a smearing based on the genJet pt
+                                                                    double dPt = jet->p4.pt() - genJet->p4.pt();
+                                                                    shift_nom = (jetResolutionScaleFactor_nom - 1.) * dPt / jet->p4.pt();
+                                                            }
+                                                            else if(jetResolutionScaleFactor_nom > 1){
+                                                                    // no matching genjet, smear based on gaussian variation
+                                                                    shift_nom = res_rndm * std::sqrt(std::max(jetResolutionScaleFactor_nom * jetResolutionScaleFactor_nom - 1, 0.0));
+                                                            }
+                                                            else {
+                                                                    shift_nom = 0.;
+                                                            }
+                                                            if (shift_nom < -1.0) shift_nom = -1.0;
+                                                            product.m_MET_shift.p4 -= jet->p4*(shift-shift_nom); // requirement for type I corrections
+                                                        }
 							jet->p4 *= 1.0 + shift;
 							LOG(DEBUG) << "smeared jet (" << shift << "):  pt: " << jet->p4.pt() << "  eta: " << jet->p4.eta() << "  phi: " << jet->p4.phi() << "  e: " << jet->p4.energy();
 					}
