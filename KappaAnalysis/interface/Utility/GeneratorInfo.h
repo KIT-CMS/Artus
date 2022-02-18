@@ -32,6 +32,10 @@ public:
 			KappaTypes::event_type const& event,
 			KLepton* lepton
 	);
+	static float GetGenMatchedParticleEtaUW(
+			KappaTypes::event_type const& event,
+			KLepton* lepton
+	);
 	static std::vector<RMFLV> BuildGenTausUW(
 			KappaTypes::event_type const& event
 	);
