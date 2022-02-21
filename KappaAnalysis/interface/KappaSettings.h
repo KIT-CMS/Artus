@@ -257,7 +257,8 @@ public:
 	IMPL_SETTING_STRINGLIST_DEFAULT(PuJetIDs, {});
 	IMPL_SETTING_STRINGLIST_DEFAULT(JetTaggerLowerCuts, {});
 	IMPL_SETTING_STRINGLIST_DEFAULT(JetTaggerUpperCuts, {});
-
+	IMPL_SETTING_DEFAULT(bool, OnlyCleanZLeptons, false);
+	
 	IMPL_SETTING(int, NElectrons);
 	IMPL_SETTING(int, NMuons);
 	IMPL_SETTING(int, NTaus);

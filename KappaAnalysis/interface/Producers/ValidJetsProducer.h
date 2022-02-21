@@ -323,18 +323,19 @@ public:
             }
         }
 
-        if (product.m_validLeptons.size() < 1) {
-            LOG(WARNING) << "Number of m_validLeptons:" << product.m_validLeptons.size()
-                         << "! Forgot to add the ValidLeptonsProducer?";
-        } else {
-            LOG(DEBUG) << "Number of valid leptons used for lepton removal: " << product.m_validLeptons.size();
-        }
-
         if (jetID == KappaEnumTypes::JetID::NONE) {
             LOG(WARNING) << "Object-based JetID skipped!";
         } else {
             LOG(DEBUG) << "Apply object-based JetID.";
         }
+
+        if (settings.GetOnlyCleanZLeptons()) {
+            LOG(DEBUG) << "Lepton Cleaning: Only clean Z leptons from jet list!";
+        } else {
+            LOG(DEBUG) << "Lepton Cleaning: Clean all valid leptons from jet list!";
+            LOG(DEBUG) << "Number of valid leptons used for lepton removal: " << product.m_validLeptons.size();
+        }
+
 
         for (typename std::vector<TJet *>::iterator jet = jets.begin(); jet != jets.end(); ++jet) {
             bool validJet = true;
@@ -354,19 +355,42 @@ public:
                 }
             }
 
-            // remove valid leptons from list of jets via simple DeltaR isolation
-            for (std::vector<KLepton *>::const_iterator lepton = product.m_validLeptons.begin();
-                 validJet && lepton != product.m_validLeptons.end(); ++lepton) {
-                validJet = validJet && ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4) >
-                                       settings.GetJetLeptonLowerDeltaRCut();
-                if (settings.GetDebugVerbosity() > 1) {
-                    LOG(DEBUG) << "Check lepton with pt: " << (*lepton)->p4.Pt() << " eta: " << (*lepton)->p4.Pt()
-                               << " phi: "
-                               << (*lepton)->p4.Pt() << " Delta R: "
-                               << ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4);
-                    if (validJet == false) {
+            // lepton cleaning -- two possibilities:
+            // (OnlyCleanZLeptons = 1) only clean the two muons from the Z (recommended)
+            // (OnlyCleanZLeptons = 0) remove all valid leptons from the jet list (not recommended for JEC)
+
+            if (settings.GetOnlyCleanZLeptons()) {
+                // remove the two valid Z-leptons from list of jets via simple DeltaR isolation
+                if (product.m_zValid) {
+                    if (ROOT::Math::VectorUtil::DeltaR((*jet)->p4, product.m_zLeptons.first->p4) 
+                          < settings.GetJetLeptonLowerDeltaRCut()) {
+                        validJet = false;
                         LOG(DEBUG) << "Jet invalidated and removed due to delta R cut ("
                                    << settings.GetJetLeptonLowerDeltaRCut() << ")";
+                    }
+                    if (ROOT::Math::VectorUtil::DeltaR((*jet)->p4, product.m_zLeptons.second->p4) 
+                          < settings.GetJetLeptonLowerDeltaRCut()) {
+                        validJet = false;
+                        LOG(DEBUG) << "Jet invalidated and removed due to delta R cut ("
+                                   << settings.GetJetLeptonLowerDeltaRCut() << ")";
+                    }
+                } else {
+                    LOG(ERROR) << "No valid Z for lepton cleaning. Lepton cleaning skipped!";
+                }
+            } else {
+                // remove ALL valid leptons from list of jets via simple DeltaR isolation
+                for (std::vector<KLepton *>::const_iterator lepton = product.m_validLeptons.begin();
+                      validJet && lepton != product.m_validLeptons.end(); ++lepton) {
+                    validJet = validJet && ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4) >
+                    settings.GetJetLeptonLowerDeltaRCut(); 
+                    if (settings.GetDebugVerbosity() > 1) {
+                        LOG(DEBUG) << "Check lepton with pt: " << (*lepton)->p4.Pt() << " eta: " << (*lepton)->p4.Pt()
+                                   << " phi: " << (*lepton)->p4.Pt() << " Delta R: " 
+                                   << ROOT::Math::VectorUtil::DeltaR((*jet)->p4, (*lepton)->p4);
+                        if (validJet == false) {
+                            LOG(DEBUG) << "Jet invalidated and removed due to delta R cut (" 
+                                       << settings.GetJetLeptonLowerDeltaRCut() << ")";
+                        }
                     }
                 }
             }
