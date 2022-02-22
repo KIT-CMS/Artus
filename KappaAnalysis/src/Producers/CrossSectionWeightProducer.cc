@@ -9,10 +9,15 @@ void CrossSectionWeightProducer::Produce(KappaEvent const &event, KappaProduct &
     assert(event.m_genLumiInfo);
     LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
 
-    if (static_cast<double>(settings.GetCrossSection()) > 0.0) {
+    if (!signbit(settings.GetCrossSection())) {
         LOG(DEBUG) << "Adding crossSectionPerEventWeight: " << settings.GetCrossSection();
         product.m_weights["crossSectionPerEventWeight"] = settings.GetCrossSection();
+        if (!signbit(settings.GetCrossSectionUp()) && signbit(settings.GetCrossSectionDown())) {
+            LOG(DEBUG) << "Adding crossSectionPerEventWeight Variations";
+            product.m_optionalWeights["crossSectionPerEventWeightUp"] = settings.GetCrossSectionUp();
+            product.m_optionalWeights["crossSectionPerEventWeightDown"] = settings.GetCrossSectionDown();
+        }
     } else {
-        LOG(ERROR) << "No CrossSection information in the input found.";
+        LOG(FATAL) << "No valid CrossSection specified: " << settings.GetCrossSection();
     }
 }
