@@ -331,6 +331,10 @@ public:
 
         if (settings.GetOnlyCleanZLeptons()) {
             LOG(DEBUG) << "Lepton Cleaning: Only clean Z leptons from jet list!";
+            if (!product.m_zValid) {
+                // This spams the output if e.g. in nocut pipeline, make it just appear in DEBUG mode
+                LOG(DEBUG) << "No valid Z for lepton cleaning. Lepton cleaning will be skipped!";
+            }
         } else {
             LOG(DEBUG) << "Lepton Cleaning: Clean all valid leptons from jet list!";
             LOG(DEBUG) << "Number of valid leptons used for lepton removal: " << product.m_validLeptons.size();
@@ -374,8 +378,6 @@ public:
                         LOG(DEBUG) << "Jet invalidated and removed due to delta R cut ("
                                    << settings.GetJetLeptonLowerDeltaRCut() << ")";
                     }
-                } else {
-                    LOG(ERROR) << "No valid Z for lepton cleaning. Lepton cleaning skipped!";
                 }
             } else {
                 // remove ALL valid leptons from list of jets via simple DeltaR isolation
