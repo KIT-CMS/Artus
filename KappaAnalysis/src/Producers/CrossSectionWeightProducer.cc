@@ -12,7 +12,7 @@ void CrossSectionWeightProducer::Produce(KappaEvent const &event, KappaProduct &
     if (!signbit(settings.GetCrossSection())) {
         LOG(DEBUG) << "Adding crossSectionPerEventWeight: " << settings.GetCrossSection();
         product.m_weights["crossSectionPerEventWeight"] = settings.GetCrossSection();
-        if (!signbit(settings.GetCrossSectionUp()) && signbit(settings.GetCrossSectionDown())) {
+        if (!signbit(settings.GetCrossSectionUp()) && !signbit(settings.GetCrossSectionDown())) {
             LOG(DEBUG) << "Adding crossSectionPerEventWeight Variations";
             product.m_optionalWeights["crossSectionPerEventWeightUp"] = settings.GetCrossSectionUp();
             product.m_optionalWeights["crossSectionPerEventWeightDown"] = settings.GetCrossSectionDown();
