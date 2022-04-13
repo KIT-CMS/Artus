@@ -324,7 +324,7 @@ public:
         }
 
         if (jetID == KappaEnumTypes::JetID::NONE) {
-            LOG(WARNING) << "Object-based JetID skipped!";
+            LOG(DEBUG) << "Object-based JetID skipped!";
         } else {
             LOG(DEBUG) << "Apply object-based JetID.";
         }
