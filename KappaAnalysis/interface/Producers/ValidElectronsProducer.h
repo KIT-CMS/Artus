@@ -196,10 +196,13 @@ public:
 		assert(event.m_electrons);
 		assert(event.m_vertexSummary);
 		assert(event.m_electronMetadata);
+		LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
 		// select input source
 		std::vector<KElectron*> electrons;
 		if ((validElectronsInput == ValidElectronsInput::AUTO && (product.m_correctedElectrons.size() > 0)) || (validElectronsInput == ValidElectronsInput::CORRECTED))
 		{
+			LOG(DEBUG) << "Using corrected Electrons as input; Number of m_correctedElectrons: "
+				<< product.m_correctedElectrons.size();
 			electrons.resize(product.m_correctedElectrons.size());
 			size_t electronIndex = 0;
 			for (std::vector<std::shared_ptr<KElectron> >::iterator electron = product.m_correctedElectrons.begin();
@@ -223,7 +226,9 @@ public:
 		for (std::vector<KElectron*>::iterator electron = electrons.begin(); electron != electrons.end(); ++electron)
 		{
 			bool valid = true;
-
+			LOG(DEBUG) << "Apply Electon VID:";
+			LOG(DEBUG) << "Year: " << settings.GetYear();
+			LOG(DEBUG) << "ElectronID: ";
 			// POG recommondations
 			// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentification#Non_triggering_MVA
 			// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentification#Triggering_MVA
@@ -245,30 +250,42 @@ public:
 				valid = valid && IsTightVbtf95Electron(*electron, event, product);
 			else if (electronID == ElectronID::FAKEABLE)
 				valid = valid && IsFakeableElectron(*electron, event, product);
-			else if (electronID == ElectronID::VETO)
+			else if (electronID == ElectronID::VETO) {
+				LOG(DEBUG) << "--VETO";
 				valid = valid && (*electron)->idVeto();
-			else if (electronID == ElectronID::LOOSE)
+			} else if (electronID == ElectronID::LOOSE) {
+				LOG(DEBUG) << "--LOOSE";
 				valid = valid && (*electron)->idLoose();
-			else if (electronID == ElectronID::MEDIUM)
+			} else if (electronID == ElectronID::MEDIUM) {
+				LOG(DEBUG) << "--MEDIUM";
 				valid = valid && (*electron)->idMedium();
-			else if (electronID == ElectronID::TIGHT)		
+			} else if (electronID == ElectronID::TIGHT) {
+				LOG(DEBUG) << "--TIGHT";
 				valid = valid && (*electron)->idTight();
-			else if (electronID != ElectronID::USER && electronID != ElectronID::NONE)
+			} else if (electronID == ElectronID::USER) {
+				LOG(DEBUG) << "--USER";
+			} else if (electronID != ElectronID::USER && electronID != ElectronID::NONE)
 				LOG(FATAL) << "Electron ID of type " << Utility::ToUnderlyingValue(electronID) << " not yet implemented!";
 
 			// Electron Isolation
+                        LOG(DEBUG) << "ElectronIsoType: ";
 			if (electronIsoType == ElectronIsoType::PF) {
+				LOG(DEBUG) << "--PF";
 				if (electronIso == ElectronIso::MVANONTRIG)
 					valid = valid && ((((*electron)->trackIso / (*electron)->p4.Pt()) < 0.4f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
 				else if (electronIso == ElectronIso::MVATRIG)
 					valid = valid && ((((*electron)->trackIso / (*electron)->p4.Pt()) < 0.15f) ? settings.GetDirectIso() : (!settings.GetDirectIso()));
 				else if (electronIso == ElectronIso::FAKEABLE)
 					valid = valid && IsFakeableElectronIso(*electron, event, product, settings);
-				else if (electronIso != ElectronIso::NONE)
+				else if (electronIso == ElectronIso::NONE) {
+					LOG(DEBUG) << "ElectronIso:\n--NONE";
+					valid = valid && IsFakeableElectronIso(*electron, event, product, settings);
+				} else
 					LOG(FATAL) << "Electron isolation of type " << Utility::ToUnderlyingValue(electronIso) << " not yet implemented!";
-			}
-			else if (electronIsoType != ElectronIsoType::USER && electronIsoType != ElectronIsoType::NONE)
-			{
+			} else if (electronIsoType == ElectronIsoType::NONE) {
+				LOG(DEBUG) << "--NONE";
+				LOG(DEBUG) << "ElectronIso:\n--NONE";
+			} else if (electronIsoType != ElectronIsoType::USER && electronIsoType != ElectronIsoType::NONE) {
 				LOG(FATAL) << "Electron isolation type of type " << Utility::ToUnderlyingValue(electronIsoType) << " not yet implemented!";
 			}
 
@@ -278,8 +295,9 @@ public:
 				// && sip is the significance of impact parameter in 3D of the electron GSF track < 4 TODO
 			else if (electronReco == ElectronReco::MVATRIG)
 				valid = valid && ((*electron)->track.nInnerHits == 0);
-			else if (electronReco != ElectronReco::USER && electronReco != ElectronReco::NONE)
-			{
+			else if (electronReco == ElectronReco::NONE) {
+				LOG(DEBUG) << "ElectronReco:\n--NONE";
+			} else if (electronReco != ElectronReco::USER && electronReco != ElectronReco::NONE) {
 				LOG(FATAL) << "Electron reconstruction of type " << Utility::ToUnderlyingValue(electronReco) << " not yet implemented!";
 			}
 
@@ -296,6 +314,17 @@ public:
 				(product.*m_validElectronsMember).push_back(*electron);
 			else
 				(product.*m_invalidElectronsMember).push_back(*electron);
+			LOG(DEBUG) << "";
+		}
+		LOG(DEBUG) << "Number of m_validElectronsMember: " << (product.*m_validElectronsMember).size();
+		LOG(DEBUG) << "Number of m_invalidElectronsMember: " << (product.*m_invalidElectronsMember).size();
+		if (settings.GetDebugVerbosity() > 0) {
+			//loop over all mu
+			LOG(DEBUG) << "\nAll valid electrons:";
+			for (auto el = (product.*m_validElectronsMember).begin(); el != (product.*m_validElectronsMember).end(); ++el) {
+				std::cout << "Pt:" << (*el)->p4.Pt() << " eta: " << (*el)->p4.Eta() << " phi: " << (*el)->p4.Phi()
+				<< "\n";
+			}
 		}
 	}
 
@@ -484,6 +513,7 @@ protected:
 	virtual bool AdditionalCriteria(KElectron* electron, event_type const& event,
 	                                product_type& product, setting_type const& settings) const
 	{
+		LOG(DEBUG) << "[ARTUS] Apply additional criteria";
 		return true;
 	}
 
