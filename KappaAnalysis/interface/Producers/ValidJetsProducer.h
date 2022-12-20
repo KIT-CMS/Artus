@@ -761,7 +761,7 @@ public:
                     } else {
                         LOG(FATAL) << "+++ Unknown JetID for this period and eta region! +++" << std::endl;
                     }
-                } else if (std::abs(jet->p4.eta()) < 2.4f && std::abs(jet->p4.eta()) <= 2.7f) {
+                } else if (std::abs(jet->p4.eta()) > 2.4f && std::abs(jet->p4.eta()) <= 2.7f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT || jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) {
                         float maxNHFraction = 0.90f;
                         float maxNEMFraction = 0.99f;
@@ -772,7 +772,7 @@ public:
                     } else {
                         LOG(FATAL) << "+++ Unknown JetID for this period and eta region! +++" << std::endl;
                     }
-                } else if (std::abs(jet->p4.eta()) < 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
+                } else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT || jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) {
                         float maxNHFraction = 0.90f;
                         float minNEMFraction = 0.0f;
@@ -787,7 +787,7 @@ public:
                     } else {
                         LOG(FATAL) << "+++ Unknown JetID for this period and eta region! +++" << std::endl;
                     }
-                } else if (std::abs(jet->p4.eta()) < 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
+                } else if (std::abs(jet->p4.eta()) > 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT || jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) {
                         float minNHFraction = 0.20f;
                         float maxNEMFraction = 0.90f;
@@ -828,7 +828,7 @@ public:
                     } else {
                         LOG(FATAL) << "+++ Unknown JetID for this period and eta region! +++" << std::endl;
                     }
-                } else if (std::abs(jet->p4.eta()) < 2.6f && std::abs(jet->p4.eta()) <= 2.7f) {
+                } else if (std::abs(jet->p4.eta()) > 2.6f && std::abs(jet->p4.eta()) <= 2.7f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHT || jetID == KappaEnumTypes::JetID::TIGHTLEPVETO) {
                         float maxNHFraction = 0.90f;
                         float maxNEMFraction = 0.99f;
@@ -850,7 +850,7 @@ public:
                     } else {
                         LOG(FATAL) << "+++ Unknown JetID for this period and eta region! +++" << std::endl;
                     }
-                } else if (std::abs(jet->p4.eta()) < 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
+                } else if (std::abs(jet->p4.eta()) > 2.7f && std::abs(jet->p4.eta()) <= 3.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHTLEPVETO || jetID == KappaEnumTypes::JetID::TIGHT) {
                         float minNEMFraction = 0.01f;
                         float maxNEMFraction = 0.99f;
@@ -863,7 +863,7 @@ public:
                     } else {
                         LOG(FATAL) << "+++ Unknown JetID for this period and eta region! +++" << std::endl;
                     }
-                } else if (std::abs(jet->p4.eta()) < 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
+                } else if (std::abs(jet->p4.eta()) > 3.0f && std::abs(jet->p4.eta()) <= 5.0f) {
                     if (jetID == KappaEnumTypes::JetID::TIGHTLEPVETO || jetID == KappaEnumTypes::JetID::TIGHT) {
                         float minNHFraction = 0.20f;
                         float maxNEMFraction = 0.90f;
