@@ -35,7 +35,11 @@ def main():
 		
 		# retrieve weights and total number of events
 		root_file = ROOT.TFile.Open(file_name, "READ")
-		lumiTree = root_file.Get("Lumis")
+		try:
+			lumiTree = root_file.Get("Lumis")
+		except Exception as e:
+			print(file_name)
+			raise e
 		n_entries = lumiTree.GetEntries()
 		
 		# nickname matching and sum of weights
