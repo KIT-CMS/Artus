@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "Kappa/DataFormats/interface/Kappa.h"
@@ -6,9 +5,10 @@
 #include "Artus/KappaAnalysis/interface/KappaProducerBase.h"
 
 #include "Artus/Utility/interface/RoccoR.h"
-#include "Artus/Utility/interface/RoccoR2015.h"
 #include "Artus/Utility/interface/rochcor2015.h"
 #include "TRandom3.h"
+
+#include <memory>  // Hinzufügen für Smart Pointers
 
 /**
    \brief Producer for muon four momentum corrections.
@@ -46,8 +46,8 @@ protected:
                                        KappaProduct &product, KappaSettings const &settings) const;
 
 private:
-    MuonEnergyCorrection muonEnergyCorrection;
-    rochcor2015 *rmcor2015;
-    RoccoR *rmcor;
-    TRandom3 *random;
+    MuonEnergyCorrection muonEnergyCorrection = MuonEnergyCorrection::NONE;
+    std::unique_ptr<rochcor2015> rmcor2015 = nullptr;
+    std::unique_ptr<RoccoR> rmcor = nullptr;
+    std::unique_ptr<TRandom3> random = nullptr;
 };
