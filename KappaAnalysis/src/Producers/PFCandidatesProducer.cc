@@ -36,6 +36,11 @@ void PFCandidatesProducer::Init(KappaSettings const& settings)
 void PFCandidatesProducer::Produce(KappaEvent const& event, KappaProduct& product, KappaSettings const& settings) const
 {
     LOG(DEBUG) << "\n[" << this->GetProducerId() << "]";
+	// Sane memroy allocation based on a few DY events
+	product.m_pfChargedHadrons.reserve(512);
+	product.m_pfNeutralHadrons.reserve(128);
+	product.m_pfPhotons.reserve(128);
+	product.m_pfElectromagneticHF.reserve(264);
 	for (KPFCandidates::const_iterator pfCandidate = event.m_packedPFCandidates->begin();
 		pfCandidate != event.m_packedPFCandidates->end(); ++pfCandidate)
 	{

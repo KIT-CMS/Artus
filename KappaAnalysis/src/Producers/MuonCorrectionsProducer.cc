@@ -1,4 +1,3 @@
-
 #include "Artus/KappaAnalysis/interface/Producers/MuonCorrectionsProducer.h"
 #include "Artus/KappaAnalysis/interface/Utility/GeneratorInfo.h"
 #include <boost/algorithm/string.hpp>
@@ -33,13 +32,12 @@ void MuonCorrectionsProducer::Init(KappaSettings const& settings)
 	KappaProducerBase::Init(settings);
 	muonEnergyCorrection = ToMuonEnergyCorrection(settings.GetMuonEnergyCorrection());
 	if (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2015) {
-		rmcor2015 = new rochcor2015(settings.GetMuonRochesterCorrectionsFile());
-
+		rmcor2015 = std::make_unique<rochcor2015>(settings.GetMuonRochesterCorrectionsFile());
 	}
 	if ((muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2016UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2017UL) || (muonEnergyCorrection == MuonEnergyCorrection::ROCHCORR2018UL))	{
-		rmcor = new RoccoR(settings.GetMuonRochesterCorrectionsFile());
+		rmcor = std::make_unique<RoccoR>(settings.GetMuonRochesterCorrectionsFile());
 	}
-	random = new TRandom3();
+	random = std::make_unique<TRandom3>();
 }
 
 void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& product,
@@ -189,5 +187,3 @@ void MuonCorrectionsProducer::AdditionalCorrections(KMuon* muon, KappaEvent cons
 {
 	// LOG(DEBUG) << "Additional Corrections applied! Please verify that this is correct ...\n";
 }
-
-
