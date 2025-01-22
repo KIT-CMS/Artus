@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <cstdlib>
 
@@ -71,7 +70,9 @@ std::pair<bool, el::Level> ArtusConfig::parseLogLevel(
 	return std::make_pair(false, el::Level::Fatal);
 }
 
-ArtusConfig::ArtusConfig(std::stringstream & sStream)
+ArtusConfig::ArtusConfig(std::stringstream & sStream) :
+    m_jsonConfigFileName(""),
+    m_minimumLogLevelString("")
 {
 	boost::property_tree::json_parser::read_json(sStream, m_propTreeRoot);
 

@@ -14,8 +14,11 @@ void PUWeightProducer::Init(KappaSettings const& settings) {
 	const std::string histogramName = "pileup";
 	LOG(DEBUG) << "\tLoading pile-up weights from files...";
 	LOG(DEBUG) << "\t\t" << settings.GetPileupWeightFile() << "/" << histogramName;
-	TFile file(settings.GetPileupWeightFile().c_str(), "READONLY");
-	TH1D* pileupHistogram = dynamic_cast<TH1D*>(file.Get(histogramName.c_str()));
+	std::unique_ptr<TFile> file = std::make_unique<TFile>(settings.GetPileupWeightFile().c_str(), "read");
+	if(!file) {
+		LOG(FATAL) << "File " << settings.GetPileupWeightFile() << " not found!";
+	}
+	TH1D* pileupHistogram = dynamic_cast<TH1D*>(file->Get(histogramName.c_str()));
 
 	m_pileupWeights.clear();
 	for (int i = 1; i <= pileupHistogram->GetNbinsX(); ++i)
@@ -24,7 +27,7 @@ void PUWeightProducer::Init(KappaSettings const& settings) {
 	}
 	m_bins = 1.0 / pileupHistogram->GetBinWidth(1);
 	delete pileupHistogram;
-	file.Close();
+	file->Close();
 }
 
 void PUWeightProducer::Produce(KappaEvent const& event, KappaProduct& product,
