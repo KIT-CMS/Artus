@@ -34,11 +34,17 @@ def main():
 	for (fileindex, file_name) in enumerate(args.files):
 		
 		# retrieve weights and total number of events
-		root_file = ROOT.TFile.Open(file_name, "READ")
+		try:
+			root_file = ROOT.TFile.Open(file_name, "READ")
+			if not root_file or root_file.IsZombie():
+				raise IOError("Could not open %s" % file_name)
+		except Exception as e:
+			print("Error opening file: " + file_name)
+			raise e
 		try:
 			lumiTree = root_file.Get("Lumis")
 		except Exception as e:
-			print(file_name)
+			print("Error reading TTree Lumis from " + file_name)
 			raise e
 		n_entries = lumiTree.GetEntries()
 		
