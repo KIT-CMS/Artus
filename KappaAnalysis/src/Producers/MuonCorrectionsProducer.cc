@@ -98,7 +98,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 				rmcor2015->momcor_data(mu, q, 0, qter);
 				muon->get()->p4.SetPxPyPzE(mu.Px(),mu.Py(),mu.Pz(),mu.E());
 			} else {
-			int ntrk = muon->get()->track.nPixelLayers + muon->get()->track.nStripLayers; // TODO: this corresponds to reco::HitPattern::trackerLayersWithMeasurementOld(). update to "new" impleme	ntation also in Kappa
+			int ntrk = muon->get()->track.nTrackerLayers();
 				rmcor2015->momcor_mc(mu, q, ntrk, qter);
 				muon->get()->p4.SetPxPyPzE(mu.Px(),mu.Py(),mu.Pz(),mu.E());
 			}
@@ -116,7 +116,7 @@ void MuonCorrectionsProducer::Produce(KappaEvent const& event, KappaProduct& pro
 				scaleFactor = rmcor->kScaleDT(q, pt, eta, phi);
 				LOG(DEBUG) << "scaleFactor (kScaleDT used): " << scaleFactor;
 			} else {
-				int ntrk = muon->get()->track.nPixelLayers + muon->get()->track.nStripLayers; // TODO: this corresponds to reco::HitPattern::trackerLayersWithMeasurementOld(). update to "new" implementation also in Kappa
+				int ntrk = muon->get()->track.nTrackerLayers();
 				if (settings.GetRecoMuonMatchingGenParticleMatchAllMuons() &&
 						&(*product.m_genParticleMatchedMuons[static_cast<KMuon*>(const_cast<KLepton*>(product.m_originalLeptons[muon->get()]))]) != nullptr) {
 					KGenParticle* genMuon = &(*product.m_genParticleMatchedMuons[static_cast<KMuon*>(const_cast<KLepton*>(product.m_originalLeptons[muon->get()]))]);
